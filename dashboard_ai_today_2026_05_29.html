@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta charset="utf-8">
+<title>AI 产业链今日复盘 · 2026-05-29</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;background:#f5f6f8;color:#222;margin:0;padding:0;}
+.header{background:linear-gradient(135deg,#0c4a6e 0%,#075985 100%);color:#fff;padding:20px 28px;}
+.header h1{margin:0;font-size:22px;}
+.header .sub{font-size:13px;opacity:0.85;margin-top:4px;}
+.body{padding:20px 28px;max-width:1400px;margin:auto;}
+.alert{background:linear-gradient(135deg,#fef3c7 0%,#fff 100%);border-left:5px solid #f59e0b;padding:16px 20px;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);}
+.alert h2{margin:0 0 8px;font-size:17px;color:#92400e;}
+.alert p{margin:6px 0;font-size:13.5px;line-height:1.6;color:#444;}
+.alert b{color:#0c4a6e;}
+.alert .big-num{font-size:24px;font-weight:900;color:#16a34a;}
+.alert .big-num-r{font-size:24px;font-weight:900;color:#dc2626;}
+h2.section{margin:24px 0 10px;font-size:16px;color:#0c4a6e;border-left:4px solid #0c4a6e;padding-left:10px;}
+.sec-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:14px;margin-bottom:20px;}
+.sec-card{background:#fff;padding:14px 16px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.sec-card h3{margin:0 0 10px;font-size:14px;color:#0c4a6e;}
+table{border-collapse:collapse;width:100%;background:#fff;font-size:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);border-radius:6px;overflow:hidden;margin-bottom:16px;}
+th{background:#f3f4f6;padding:7px 9px;text-align:left;font-weight:700;font-size:11px;color:#333;border-bottom:1px solid #ddd;}
+td{padding:6px 9px;border-bottom:1px solid #eee;white-space:nowrap;}
+tr:hover td{background:#fafbfc;}
+.r{text-align:right;font-variant-numeric:tabular-nums;}
+.tk{font-weight:700;color:#0c4a6e;}
+.t-Stock{background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;}
+.t-ETF{background:#ede9fe;color:#6d28d9;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;}
+.sig{display:inline-block;padding:1px 6px;border-radius:3px;background:#f3f4f6;font-size:10px;margin-right:3px;color:#444;}
+.sector-bar{display:flex;align-items:center;padding:8px 12px;font-size:12.5px;border-bottom:1px solid #f3f4f6;}
+.sector-bar .sb-name{flex:1;font-weight:600;color:#1f2937;}
+.sector-bar .sb-bar{flex:2;height:18px;background:#f3f4f6;border-radius:3px;overflow:hidden;position:relative;margin:0 12px;}
+.sector-bar .sb-fill{height:100%;position:absolute;top:0;}
+.sector-bar .sb-fill-pos{background:linear-gradient(90deg,#86efac,#16a34a);left:50%;}
+.sector-bar .sb-fill-neg{background:linear-gradient(90deg,#fca5a5,#dc2626);right:50%;}
+.sector-bar .sb-mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:#999;}
+.sector-bar .sb-pct{min-width:70px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;}
+.insight-box{background:#f0f9ff;border-left:4px solid #0c4a6e;padding:12px 16px;margin:10px 0;border-radius:4px;font-size:13px;line-height:1.6;}
+.insight-box b{color:#0c4a6e;}
+.action-box{background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;margin:10px 0;border-radius:4px;font-size:13px;line-height:1.6;}
+.action-box b{color:#92400e;}
+</style></head>
+<body>
+
+<div class="header">
+  <h1>🌅 AI 产业链今日复盘 · 2026-05-29</h1>
+  <div class="sub">SPY +0.25% · 97 个标的 · 5 个个股子赛道 + 7 类 ETF · 信号 + 启示</div>
+</div>
+
+<div class="body">
+
+<div class="alert">
+<h2>🎯 今日最重要的事：SaaS 应用层大幅跑赢，电力/半导体跑输 — Insight #7 实时验证</h2>
+<p><b>SaaS / 应用 / 安全个股平均涨幅 <span class="big-num">+4.51%</span></b>，
+其中 NOW +13% / IBM +10% / PLTR +9.6% / CRM +7.9% / ESTC +6.5% / CRWD +6.5% / ORCL +6.4% / DDOG +6.3% / SNOW +6%。
+同时 <b>云软件 ETF 平均 +4.24%</b> (IGV/SKYY/CLOU/WCLD)。</p>
+<p>对比 <b>半导体个股 +0.14%</b>、<b>半导体 ETF -0.35%</b>（XSD 还跌 -2.4%）、
+<b>电力&DC 个股 <span class="big-num-r">-1.51%</span></b>、<b>电力 ETF -1.18%</b>。</p>
+<p>👉 <b>这一天就把昨天 Insight #7 描述的「2014 SaaS reset 重演」剧本启动了</b>。
+WCLD/IGV 创年内新低 → 一天反转 → 多只 SaaS 个股 RSI 上穿 70。
+但 <b>成交量普遍未放大 (Vol× &lt; 1)</b>，说明这是<b>动量反转而非趋势确认</b>，需观察持续性。</p>
+</div>
+
+<h2 class="section">📊 子赛道今日表现</h2>
+<div class="sec-card">
+<div class="sector-bar">
+      <div class="sb-name">Stock · 数据/应用/安全 <span style="color:#999;font-size:10px;">(17)</span></div>
+      <div class="sb-bar"><div class="sb-mid"></div><div class="sb-fill sb-fill-pos" style="width:50.0%;left:50%;"></div></div>
+      <div class="sb-pct" style="color:#16a34a;">+4.51%</div>
+    </div><div class="sector-bar">
+      <div class="sb-name">ETF · 云软件ETF <span style="color:#999;font-size:10px;">(4)</span></div>
+      <div class="sb-bar"><div class="sb-mid"></div><div class="sb-fill sb-fill-pos" style="width:47.006651884700666%;left:50%;"></div></div>
+      <div class="sb-pct" style="color:#16a34a;">+4.24%</div>
+    </div><div class="sector-bar">
+      <div class="sb-name">ETF · 安全ETF <span style="color:#999;font-size:10px;">(2)</span></div>
+      <div class="sb-bar"><div class="sb-mid"></div><div class="sb-fill sb-fill-pos" style="width:39.57871396895787%;left:50%;"></div></div>
+      <div class="sb-pct" style="color:#16a34a;">+3.57%</div>
+    </div><div class="sector-bar">
+      <div class="sb-name">Stock · 二阶受益 <span style="color:#999;font-size:10px;">(14)</span></div>
+      <div class="sb-bar"><div class="sb-mid"></div><div class="sb-fill sb-fill-pos" style="width:16.629711751662974%;left:50%;"></div></div>
+      <div class="sb-pct" style="color:#16a34a;">+1.50%</div>
+    </div><div class="sector-bar">
+      <div class="sb-name">ETF · 大科技ETF <span style="color:#999;font-size:10px;">(4)</span></div>
+      <div class="sb-bar"><div class="sb-mid"></div><div class="sb-fill sb-fill-pos" style="width:6.651884700665188%;left:50%;"></div></div>
+      <div class="sb-pct" style="color:#16a34a;">+0.60%</div>
+    </div><div class="sector-bar">
+      <div class="sb-name">ETF · AI主题ETF <span style="color:#999;font-size:10px;">(7)</span></div>
+      <div class="sb-bar"><div class="sb-mid"></div><div class="sb-fill sb-fill-pos" style="width:4.545454545454546%;left:50%;"></div></div>
+      <div class="sb-pct" style="color:#16a34a;">+0.41%</div>
+    </div><div class="sector-bar">
+      <div class="sb-name">Stock · 基础设施 <span style="color:#999;font-size:10px;">(19)</span></div>
+      <div class="sb-bar"><div class="sb-mid"></div><div class="sb-fill sb-fill-pos" style="width:1.552106430155211%;left:50%;"></div></div>
+      <div class="sb-pct" style="color:#16a34a;">+0.14%</div>
+    </div><div class="sector-bar">
+      <div class="sb-name">ETF · 数据中心ETF <span style="color:#999;font-size:10px;">(3)</span></div>
+      <div class="sb-bar"><div class="sb-mid"></div><div class="sb-fill sb-fill-pos" style="width:0.0%;left:50%;"></div></div>
+      <div class="sb-pct" style="color:#16a34a;">+-0.00%</div>
+    </div><div class="sector-bar">
+      <div class="sb-name">ETF · 半导体ETF <span style="color:#999;font-size:10px;">(5)</span></div>
+      <div class="sb-bar"><div class="sb-mid"></div><div class="sb-fill sb-fill-neg" style="width:3.8802660753880267%;right:50%;"></div></div>
+      <div class="sb-pct" style="color:#dc2626;">-0.35%</div>
+    </div><div class="sector-bar">
+      <div class="sb-name">Stock · 云&模型 <span style="color:#999;font-size:10px;">(7)</span></div>
+      <div class="sb-bar"><div class="sb-mid"></div><div class="sb-fill sb-fill-neg" style="width:4.545454545454546%;right:50%;"></div></div>
+      <div class="sb-pct" style="color:#dc2626;">-0.41%</div>
+    </div><div class="sector-bar">
+      <div class="sb-name">ETF · 电力/基建ETF <span style="color:#999;font-size:10px;">(5)</span></div>
+      <div class="sb-bar"><div class="sb-mid"></div><div class="sb-fill sb-fill-neg" style="width:13.082039911308204%;right:50%;"></div></div>
+      <div class="sb-pct" style="color:#dc2626;">-1.18%</div>
+    </div><div class="sector-bar">
+      <div class="sb-name">Stock · 电力&DC <span style="color:#999;font-size:10px;">(10)</span></div>
+      <div class="sb-bar"><div class="sb-mid"></div><div class="sb-fill sb-fill-neg" style="width:16.74057649667406%;right:50%;"></div></div>
+      <div class="sb-pct" style="color:#dc2626;">-1.51%</div>
+    </div></div><h2 class="section">🚀 今日大涨 Top 15</h2><table><tr><th>Ticker</th><th>Type</th><th>赛道</th><th class="r">Price</th><th class="r">今日%</th><th class="r">vs SPY</th><th class="r">RSI</th><th class="r">Vol×</th><th class="r">距52W高</th><th>信号</th></tr><tr>
+      <td class="tk">NOW</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$122.84</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+12.98%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+12.73pt</span></td>
+      <td class="r">73</td>
+      <td class="r">0.86</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-18.60%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">⚠️ 进超买</span></td>
+    </tr><tr>
+      <td class="tk">IBM</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>二阶受益</td>
+      <td class="r">$290.88</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+10.09%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+9.84pt</span></td>
+      <td class="r">79</td>
+      <td class="r">1.02</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-6.37%</span></td>
+      <td><span class="sig">🚀 大涨</span></td>
+    </tr><tr>
+      <td class="tk">PLTR</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$157.17</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+9.65%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+9.40pt</span></td>
+      <td class="r">68</td>
+      <td class="r">0.75</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-13.49%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">⬆️ 上穿MA63</span></td>
+    </tr><tr>
+      <td class="tk">CRM</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$190.02</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+7.86%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+7.61pt</span></td>
+      <td class="r">60</td>
+      <td class="r">0.44</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-28.42%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">⬆️ 上穿MA21</span> <span class="sig">⬆️ 上穿MA63</span></td>
+    </tr><tr>
+      <td class="tk">ESTC</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$61.37</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.53%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.28pt</span></td>
+      <td class="r">72</td>
+      <td class="r">0.99</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-21.94%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">⚠️ 进超买</span></td>
+    </tr><tr>
+      <td class="tk">CRWD</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$714.76</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.52%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.27pt</span></td>
+      <td class="r">83</td>
+      <td class="r">0.38</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">ORCL</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>云&模型</td>
+      <td class="r">$216.73</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.39%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.15pt</span></td>
+      <td class="r">72</td>
+      <td class="r">0.63</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">⚠️ 进超买</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">DDOG</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$239.40</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.29%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.04pt</span></td>
+      <td class="r">86</td>
+      <td class="r">0.17</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">SNOW</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$253.57</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.01%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+5.76pt</span></td>
+      <td class="r">87</td>
+      <td class="r">0.66</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">GTLB</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$29.55</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+5.80%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+5.55pt</span></td>
+      <td class="r">70</td>
+      <td class="r">0.21</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-22.58%</span></td>
+      <td><span class="sig">🚀 大涨</span></td>
+    </tr><tr>
+      <td class="tk">PANW</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$272.27</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+5.63%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+5.38pt</span></td>
+      <td class="r">78</td>
+      <td class="r">0.34</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">SKYY</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>云软件ETF</td>
+      <td class="r">$141.75</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.99%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.74pt</span></td>
+      <td class="r">78</td>
+      <td class="r">0.40</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">WCLD</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>云软件ETF</td>
+      <td class="r">$31.93</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.62%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.37pt</span></td>
+      <td class="r">67</td>
+      <td class="r">0.50</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-10.51%</span></td>
+      <td><span class="sig">📈 +2%</span></td>
+    </tr><tr>
+      <td class="tk">MU</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>基础设施</td>
+      <td class="r">$965.46</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.54%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.29pt</span></td>
+      <td class="r">78</td>
+      <td class="r">0.35</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">CIBR</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>安全ETF</td>
+      <td class="r">$87.26</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.28%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.04pt</span></td>
+      <td class="r">79</td>
+      <td class="r">0.32</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">🎯 创新高</span></td>
+    </tr></table><h2 class="section">📉 今日大跌 Top 15</h2><table><tr><th>Ticker</th><th>Type</th><th>赛道</th><th class="r">Price</th><th class="r">今日%</th><th class="r">vs SPY</th><th class="r">RSI</th><th class="r">Vol×</th><th class="r">距52W高</th><th>信号</th></tr><tr>
+      <td class="tk">COHR</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>基础设施</td>
+      <td class="r">$353.32</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-6.27%</span></td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-6.52pt</span></td>
+      <td class="r">50</td>
+      <td class="r">0.30</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-12.75%</span></td>
+      <td><span class="sig">📉 大跌</span> <span class="sig">⬇️ 下穿MA21</span></td>
+    </tr><tr>
+      <td class="tk">NBIS</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>云&模型</td>
+      <td class="r">$215.21</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-4.92%</span></td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-5.17pt</span></td>
+      <td class="r">60</td>
+      <td class="r">0.38</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-4.92%</span></td>
+      <td><span class="sig">🔻 -2%</span></td>
+    </tr><tr>
+      <td class="tk">FN</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>基础设施</td>
+      <td class="r">$640.04</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-4.18%</span></td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-4.43pt</span></td>
+      <td class="r">45</td>
+      <td class="r">0.13</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-14.26%</span></td>
+      <td><span class="sig">🔻 -2%</span></td>
+    </tr><tr>
+      <td class="tk">TEM</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$49.34</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-3.81%</span></td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-4.05pt</span></td>
+      <td class="r">52</td>
+      <td class="r">0.91</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-29.85%</span></td>
+      <td><span class="sig">🔻 -2%</span> <span class="sig">⬇️ 下穿MA63</span></td>
+    </tr><tr>
+      <td class="tk">LITE</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>基础设施</td>
+      <td class="r">$832.48</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-3.27%</span></td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-3.52pt</span></td>
+      <td class="r">43</td>
+      <td class="r">0.35</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-20.95%</span></td>
+      <td><span class="sig">🔻 -2%</span></td>
+    </tr><tr>
+      <td class="tk">CRWV</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>云&模型</td>
+      <td class="r">$103.59</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-3.06%</span></td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-3.31pt</span></td>
+      <td class="r">46</td>
+      <td class="r">0.27</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-24.92%</span></td>
+      <td><span class="sig">🔻 -2%</span></td>
+    </tr><tr>
+      <td class="tk">PWR</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>电力&DC</td>
+      <td class="r">$708.53</td>
+      <td class="r"><span style="color:#a85a00">-2.95%</span></td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-3.20pt</span></td>
+      <td class="r">50</td>
+      <td class="r">0.16</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-9.77%</span></td>
+      <td><span class="sig">🔻 -2%</span></td>
+    </tr><tr>
+      <td class="tk">GEV</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>电力&DC</td>
+      <td class="r">$969.22</td>
+      <td class="r"><span style="color:#a85a00">-2.69%</span></td>
+      <td class="r"><span style="color:#a85a00">-2.94pt</span></td>
+      <td class="r">40</td>
+      <td class="r">0.43</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-15.69%</span></td>
+      <td><span class="sig">🔻 -2%</span></td>
+    </tr><tr>
+      <td class="tk">MDB</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$317.17</td>
+      <td class="r"><span style="color:#a85a00">-2.61%</span></td>
+      <td class="r"><span style="color:#a85a00">-2.86pt</span></td>
+      <td class="r">57</td>
+      <td class="r">1.53</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-28.01%</span></td>
+      <td><span class="sig">🔻 -2%</span></td>
+    </tr><tr>
+      <td class="tk">XSD</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>半导体ETF</td>
+      <td class="r">$615.66</td>
+      <td class="r"><span style="color:#a85a00">-2.37%</span></td>
+      <td class="r"><span style="color:#a85a00">-2.61pt</span></td>
+      <td class="r">70</td>
+      <td class="r">0.26</td>
+      <td class="r"><span style="color:#a85a00">-2.62%</span></td>
+      <td><span class="sig">🔻 -2%</span> <span class="sig">✅ 离超买</span></td>
+    </tr><tr>
+      <td class="tk">NRG</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>电力&DC</td>
+      <td class="r">$134.51</td>
+      <td class="r"><span style="color:#a85a00">-2.17%</span></td>
+      <td class="r"><span style="color:#a85a00">-2.42pt</span></td>
+      <td class="r">42</td>
+      <td class="r">0.08</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-26.68%</span></td>
+      <td><span class="sig">🔻 -2%</span></td>
+    </tr><tr>
+      <td class="tk">URA</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>电力/基建ETF</td>
+      <td class="r">$49.69</td>
+      <td class="r"><span style="color:#a85a00">-2.10%</span></td>
+      <td class="r"><span style="color:#a85a00">-2.35pt</span></td>
+      <td class="r">44</td>
+      <td class="r">0.24</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-19.62%</span></td>
+      <td><span class="sig">🔻 -2%</span></td>
+    </tr><tr>
+      <td class="tk">NLR</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>电力/基建ETF</td>
+      <td class="r">$130.66</td>
+      <td class="r"><span style="color:#a85a00">-1.98%</span></td>
+      <td class="r"><span style="color:#a85a00">-2.23pt</span></td>
+      <td class="r">44</td>
+      <td class="r">0.18</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-20.51%</span></td>
+      <td></td>
+    </tr><tr>
+      <td class="tk">VST</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>电力&DC</td>
+      <td class="r">$157.10</td>
+      <td class="r"><span style="color:#a85a00">-1.98%</span></td>
+      <td class="r"><span style="color:#a85a00">-2.23pt</span></td>
+      <td class="r">53</td>
+      <td class="r">0.12</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-12.69%</span></td>
+      <td></td>
+    </tr><tr>
+      <td class="tk">INFY</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>二阶受益</td>
+      <td class="r">$12.46</td>
+      <td class="r"><span style="color:#a85a00">-1.89%</span></td>
+      <td class="r"><span style="color:#a85a00">-2.14pt</span></td>
+      <td class="r">47</td>
+      <td class="r">0.47</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-35.61%</span></td>
+      <td></td>
+    </tr></table><h2 class="section">⚠️ 新进超买区 (RSI 上穿 70) — 短期回调风险</h2><table><tr><th>Ticker</th><th>Type</th><th>赛道</th><th class="r">Price</th><th class="r">今日%</th><th class="r">vs SPY</th><th class="r">RSI</th><th class="r">Vol×</th><th class="r">距52W高</th><th>信号</th></tr><tr>
+      <td class="tk">ESTC</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$61.37</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.53%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.28pt</span></td>
+      <td class="r">72</td>
+      <td class="r">0.99</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-21.94%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">⚠️ 进超买</span></td>
+    </tr><tr>
+      <td class="tk">HACK</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>安全ETF</td>
+      <td class="r">$96.56</td>
+      <td class="r"><span style="color:#3b7d3b">+2.85%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+2.60pt</span></td>
+      <td class="r">72</td>
+      <td class="r">0.24</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">⚠️ 进超买</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">IGV</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>云软件ETF</td>
+      <td class="r">$99.42</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+3.91%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+3.66pt</span></td>
+      <td class="r">73</td>
+      <td class="r">0.45</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-6.42%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">⚠️ 进超买</span></td>
+    </tr><tr>
+      <td class="tk">IRBO</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>AI主题ETF</td>
+      <td class="r">$72.71</td>
+      <td class="r"><span style="color:#3b7d3b">+2.28%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+2.03pt</span></td>
+      <td class="r">70</td>
+      <td class="r">1.32</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">⚠️ 进超买</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">NOW</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$122.84</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+12.98%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+12.73pt</span></td>
+      <td class="r">73</td>
+      <td class="r">0.86</td>
+      <td class="r"><span style="color:#c0392b;font-weight:700">-18.60%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">⚠️ 进超买</span></td>
+    </tr><tr>
+      <td class="tk">ORCL</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>云&模型</td>
+      <td class="r">$216.73</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.39%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.15pt</span></td>
+      <td class="r">72</td>
+      <td class="r">0.63</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">⚠️ 进超买</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">VPN</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>数据中心ETF</td>
+      <td class="r">$31.65</td>
+      <td class="r"><span style="color:#3b7d3b">+1.25%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+1.00pt</span></td>
+      <td class="r">71</td>
+      <td class="r">0.68</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">⚠️ 进超买</span> <span class="sig">🎯 创新高</span></td>
+    </tr></table><h2 class="section">🎯 创 52W 新高 (29 只)</h2><table><tr><th>Ticker</th><th>Type</th><th>赛道</th><th class="r">Price</th><th class="r">今日%</th><th class="r">vs SPY</th><th class="r">RSI</th><th class="r">Vol×</th><th class="r">距52W高</th><th>信号</th></tr><tr>
+      <td class="tk">AIQ</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>AI主题ETF</td>
+      <td class="r">$67.07</td>
+      <td class="r"><span style="color:#3b7d3b">+1.10%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+0.85pt</span></td>
+      <td class="r">78</td>
+      <td class="r">0.54</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">ARM</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>基础设施</td>
+      <td class="r">$341.51</td>
+      <td class="r"><span style="color:#3b7d3b">+1.86%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+1.61pt</span></td>
+      <td class="r">76</td>
+      <td class="r">0.33</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">ASML</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>基础设施</td>
+      <td class="r">$1624.99</td>
+      <td class="r"><span style="color:#3b7d3b">+1.20%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+0.95pt</span></td>
+      <td class="r">60</td>
+      <td class="r">0.20</td>
+      <td class="r"><span style="color:#a85a00">-0.48%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">AVGO</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>基础设施</td>
+      <td class="r">$438.18</td>
+      <td class="r"><span style="color:#3b7d3b">+2.72%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+2.47pt</span></td>
+      <td class="r">63</td>
+      <td class="r">0.47</td>
+      <td class="r"><span style="color:#a85a00">-0.36%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">CHAT</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>AI主题ETF</td>
+      <td class="r">$97.29</td>
+      <td class="r"><span style="color:#3b7d3b">+0.44%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+0.20pt</span></td>
+      <td class="r">75</td>
+      <td class="r">0.47</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">CIBR</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>安全ETF</td>
+      <td class="r">$87.26</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.28%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.04pt</span></td>
+      <td class="r">79</td>
+      <td class="r">0.32</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">CLOU</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>云软件ETF</td>
+      <td class="r">$23.80</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+3.46%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+3.21pt</span></td>
+      <td class="r">68</td>
+      <td class="r">0.29</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">CRDO</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>基础设施</td>
+      <td class="r">$228.62</td>
+      <td class="r"><span style="color:#3b7d3b">+2.82%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+2.57pt</span></td>
+      <td class="r">67</td>
+      <td class="r">0.37</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">CRWD</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$714.76</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.52%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.27pt</span></td>
+      <td class="r">83</td>
+      <td class="r">0.38</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">DDOG</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$239.40</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.29%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.04pt</span></td>
+      <td class="r">86</td>
+      <td class="r">0.17</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">DTCR</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>数据中心ETF</td>
+      <td class="r">$31.60</td>
+      <td class="r"><span style="color:#a85a00">-0.16%</span></td>
+      <td class="r"><span style="color:#a85a00">-0.41pt</span></td>
+      <td class="r">70</td>
+      <td class="r">0.22</td>
+      <td class="r"><span style="color:#a85a00">-0.16%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">HACK</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>安全ETF</td>
+      <td class="r">$96.56</td>
+      <td class="r"><span style="color:#3b7d3b">+2.85%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+2.60pt</span></td>
+      <td class="r">72</td>
+      <td class="r">0.24</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">⚠️ 进超买</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">IRBO</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>AI主题ETF</td>
+      <td class="r">$72.71</td>
+      <td class="r"><span style="color:#3b7d3b">+2.28%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+2.03pt</span></td>
+      <td class="r">70</td>
+      <td class="r">1.32</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">⚠️ 进超买</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">LRCX</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>基础设施</td>
+      <td class="r">$322.05</td>
+      <td class="r"><span style="color:#3b7d3b">+1.27%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+1.03pt</span></td>
+      <td class="r">67</td>
+      <td class="r">0.15</td>
+      <td class="r"><span style="color:#a85a00">-0.20%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">MU</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>基础设施</td>
+      <td class="r">$965.46</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.54%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.29pt</span></td>
+      <td class="r">78</td>
+      <td class="r">0.35</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">ORCL</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>云&模型</td>
+      <td class="r">$216.73</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.39%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.15pt</span></td>
+      <td class="r">72</td>
+      <td class="r">0.63</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">⚠️ 进超买</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">PANW</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$272.27</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+5.63%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+5.38pt</span></td>
+      <td class="r">78</td>
+      <td class="r">0.34</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">QQQ</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>大科技ETF</td>
+      <td class="r">$738.42</td>
+      <td class="r"><span style="color:#3b7d3b">+0.38%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+0.14pt</span></td>
+      <td class="r">77</td>
+      <td class="r">0.26</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">QQQM</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>大科技ETF</td>
+      <td class="r">$304.05</td>
+      <td class="r"><span style="color:#3b7d3b">+0.40%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+0.15pt</span></td>
+      <td class="r">77</td>
+      <td class="r">0.35</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">SKYY</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>云软件ETF</td>
+      <td class="r">$141.75</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.99%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+4.74pt</span></td>
+      <td class="r">78</td>
+      <td class="r">0.40</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">SMH</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>半导体ETF</td>
+      <td class="r">$603.90</td>
+      <td class="r"><span style="color:#3b7d3b">+0.68%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+0.43pt</span></td>
+      <td class="r">72</td>
+      <td class="r">0.18</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">SNOW</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>数据/应用/安全</td>
+      <td class="r">$253.57</td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+6.01%</span></td>
+      <td class="r"><span style="color:#0a7a0a;font-weight:700">+5.76pt</span></td>
+      <td class="r">87</td>
+      <td class="r">0.66</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🚀 大涨</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">SOXL</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>半导体ETF</td>
+      <td class="r">$227.47</td>
+      <td class="r"><span style="color:#3b7d3b">+1.26%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+1.02pt</span></td>
+      <td class="r">72</td>
+      <td class="r">0.24</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">SOXX</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>半导体ETF</td>
+      <td class="r">$572.21</td>
+      <td class="r"><span style="color:#3b7d3b">+0.48%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+0.23pt</span></td>
+      <td class="r">73</td>
+      <td class="r">0.25</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">THNQ</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>AI主题ETF</td>
+      <td class="r">$88.32</td>
+      <td class="r"><span style="color:#3b7d3b">+0.15%</span></td>
+      <td class="r"><span style="color:#a85a00">-0.10pt</span></td>
+      <td class="r">78</td>
+      <td class="r">0.38</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">TSM</td>
+      <td><span class="t-Stock">Stock</span></td>
+      <td>基础设施</td>
+      <td class="r">$422.74</td>
+      <td class="r"><span style="color:#a85a00">-0.50%</span></td>
+      <td class="r"><span style="color:#a85a00">-0.75pt</span></td>
+      <td class="r">62</td>
+      <td class="r">0.26</td>
+      <td class="r"><span style="color:#a85a00">-0.50%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">VPN</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>数据中心ETF</td>
+      <td class="r">$31.65</td>
+      <td class="r"><span style="color:#3b7d3b">+1.25%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+1.00pt</span></td>
+      <td class="r">71</td>
+      <td class="r">0.68</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">⚠️ 进超买</span> <span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">WTAI</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>AI主题ETF</td>
+      <td class="r">$43.98</td>
+      <td class="r"><span style="color:#3b7d3b">+0.48%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+0.23pt</span></td>
+      <td class="r">74</td>
+      <td class="r">0.20</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">🎯 创新高</span></td>
+    </tr><tr>
+      <td class="tk">XLK</td>
+      <td><span class="t-ETF">ETF</span></td>
+      <td>大科技ETF</td>
+      <td class="r">$190.70</td>
+      <td class="r"><span style="color:#3b7d3b">+2.06%</span></td>
+      <td class="r"><span style="color:#3b7d3b">+1.81pt</span></td>
+      <td class="r">80</td>
+      <td class="r">0.23</td>
+      <td class="r"><span style="color:#3b7d3b">+0.00%</span></td>
+      <td><span class="sig">📈 +2%</span> <span class="sig">🎯 创新高</span></td>
+    </tr></table>
+<h2 class="section">💡 资深分析师视角 — 今日 10 大启示</h2>
+
+<div class="insight-box">
+<b>① 今天是 SaaS 板块的关键 reversal day。</b> 多只软件股一天大涨 6-13%（NOW/IBM/PLTR/CRM/CRWD/SNOW/ORCL），
+软件 ETF (IGV +3.9%, SKYY +5%) 创 52 周新高。这印证了我昨天 Insight #7 的判断：当 WCLD/IGV YTD 已经 -10% 创新低时，
+基本面没坏的应用层会经历"momentum reversal"。
+<b>关键观察：成交量没放大</b>（绝大多数 Vol× &lt; 1），所以这可能是一日反转或趋势开始，<b>下周量能确认是关键</b>。
+</div>
+
+<div class="insight-box">
+<b>② 半导体板块今天「跟不上了」是重要技术信号。</b> SPY +0.25%，但 SMH 仅 +0.7%, XSD -2.4%, SOXL 仅 +1.3% （3x 杠杆只跟单边 5x 应该 +2.5%）。
+半导体一向是市场涨势的领头羊，<b>今天明显落后于 SaaS = leadership rotation 的早期信号</b>。
+配合 SOXL YTD +375% 的极度过热，这是<b>半导体板块阶段性 top 的第一个 weak signal</b>。
+</div>
+
+<div class="insight-box">
+<b>③ 电力 / 数据中心板块今天 -1.5% 是过热兑现的开始。</b> GEV -2.7%, PWR -3%, VRT -2%。
+昨天我说过电力个股已经超热，今天是第一波获利了结。但这<b>不会改变长期 thesis</b>，
+反而给 NLR/URA ETF (今天小跌但 YTD 仍接近 0%) 第二次更好的入场点。
+</div>
+
+<div class="insight-box">
+<b>④ 光通信 (COHR -6.3%, FN -4.2%, LITE -3.3%) 是今天最弱的细分。</b>
+这印证了我说的"光模块/CPO 已经被定价完美"。光模块 thesis 已经走完一轮估值扩张，
+现在进入"看实际订单交付"阶段，没增量惊喜就会回调。<b>不要追，等回调 20% 再看 FN（财务最稳）</b>。
+</div>
+
+<div class="insight-box">
+<b>⑤ GPU 云租赁 (CRWV -3%, NBIS -5%) 今天的下跌很关键。</b>
+当所有"软件 + AI 应用"今天大涨时，CRWV/NBIS 不仅没涨还跌了。说明<b>市场开始分辨「真正变现的 AI 应用」 vs 「GPU 包租公」</b>。
+前者（NOW/PLTR/CRM 的 Agentforce/AIP 兑现）有 ARR，后者只是 GPU 套利。
+<b>这是 CRWV/NBIS 高估值脆弱性的第一次预警</b>。
+</div>
+
+<div class="insight-box">
+<b>⑥ ORCL +6.4% 今天「破圈」了。</b> Oracle 不再被当作传统数据库，而是 Stargate 4500 亿 + OpenAI 算力合作的新算力玩家。
+ORCL 是 Mag7 之外被市场重新定价的最大故事。但要警惕：<b>OCI 资本开支吞噬 FCF（FCF Y -3.8%）</b>，
+故事好但财务恶化中。Insight：成长股估值给到位但财务质量没到位 = 估值难以维持。
+</div>
+
+<div class="insight-box">
+<b>⑦ IBM +10% 是今天最反常的票。</b> 一个被认为"无聊"的老科技公司一天跳 10%，
+说明<b>市场开始把 Watsonx + Red Hat OpenShift 当作真实 AI 落地受益</b>。
+配合我 Insight #3 说的"IT 服务被错杀"，IBM 是被严重低估的 Watsonx + 咨询服务双轮票。
+但今日 RSI 跳到 79（极度超买），<b>追高不智，等回调 -5% 再考虑</b>。
+</div>
+
+<div class="insight-box">
+<b>⑧ ETF 层面：IGV (软件)、HACK/CIBR (安全)、IRBO (机器人AI)、VPN (数据中心REIT) 都新进超买。</b>
+这是除半导体 ETF 之外，<b>第一批 AI 主题 ETF 同时进入超买</b>。
+配合 IGV/HACK/SKYY 都是今天创 52W 新高，<b>"AI 主题轮动" 正在从半导体扩散到应用 / 安全 / 数据 / 机器人</b>。
+这是典型的牛市末段「全员超买」预警，但同时也是趋势确认的信号。
+</div>
+
+<div class="insight-box">
+<b>⑨ MAGS 表现平平 vs 个别 Mag7 大涨。</b> 今天 GOOGL/META/AMZN 基本持平，MSFT 微涨，
+但 ORCL +6.4% / NVDA 基本平。<b>Mag7 内部分化加剧 = 资金从「被动 Mag7 配置」转向「主动选股」</b>。
+这对 active investor 是好消息，对 QQQ/MAGS 被动持仓者是预警：未来 12 个月超额收益要靠选股而非主题。
+</div>
+
+<div class="action-box">
+<b>📋 今日操作建议 — 三件事</b><br>
+<b>① 加仓窗口</b>：电力 ETF（NLR/URA 跌而 thesis 仍在）；GOOGL/META（今日没跟涨但基本面最强）；ACN/INFY（昨天 Insight #3 的 mean reversion，今天还没起飞，仍是好窗口）；EDA（SNPS/CDNS 没有今日参与，估值健康）。<br>
+<b>② 减仓窗口</b>：所有今天跳 6%+ 但 Vol× &lt; 1 的票（NOW/PLTR/CRWD/DDOG/SNOW/ORCL），追高 R/R 差。等回调 -5% 再看。<br>
+<b>③ 警戒</b>：CRWV/NBIS 今天下跌是 GPU 云租赁高估值脆弱性的预警，<b>不要逢低加仓</b>，等订单兑现证据。
+</div>
+
+<div class="action-box">
+<b>🔭 下周观察 — 三个关键点</b><br>
+<b>① 量能确认</b>：SaaS 反弹能否带量？今天 Vol× 都 &lt; 1 是隐忧。下周 Vol× 出现 1.5x+ 才是真实趋势。<br>
+<b>② 半导体能否补涨</b>：如果 SOXX 接下来 5 天涨不过 SaaS ETF，板块轮动确认。<br>
+<b>③ 电力的回调深度</b>：CEG/VST/GEV 是否跌破 MA21？跌破即技术上确认顶部成形，没破就是健康整理。
+</div>
+<div style="text-align:center;color:#888;font-size:11px;margin:30px 0;">数据 yfinance · 2026-05-29 07:36 · 技术读数 ≠ 投资建议</div></div></body></html>
