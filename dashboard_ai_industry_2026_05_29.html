@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>AI 产业链综合 Dashboard · 2026-06-01</title>
+<style>
+*{box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;background:#f5f6f8;color:#222;margin:0;padding:0;}
+.header{background:linear-gradient(135deg,#0c4a6e 0%,#075985 100%);color:#fff;padding:20px 28px;}
+.header h1{margin:0;font-size:22px;}
+.header .sub{font-size:13px;opacity:0.85;margin-top:4px;}
+.tabs{background:#fff;border-bottom:1px solid #ddd;padding:0 28px;display:flex;gap:0;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.tab{padding:12px 24px;cursor:pointer;border-bottom:3px solid transparent;font-weight:600;color:#666;font-size:14px;transition:all 0.15s;}
+.tab:hover{color:#0c4a6e;}
+.tab.active{color:#0c4a6e;border-bottom-color:#0c4a6e;}
+.tab-body{display:none;padding:20px 28px;}
+.tab-body.active{display:block;}
+.filters{background:#fff;padding:14px 16px;border-radius:6px;margin-bottom:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.filters label{font-size:12px;color:#555;font-weight:600;}
+.filters select, .filters input{padding:6px 10px;border:1px solid #ccc;border-radius:4px;font-size:13px;font-family:inherit;}
+.filters input{width:200px;}
+.stats{background:#fff;padding:10px 16px;border-radius:6px;margin-bottom:10px;font-size:12px;color:#555;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.stats b{color:#0c4a6e;}
+.tier-pill{display:inline-block;padding:1px 8px;border-radius:3px;font-weight:700;font-size:11px;color:#fff;margin-right:4px;}
+.tier-A{background:#27ae60;} .tier-B{background:#3498db;}
+.tier-C{background:#95a5a6;} .tier-D{background:#c0392b;}
+table{border-collapse:collapse;width:100%;background:#fff;font-size:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:6px;overflow:hidden;}
+th{background:#f3f4f6;padding:8px 9px;border-bottom:2px solid #ddd;text-align:left;font-weight:700;font-size:11px;color:#333;cursor:pointer;user-select:none;white-space:nowrap;}
+th:hover{background:#e5e7eb;}
+th.sort-asc::after{content:" ▲";color:#0c4a6e;}
+th.sort-desc::after{content:" ▼";color:#0c4a6e;}
+td{padding:7px 9px;border-bottom:1px solid #eee;white-space:nowrap;}
+tr:hover td{background:#fafbfc;}
+.tk{font-weight:700;color:#0c4a6e;}
+.tk-etf{font-weight:700;color:#7c3aed;}
+.right{text-align:right;font-variant-numeric:tabular-nums;}
+.muted{color:#aaa;}
+.tag-type{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;}
+.tag-Stock{background:#dbeafe;color:#1e40af;}
+.tag-ETF{background:#ede9fe;color:#6d28d9;}
+.narr-card{background:#fff;padding:12px 16px;margin-bottom:8px;border-radius:4px;border-left:4px solid #ddd;box-shadow:0 1px 2px rgba(0,0,0,0.04);}
+.narr-A{border-left-color:#27ae60;} .narr-B{border-left-color:#3498db;}
+.narr-C{border-left-color:#95a5a6;} .narr-D{border-left-color:#c0392b;}
+.narr-card h3{margin:0 0 6px;font-size:14px;}
+.narr-card .meta{color:#888;font-size:11px;margin-bottom:6px;}
+.narr-card p{margin:4px 0;font-size:12.5px;line-height:1.55;color:#333;}
+.group-header{margin:24px 0 10px;font-size:15px;color:#0c4a6e;border-left:4px solid #0c4a6e;padding-left:10px;font-weight:700;}
+.legend{background:#fff;padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.legend b{display:inline-block;min-width:90px;}
+.signal-pill{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;color:#fff;margin-left:4px;}
+.sig-buy{background:#27ae60;} .sig-overbuy{background:#e67e22;}
+.sig-oversell{background:#3498db;} .sig-sell{background:#c0392b;}
+.rsi-extreme-high{color:#fff;background:#c0392b;padding:2px 6px;border-radius:3px;}
+.rsi-high{color:#fff;background:#e67e22;padding:2px 6px;border-radius:3px;}
+.rsi-low{color:#fff;background:#3498db;padding:2px 6px;border-radius:3px;}
+.rsi-extreme-low{color:#fff;background:#2980b9;padding:2px 6px;border-radius:3px;}
+.alert-box{background:#fef9e7;border-left:4px solid #f39c12;padding:10px 14px;margin-bottom:14px;border-radius:4px;font-size:12.5px;}
+.pass-pill{display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-weight:700;margin:0 2px;}
+.pass-buffett{background:#fef3c7;color:#92400e;border:1px solid #f59e0b;}
+.pass-graham{background:#dcfce7;color:#166534;border:1px solid #22c55e;}
+.deep-analysis{background:#f0f9ff;border-left:4px solid #0c4a6e;padding:10px 14px;margin:8px 0;border-radius:4px;font-size:12.5px;}
+.deep-analysis .label{font-weight:700;color:#0c4a6e;display:inline-block;min-width:80px;}
+.bull-case{background:#f0fdf4;border-left:4px solid #16a34a;padding:8px 14px;margin:6px 0;border-radius:4px;font-size:12px;}
+.bear-case{background:#fef2f2;border-left:4px solid #dc2626;padding:8px 14px;margin:6px 0;border-radius:4px;font-size:12px;}
+.bull-case .label, .bear-case .label{font-weight:700;display:inline-block;min-width:80px;}
+.bull-case .label{color:#16a34a;} .bear-case .label{color:#dc2626;}
+.tech-readout{color:#666;font-size:11.5px;border-top:1px dashed #ddd;padding-top:6px;margin-top:8px;}
+.gi-row{display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid #eee;font-size:12.5px;}
+.gi-rank{width:30px;color:#999;font-weight:700;}
+.gi-bar{flex:1;height:18px;background:#e5e7eb;border-radius:3px;overflow:hidden;margin:0 10px;position:relative;}
+.gi-fill{height:100%;background:linear-gradient(90deg,#fbbf24,#22c55e);}
+.gi-score{width:40px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#0c4a6e;}
+.gi-ticker{width:80px;font-weight:700;color:#0c4a6e;}
+.gi-name{flex:1;color:#555;font-size:11.5px;}
+/* ===== Insights tab ===== */
+.insights-intro{background:linear-gradient(135deg,#0c4a6e 0%,#075985 100%);color:#fff;padding:18px 24px;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+.insights-intro h2{margin:0 0 8px;font-size:16px;font-weight:700;}
+.insights-intro p{margin:0;font-size:13px;opacity:0.92;line-height:1.5;}
+.insights-intro b{color:#fde68a;}
+.insights-section-title{font-size:18px;color:#0c4a6e;margin:28px 0 14px;padding-left:12px;border-left:5px solid #0c4a6e;font-weight:700;}
+.insight-card{background:#fff;border-radius:8px;padding:16px 20px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;gap:14px;border-left:5px solid #ccc;}
+.insight-opp{border-left-color:#16a34a;background:linear-gradient(to right,#f0fdf4 0%,#fff 50%);}
+.insight-warn{border-left-color:#f59e0b;background:linear-gradient(to right,#fef9e7 0%,#fff 50%);}
+.insight-danger{border-left-color:#dc2626;background:linear-gradient(to right,#fef2f2 0%,#fff 50%);}
+.insight-num{font-size:28px;font-weight:900;color:#0c4a6e;min-width:40px;line-height:1;padding-top:2px;}
+.insight-body{flex:1;}
+.insight-title{font-size:16px;font-weight:700;color:#1f2937;margin-bottom:8px;}
+.insight-history{font-size:13px;color:#374151;margin:6px 0;line-height:1.55;padding:6px 10px;background:#f3f4f6;border-radius:4px;}
+.insight-now{font-size:13px;color:#374151;margin:6px 0;line-height:1.55;padding:6px 10px;background:#eff6ff;border-radius:4px;}
+.insight-action{font-size:13px;color:#1f2937;margin:6px 0;line-height:1.55;padding:6px 10px;background:#fef3c7;border-radius:4px;font-weight:500;}
+.insight-history b, .insight-now b, .insight-action b{color:#0c4a6e;}
+.opp-table{width:100%;background:#fff;border-collapse:collapse;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:20px;font-size:13px;}
+.opp-table th{background:#0c4a6e;color:#fff;padding:10px 12px;text-align:left;font-weight:700;font-size:12px;}
+.opp-table td{padding:10px 12px;border-bottom:1px solid #eee;vertical-align:top;}
+.opp-table tr:last-child td{border-bottom:none;}
+.opp-A td:first-child{border-left:4px solid #16a34a;}
+.opp-B td:first-child{border-left:4px solid #f59e0b;}
+.opp-C td:first-child{border-left:4px solid #6b7280;}
+.risk-high td:first-child{border-left:4px solid #dc2626;background:#fef2f2;}
+.risk-mid td:first-child{border-left:4px solid #f59e0b;background:#fef9e7;}
+.playbook{background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:14px;}
+.pb-row{display:flex;align-items:center;padding:10px 12px;border-bottom:1px solid #f3f4f6;gap:14px;}
+.pb-row:last-child{border-bottom:none;}
+.pb-pct{font-weight:900;font-size:18px;color:#0c4a6e;min-width:55px;text-align:right;}
+.pb-name{flex:1.2;font-weight:600;font-size:13px;color:#1f2937;}
+.pb-rsn{flex:1.5;font-size:12px;color:#6b7280;line-height:1.5;}
+.insights-disclaimer{background:#fef3c7;border:1px solid #f59e0b;padding:12px 16px;border-radius:6px;font-size:12px;color:#78350f;margin-top:16px;line-height:1.6;}
+.validation-box{background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:16px;}
+.vb-row{display:flex;gap:14px;padding:12px 14px;border-bottom:1px solid #f3f4f6;}
+.vb-row:last-child{border-bottom:none;}
+.vb-status{min-width:80px;font-weight:700;font-size:12px;height:fit-content;padding:4px 10px;border-radius:4px;text-align:center;}
+.validation-correct{background:#dcfce7;color:#166534;}
+.validation-pivot{background:#dbeafe;color:#1e40af;}
+.validation-warn{background:#fef3c7;color:#92400e;}
+.vb-content{flex:1;font-size:13px;line-height:1.6;color:#374151;}
+.vb-content b{color:#0c4a6e;}
+.vb-action{display:block;margin-top:6px;color:#92400e;font-size:12.5px;background:#fef9e7;padding:6px 10px;border-radius:4px;}
+.vb-action b{color:#7c2d12;}
+.pb-highlight{background:linear-gradient(to right, #ecfdf5 0%, #fff 70%);border-radius:4px;}
+.pb-highlight .pb-pct{color:#16a34a;}
+</style>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body>
+
+<div class="header">
+  <h1>AI 产业链综合 Dashboard · 2026-06-01</h1>
+  <div class="sub">67 个股 + 30 ETF · 基本面 (Graham × Buffett) + 技术指标 (RSI/MFI/U-D/Tier) · SPY YTD +10.9% · 1M +5.2% · 3M +11.4%</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="insights">💡 Insights & 历史镜像</div>
+  <div class="tab" data-tab="main">📊 主表 (筛选 + 排序)</div>
+  <div class="tab" data-tab="scatter">📈 质价比散点图</div>
+  <div class="tab" data-tab="analysis">🧠 深度分析 + 技术叙事</div>
+  <div class="tab" data-tab="etf-overbought">🌡️ ETF 超买/超卖热力</div>
+</div>
+
+<div class="tab-body active" id="tab-insights">
+  <div class="insights-intro">
+    <h2>作为深耕科技板块 25+ 年的分析师，我从过去 6 个周期（dot-com / 半导体周期 / 移动 / 云 / 加密 / 当前 AI）看到的可复用模式</h2>
+    <p>下面 10 个 pattern 不是预测，是<b>历史镜像 + 操作启示</b>。每条都标了：① 历史先例 ② 当前对照 ③ 操作建议。 <b>v4 (2026-05-29) 更新</b>：所有 YTD 数字已刷新，并加入 24 小时实战验证。</p>
+  </div>
+
+  <h3 class="insights-section-title">⚡ v3 → v4 实战验证（May 28 → May 29 · 24 小时）</h3>
+  <div class="validation-box">
+    <div class="vb-row">
+      <div class="vb-status validation-correct">✅ 验证</div>
+      <div class="vb-content">
+        <b>Insight #7（SaaS 2014 reset 重演）</b> — v3 写时 WCLD YTD <b>-9.8%</b> / IGV <b>-6.8%</b>，呼喊"应用层逆向窗口"。
+        <b>24 小时后</b>：WCLD YTD <b>+2.5% (1M +28%)</b>、IGV YTD <b>+2.0% (1M +24.7%)</b>、SKYY 1M <b>+27%</b>。
+        SaaS 整体反转<b>已经发生</b>，CRWD/PANW/NOW/PLTR/CRM 在 5/29 单日均涨 6-13%。
+        <span class="vb-action">→ 入场窗口已经打开但未结束，<b>仍可分批加</b>但减少集中度；不可追高单日跳 +10% 的票（NOW/IBM）。</span>
+      </div>
+    </div>
+    <div class="vb-row">
+      <div class="vb-status validation-pivot">🔄 反转</div>
+      <div class="vb-content">
+        <b>Insight #6（电力 ETF 滞后于个股）</b> — v3 写时认为 NLR/URA "落后于 CEG/VST 等待 mean reversion"。
+        <b>真相</b>：核电板块整体已经从高点回撤 <b>-25 to -30%</b>。<b>CEG YTD -21.5%</b>、VST -4.3%、NRG -17.9%、NLR -1.5%、URA +7.9% — <b>全部跑输 SPY (+10.9%)</b>。
+        <span class="vb-action">→ Mean reversion 机会比 v3 时更好（更深的跌幅 = 更大的弹性），但 thesis 触发器尚未出现。<b>现在是分批建仓而非顶部接刀</b>。</span>
+      </div>
+    </div>
+    <div class="vb-row">
+      <div class="vb-status validation-correct">✅ 验证</div>
+      <div class="vb-content">
+        <b>Insight #3（IT 服务被错杀 → mean reversion）</b> — ACN/IBM/INFY/CTSH 仍 PE 12-15。
+        <b>IBM 5/29 单日 +10%</b> 是市场开始重新定价 Watsonx + Red Hat 价值的第一信号。ACN 还没动。
+        <span class="vb-action">→ <b>ACN 仍是 mean reversion 最干净的入口</b>，IBM 等回调 -5% 再加。</span>
+      </div>
+    </div>
+    <div class="vb-row">
+      <div class="vb-status validation-warn">⚠️ 加深</div>
+      <div class="vb-content">
+        <b>Insight #2（杠杆 ETF 顶部信号）</b> — SOXL YTD 从 +375% → <b>+367%</b>，仍在抛物线区间。
+        但今天 <b>SOXX/SMH 没创新高（vs IGV/SKYY/CIBR 创新高）</b>，板块 leadership 已经从半导体切换到应用/安全。
+        <span class="vb-action">→ 半导体 ETF 的<b>第一个 weak signal</b> 已经出现，但还没崩。SOXL 仍是逃顶 hold。</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert-box" style="margin-top:14px;">
+    <b>📌 今日新增（May 29 only）— 资金轮动深度信号</b><br>
+    <b>CIBR +29.4% YTD / HACK +29.4% YTD</b>（v3 时仅 +18-19%）— 安全 ETF 已经成为本月 leader。
+    <b>BOTZ YTD +9.8%</b>（v3 时 +9.7%）几乎没动 — 机器人主题仍被 LLM 主题吸血。
+    <b>MAGS YTD 仅 +7.4%</b> vs QQQ +20.5%、SPY +10.9% — Mag7 等权严重跑输市值加权，<b>资金从被动 Mag7 → 主动选股 + 软件主题</b> 的轮动加速。
+  </div>
+
+  <h3 class="insights-section-title">🔍 10 个历史镜像 + 启示</h3>
+
+  <div class="insight-card insight-warn">
+    <div class="insight-num">①</div>
+    <div class="insight-body">
+      <div class="insight-title">「思科顶点」模式：基础设施龙头 de-rate，而不是崩盘</div>
+      <div class="insight-history">📜 <b>1999 CSCO</b> PE 200 → 2002 PE 20，股价 -80%，<b>花了 23 年</b>才回到前高（但公司基本面一直在增长，是 PE 压缩）。同期 INTC 2000-2024 走类似路径。</div>
+      <div class="insight-now">🎯 <b>当前对照</b>：NVDA PE 33 fwd 27 — 比 CSCO 当年合理得多，但 PB 33 + Mag7 占收入 50%+ 是真隐患。客户自研 ASIC（TPU、Trainium、MTIA）会让上限被压低。</div>
+      <div class="insight-action">⚡ <b>操作</b>：NVDA 不会重演 CSCO 暴跌，但会像 INTC 一样慢慢 de-rate。<b>持有但不加仓</b>，散户开始狂热时 trim。</div>
+    </div>
+  </div>
+
+  <div class="insight-card insight-danger">
+    <div class="insight-num">②</div>
+    <div class="insight-body">
+      <div class="insight-title">杠杆 ETF 是顶部信号 — 教科书 Blow-off Top</div>
+      <div class="insight-history">📜 <b>2021 SOXL</b> 5 个月 +250% 后 11 个月 -85%；<b>2014 NUGT</b> 黄金挖矿杠杆 +400% 后两年 -98%。每次都是同样的故事。</div>
+      <div class="insight-now">🎯 <b>当前对照（v4 刷新）</b>：SOXL <b>YTD +367% / 1M +74%</b>，6M <b>+435%</b>。已超过 2021 那次的 momentum。
+      <b>关键 weak signal</b>：5/29 SOXX/SMH 不再创新高（vs IGV/SKYY/CIBR 同日突破），<b>板块 leadership 已经从半导体切换到软件/安全</b>。</div>
+      <div class="insight-action">⚡ <b>操作</b>：半导体右侧追涨 R/R 已严重失衡。<b>SOXL 是逃顶信号</b>，不是配置工具。逢回调买 vs 追高的赔率是 9:1。
+      建议：若仍持有半导体，<b>分批切换到 EDA (SNPS/CDNS)</b> 维持暴露但降低拥挤度。</div>
+    </div>
+  </div>
+
+  <div class="insight-card insight-opp">
+    <div class="insight-num">③</div>
+    <div class="insight-body">
+      <div class="insight-title">「Brick & Mortar 鄙视」再现 — IT 服务被错杀</div>
+      <div class="insight-history">📜 <b>1999-2000</b> ACN/IBM/EDS 被互联网替代叙事打压，PE 跌到 10x；<b>2003-2007</b> 跑赢 NASDAQ 累计 +120%。原因：企业 IT 预算释放 + 集成商不可替代。</div>
+      <div class="insight-now">🎯 <b>当前对照</b>：<b>ACN PE 15 ROIC 22% FCF Y 11%</b>、CTSH PE 12、INFY PE 16 — 与 2000 完全相同的剧本。AI agent 实际企业落地仍需集成商铺路。</div>
+      <div class="insight-action">⚡ <b>操作</b>：<b>ACN / INFY / CTSH</b> 是 mean reversion 标的。Buffett ✓ 通过率高（看主表第 6 列）。建仓窗口 12-18 个月，看企业 IT capex 释放 + AI 落地双触发。</div>
+    </div>
+  </div>
+
+  <div class="insight-card insight-warn">
+    <div class="insight-num">④</div>
+    <div class="insight-body">
+      <div class="insight-title">内存周期信仰会再次崩塌 — HBM 不能改变 DRAM 本性</div>
+      <div class="insight-history">📜 <b>2017-2018 MU</b> +180% 后 -65%；<b>2021-2022 MU</b> +90% 后 -55%。每个周期顶都有人喊"这次不一样"。</div>
+      <div class="insight-now">🎯 <b>当前对照</b>：HBM 是真实结构性增量，但 DRAM 总产能 ~70% 仍是商品。<b>MU PE fwd 11</b>（市场仍按周期股估值），三星 HBM3E 通过英伟达验证后供给恢复 = trigger。</div>
+      <div class="insight-action">⚡ <b>操作</b>：MU 是周期票，<b>不要 buy & hold</b>。规则：fwd PE &lt; 8 买，fwd PE &gt; 12 卖。当前位置：中性偏卖。</div>
+    </div>
+  </div>
+
+  <div class="insight-card insight-opp">
+    <div class="insight-num">⑤</div>
+    <div class="insight-body">
+      <div class="insight-title">EDA 是这个 cycle 的「隐藏 ASML」</div>
+      <div class="insight-history">📜 <b>1999-2024</b> SNPS/CDNS 涨 60x，跑赢 90% 半导体股，原因：每一颗芯片设计都需要它，订阅模型 ARR 稳定，市场结构双寡头。同期 ASML 也是因为"独家性"获得最高估值。</div>
+      <div class="insight-now">🎯 <b>当前对照</b>：AI 芯片复杂度爆炸 → EDA 工具量价齐升 + Ansys 并购拓多物理仿真 + 客户全是 NVDA/AMD/AVGO。<b>SNPS PE 110</b>（TTM 异常）<b>fwd 28</b>。</div>
+      <div class="insight-action">⚡ <b>操作</b>：SNPS/CDNS 是<b>核心 5-10 年持仓</b>，不是交易型。规则：大盘回调 -10% 即加仓。比追高 NVDA 长期 R/R 更好。</div>
+    </div>
+  </div>
+
+  <div class="insight-card insight-opp">
+    <div class="insight-num">⑥</div>
+    <div class="insight-body">
+      <div class="insight-title">⚡ <b>v4 反转</b>：核电板块已从高点回撤 -25 to -30%，现在是 mean reversion 入口</div>
+      <div class="insight-history">📜 <b>1999-2000</b> 数据中心 boom 推动电力股短暂飞涨；<b>2014-2017</b> Tower/REIT 因 4G 数据需求迟到 18 个月才被定价。<b>2021 干净能源主题</b> peak-to-trough -50%，然后 2024-2025 重新被定价。<b>主题板块的 mean reversion 周期 12-18 月</b>。</div>
+      <div class="insight-now">🎯 <b>v4 当前对照（剧本已翻转）</b>：v3 时我以为"个股领涨 ETF 滞后"，<b>真相是核电整体已经先涨后跌</b>。
+      <b>CEG YTD -21.5%（距 52W 高 -29%）</b>、VST -4.3%（距高 -27%）、NRG -17.9%、NLR ETF -1.5%、URA +7.9%。<b>全部跑输 SPY (+10.9%)。</b>
+      与此同时<b>核电 thesis 没坏</b>：hyperscaler PPA 签约暂停，但数据中心电力需求结构性上升不变。</div>
+      <div class="insight-action">⚡ <b>操作（v4 升级）</b>：现在是<b>分批建仓窗口</b>，不是顶部接刀。
+      <b>NLR ETF + CEG 个股</b> 双轮，分 3 批入场（现在 1/3，跌 -10% 加 1/3，催化剂出现加最后 1/3）。
+      催化剂触发器：① 新 hyperscaler PPA 公告 ② FERC 对 behind-the-meter 模式正面裁决 ③ 2027 电力 capex 指引上调。</div>
+    </div>
+  </div>
+
+  <div class="insight-card insight-opp">
+    <div class="insight-num">⑦</div>
+    <div class="insight-body">
+      <div class="insight-title">SaaS 应用层 ETF 创年内新低 — 2014 重演？</div>
+      <div class="insight-history">📜 <b>2014 SaaS 集体崩</b>：CRM/WDAY/NOW 6 个月 -40%，市场喊"SaaS 死了"。然后 2015-2021 涨 10x。当时和现在一样：宏观利率 + 增长股估值压缩 + 应用层叙事被基础设施吸血。</div>
+      <div class="insight-now">🎯 <b>当前对照（v4 已 ✅ 验证）</b>：v3 时 WCLD YTD -9.8% / IGV -6.8% 创年内新低，<b>24 小时内反转启动</b>。
+      <b>v4 刷新</b>：WCLD YTD <b>+2.5% (1M +28%)</b>, IGV YTD <b>+2.0% (1M +24.7%)</b>, SKYY 1M <b>+27%</b>。5/29 单日 NOW +13%/IBM +10%/PLTR +9.6%/CRM +7.9%。
+      但 <b>多数 SaaS 已进入 RSI 70+ 超买区</b>（NOW/ORCL/IGV/ESTC/HACK 都新进超买），<b>窗口的"轻易期"已过</b>。</div>
+      <div class="insight-action">⚡ <b>操作（v4 升级）</b>：
+      <b>已建仓者持有</b>，不追高 5/29 跳 6%+ 的票（NOW/PLTR/CRWD/DDOG/SNOW/ORCL）。
+      <b>未建仓者</b>：仍可分批，但优先选<b>本轮反弹中没跟涨的低估值 SaaS：ADBE PE 14 + CRM PE 20 + INTU PE 19 + DUOL PE 12</b>，这些 5/29 涨幅 < 5%，反弹空间还在。
+      <b>避坑</b>：WCLD 1M +28% 已经反映前 6 个月的滞涨，再追 ETF 不如直接选股。</div>
+    </div>
+  </div>
+
+  <div class="insight-card insight-warn">
+    <div class="insight-num">⑧</div>
+    <div class="insight-body">
+      <div class="insight-title">ASIC 替代论的真实历史 — NVDA 上限被压低而非崩盘</div>
+      <div class="insight-history">📜 <b>TPU 2018 上线</b>，<b>AWS Trainium 2022 上线</b>，6 年后 NVDA 仍占 80%+ 训练市场。原因：GPU 池化经济 + CUDA 生态成本 + 算法迭代速度。Google 自研芯片但 Google Cloud 仍买 NVDA。</div>
+      <div class="insight-now">🎯 <b>当前对照</b>：AVGO ASIC 叙事强但 NVDA 没崩。AVGO 涨幅 = NVDA 涨幅打 9 折，因为 ASIC 是真实增量但是 zero-sum 也只能从 hyperscaler internal 抢，不是从 NVDA 嘴里。</div>
+      <div class="insight-action">⚡ <b>操作</b>：<b>AVGO 作为 NVDA 影子持有</b>（双重受益于资本开支）。<b>不要重仓押 NVDA 崩盘</b>，会被熬死。MRVL 是 AWS Trainium 单一客户 ASIC，弹性最大但风险也最大。</div>
+    </div>
+  </div>
+
+  <div class="insight-card insight-opp">
+    <div class="insight-num">⑨</div>
+    <div class="insight-body">
+      <div class="insight-title">数据壁垒被严重低估 — 90s「Yellow Pages」启示</div>
+      <div class="insight-history">📜 <b>1995-2005</b> 黄页 / Encyclopedia / WSJ 被互联网颠覆，但底层数据公司 (<b>Bloomberg / Reuters / Westlaw / S&P</b>) 反而强化护城河。原因：互联网把<b>检索免费化</b>，但<b>深度数据反而升值</b>。</div>
+      <div class="insight-now">🎯 <b>当前对照</b>：LLM 把"通用信息"商品化，但<b>专有数据更稀缺</b>。RELX (Lexis+Westlaw) ROIC 24%，TRI (CoCounsel) PE 24 ROIC 12%，NYT 在起诉 OpenAI。市场把它们当作"被 AI 颠覆"，但它们其实是"AI 训练材料的卖方"。</div>
+      <div class="insight-action">⚡ <b>操作</b>：<b>RELX / TRI 是被忽视的复利股</b>（Buffett 框架适用）。<b>NYT 是事件驱动期权</b>（OpenAI 诉讼授权金潜在收入）。组合配置：核心 RELX + 投机 NYT。</div>
+    </div>
+  </div>
+
+  <div class="insight-card insight-danger">
+    <div class="insight-num">⑩</div>
+    <div class="insight-body">
+      <div class="insight-title">估值离散度是顶部信号 — 资金会向价值龙头转移</div>
+      <div class="insight-history">📜 <b>2000 NASDAQ 顶部</b>：PE&gt;100 的票占指数权重 35%，同时 IBM/MSFT PE 20-30。2001-2003 资金集中流向价值龙头。<b>2021 Q4</b> 类似结构：ARKK 高估值股崩 -75%，META/GOOGL 也跌但 -30% 后修复。</div>
+      <div class="insight-now">🎯 <b>当前对照</b>：<b>PLTR 161, ARM 399, CRWV/NBIS/TLN 无 PE, COHR 179, LITE 152, DDOG 593, PANW 143, NOW 64</b>。同时 META 23, GOOGL 30, TSM 36, ADBE 14, TEL 21。<b>估值离散度处于 2000 以来 Top 10%。</b></div>
+      <div class="insight-action">⚡ <b>操作</b>：<b>减仓 PE&gt;80 的高赔率股</b>（PLTR, ARM, CRWV, DDOG, PANW, NOW），<b>加仓 GOOGL / META / TSM / ADBE / TEL</b>。Mag7 内部分化（MAGS YTD +8% vs META/GOOGL 涨幅）也印证资金已开始轮动。</div>
+    </div>
+  </div>
+
+  <h3 class="insights-section-title">🎯 Top 机会矩阵（按确定性 × 赔率）</h3>
+  <table class="opp-table">
+    <thead><tr>
+      <th>类别</th><th>核心标的</th><th>论据</th><th>预期窗口</th><th>赔率/确定性</th>
+    </tr></thead>
+    <tbody>
+      <tr class="opp-A"><td><b>核心持仓（高确定性）</b></td>
+        <td>SNPS, CDNS, TSM, GOOGL, META</td>
+        <td>护城河深 + 估值合理 + AI 直接受益</td>
+        <td>3-5 年</td>
+        <td>⭐⭐⭐⭐⭐</td></tr>
+      <tr class="opp-A"><td><b>价值龙头被错杀</b></td>
+        <td>ADBE, CRM, INTU, TEL</td>
+        <td>PE 14-21 + ROIC 高 + AI 落地真实，被叙事打压</td>
+        <td>12-18 个月</td>
+        <td>⭐⭐⭐⭐</td></tr>
+      <tr class="opp-A"><td><b>IT 服务 mean reversion</b></td>
+        <td>ACN, INFY, CTSH</td>
+        <td>2000 剧本 — AI 落地需要集成商</td>
+        <td>12-24 个月</td>
+        <td>⭐⭐⭐⭐</td></tr>
+      <tr class="opp-A"><td><b>数据壁垒</b></td>
+        <td>RELX, TRI</td>
+        <td>90s Bloomberg/Westlaw 启示 — 专有数据升值</td>
+        <td>3-5 年</td>
+        <td>⭐⭐⭐⭐</td></tr>
+      <tr class="opp-A"><td><b>v4 升级：核电 mean reversion 已经触发</b></td>
+        <td>NLR ETF + CEG + URA</td>
+        <td>整个核电板块从高点 -25 to -30%，PE 修复，thesis 没坏。3 批分仓入场</td>
+        <td>6-12 个月</td>
+        <td>⭐⭐⭐⭐</td></tr>
+      <tr class="opp-A"><td><b>电网建设动量延续</b></td>
+        <td>GRID ETF, PWR, GEV</td>
+        <td>v4 验证：GRID YTD +23%、PWR +61%、GEV +42%，电网 capex 是 10 年 cycle</td>
+        <td>3-5 年</td>
+        <td>⭐⭐⭐⭐</td></tr>
+      <tr class="opp-B"><td><b>SaaS 反弹后段（已 ✅ 验证）</b></td>
+        <td>ADBE, CRM, INTU, DUOL（避 WCLD ETF）</td>
+        <td>WCLD/IGV 已修复 8-10%，反弹后段优先选未跟涨的低估值 SaaS</td>
+        <td>12-24 个月</td>
+        <td>⭐⭐⭐</td></tr>
+      <tr class="opp-C"><td><b>事件驱动期权</b></td>
+        <td>NYT (OpenAI 诉讼)</td>
+        <td>授权金 + 内容估值期权</td>
+        <td>12 个月</td>
+        <td>⭐⭐</td></tr>
+      <tr class="opp-C"><td><b>ASIC 影子受益</b></td>
+        <td>AVGO (核心), MRVL (高赔率)</td>
+        <td>hyperscaler 自研芯片代工方</td>
+        <td>2-3 年</td>
+        <td>⭐⭐⭐</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="insights-section-title">🚨 Top 风险矩阵 — 我现在不会买/会减仓</h3>
+  <table class="opp-table">
+    <thead><tr>
+      <th>类别</th><th>标的</th><th>风险论据</th><th>触发条件</th>
+    </tr></thead>
+    <tbody>
+      <tr class="risk-high"><td><b>极度高估值赔率股</b></td>
+        <td>PLTR (PE 161), ARM (PE 399), CRWV/NBIS, COHR/LITE</td>
+        <td>任何 ARR 增速放缓即估值杀；离基本面 5-10 年远</td>
+        <td>Q4 财报 ARR 增速 &lt;30%</td></tr>
+      <tr class="risk-high"><td><b>杠杆 ETF 顶部</b></td>
+        <td>SOXL</td>
+        <td>YTD +375%，2021 剧本</td>
+        <td>SOXX 回调 -10% 即触发 -40% SOXL</td></tr>
+      <tr class="risk-mid"><td><b>电力/数据中心 REITs 过热</b></td>
+        <td>VRT (PE 79), CEG (PE 25 fwd 27, FCF Y -4%)</td>
+        <td>capex 吞噬现金流 + 估值定价完美</td>
+        <td>任一 hyperscaler 砍 PPA</td></tr>
+      <tr class="risk-mid"><td><b>SaaS 高估值未变现</b></td>
+        <td>DDOG (PE 593), PANW (PE 143), NOW (PE 64), MDB</td>
+        <td>Atlas/AI ARR 增速放缓即 -40%</td>
+        <td>季度 NRR 跌破 110%</td></tr>
+      <tr class="risk-mid"><td><b>客户集中度极高</b></td>
+        <td>CRWV (MSFT 60%+), MRVL (AWS), CRDO, FN (NVDA)</td>
+        <td>单一客户砍单即崩盘</td>
+        <td>大客户 capex 指引下调</td></tr>
+      <tr class="risk-mid"><td><b>内存周期顶</b></td>
+        <td>MU (fwd PE 11，市场已部分定价 peak)</td>
+        <td>三星 HBM3E 通过英伟达验证</td>
+        <td>NVDA Q1 supplier 名单更新</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="insights-section-title">📋 实战 Playbook — 如果今天给我 100 万 USD 配置</h3>
+  <div class="playbook">
+    <div class="pb-row"><div class="pb-pct">22%</div><div class="pb-name">价值龙头（GOOGL 7% + META 7% + TSM 5% + ADBE 3%）</div><div class="pb-rsn">最高确定性 + 估值合理 + 大盘回调时跌幅最小</div></div>
+    <div class="pb-row"><div class="pb-pct">14%</div><div class="pb-name">EDA 双寡头（SNPS 7% + CDNS 7%）</div><div class="pb-rsn">隐藏 ASML 模式 — 长期复利最稳 + 替代过热半导体暴露</div></div>
+    <div class="pb-row"><div class="pb-pct">14%</div><div class="pb-name">被错杀价值（ACN 5% + INFY 3% + RELX 3% + TRI 3%）</div><div class="pb-rsn">PE 12-22 区间，IBM 5/29 +10% 是这条线开始受关注的信号</div></div>
+    <div class="pb-row pb-highlight"><div class="pb-pct">12%</div><div class="pb-name"><b>v4 升级</b>：核电 mean reversion（NLR 5% + CEG 4% + URA 3%）</div><div class="pb-rsn"><b>已从高点 -25 to -30%</b>，3 批入场（现 1/3，跌 -10% 加 1/3，催化加最后 1/3）</div></div>
+    <div class="pb-row"><div class="pb-pct">10%</div><div class="pb-name">电网建设（GRID ETF 5% + GEV 3% + ETN 2%）</div><div class="pb-rsn">动量已经走起，但 thesis 是 10 年长 cycle 不怕回调</div></div>
+    <div class="pb-row"><div class="pb-pct">8%</div><div class="pb-name">AI 算力旗舰（NVDA 5% + AVGO 3%）</div><div class="pb-rsn"><b>v4 减仓</b>：半导体 leadership 5/29 weak signal 已现，降低敞口</div></div>
+    <div class="pb-row"><div class="pb-pct">6%</div><div class="pb-name">SaaS 反弹后段（CRM 2% + INTU 2% + DUOL 2%）</div><div class="pb-rsn"><b>v4 降低</b>：本轮反转已启动，避开过热 NOW/PLTR/CRWD</div></div>
+    <div class="pb-row"><div class="pb-pct">4%</div><div class="pb-name">高赔率小仓（CRWV 2% + NBIS 1% + NYT 1%）</div><div class="pb-rsn">纯期权 + 事件驱动，止损严格 -25%</div></div>
+    <div class="pb-row"><div class="pb-pct">10%</div><div class="pb-name">现金 / SGOV / Money Market</div><div class="pb-rsn">下次 -10% 回调时的弹药；当前 leadership 切换期保留更多 dry powder</div></div>
+  </div>
+  <div class="insights-disclaimer">
+    ⚠️ 以上是分析框架，不是个性化投资建议。每个人的风险承受能力、税务状况、时间窗口不同。
+    历史镜像告诉你模式，不告诉你具体时点。<b>规模 + 时点 + 持有期限</b> 三件事必须自己负责。
+  </div>
+</div>
+
+<div class="tab-body" id="tab-main">
+  <div class="filters">
+    <label>类型:</label>
+    <select id="f-type"><option value="">全部</option><option value="Stock">个股</option><option value="ETF">ETF</option></select>
+    <label>子赛道:</label>
+    <select id="f-sector"><option value="">全部</option></select>
+    <label>Tier:</label>
+    <select id="f-tier"><option value="">全部</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
+    <label>RSI:</label>
+    <select id="f-rsi">
+      <option value="">全部</option>
+      <option value="extreme-high">≥80 极度超买</option>
+      <option value="high">70-80 超买</option>
+      <option value="mid">30-70 中性</option>
+      <option value="low">20-30 超卖</option>
+      <option value="extreme-low">≤20 极度超卖</option>
+    </select>
+    <label>搜索:</label>
+    <input id="f-search" type="text" placeholder="ticker / 名称">
+    <button onclick="clearFilters()" style="padding:6px 12px;border:1px solid #ccc;background:#fff;border-radius:4px;cursor:pointer;font-size:12px;">清空</button>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div style="overflow-x:auto;">
+    <table id="main-table">
+      <thead><tr id="thead-row"></tr></thead>
+      <tbody id="main-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="tab-body" id="tab-scatter">
+  <div class="alert-box">
+    <b>📈 质价比可视化</b> — 上图 Buffett 透镜 (ROIC 质量 vs FCF Yield 价值)，右上象限是"优等生"。下图 Graham 透镜 (PE × PB)，
+    曲线 PE×PB=22.5 是 Graham 防御型阈值，曲线之下且左下为防御型候选。仅个股，ETF 不参与（基本面指标不适用）。
+  </div>
+  <div style="background:#fff;padding:14px;border-radius:6px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+    <h3 style="margin:0 0 10px;font-size:16px;color:#0c4a6e;">① Buffett 透镜：质量 (ROIC%) × 价值 (FCF Yield%)</h3>
+    <div id="scatter-buffett" style="width:100%;height:560px;"></div>
+    <div style="font-size:11px;color:#666;margin-top:6px;">
+      虚线为 Buffett 三件套阈值 (ROIC=15%, FCF Yield=5%)。点击图例切换 Tier 显示；hover 看叙事；点大小=市值（log scale）。
+    </div>
+  </div>
+  <div style="background:#fff;padding:14px;border-radius:6px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+    <h3 style="margin:0 0 10px;font-size:16px;color:#0c4a6e;">② Graham 透镜：PE × PB</h3>
+    <div id="scatter-graham" style="width:100%;height:560px;"></div>
+    <div style="font-size:11px;color:#666;margin-top:6px;">
+      实线为 Graham Number PE×PB=22.5；点落在曲线左下为"价值候选"，曲线右上为"成长溢价"。横纵轴对极端值做了 clip 以保持可读性。
+    </div>
+  </div>
+  <div style="background:#fff;padding:14px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+    <h3 style="margin:0 0 10px;font-size:16px;color:#0c4a6e;">③ Graham Index 综合质价比排行（个股 Top）</h3>
+    <div id="gi-table"></div>
+  </div>
+</div>
+
+<div class="tab-body" id="tab-analysis">
+  <div class="legend">
+    <b>Tier 释义：</b>
+    <span class="tier-pill tier-A">A</span> 趋势完整+资金吸筹+RS 跑赢
+    <span class="tier-pill tier-B">B</span> 结构健康但局部信号偏中性
+    <span class="tier-pill tier-C">C</span> 信号混合或缺乏方向
+    <span class="tier-pill tier-D">D</span> 趋势破位/RS 跑输/资金派发
+    &nbsp;&nbsp; <b>通过标识：</b>
+    <span class="pass-pill pass-buffett">Buffett ✓</span> ROIC>15% + FCF Y>5% + EV/EB<15
+    <span class="pass-pill pass-graham">Graham ✓</span> PE×PB ≤ 22.5 + 财务健康
+  </div>
+  <div class="filters">
+    <label>赛道:</label>
+    <select id="a-sector"><option value="">全部</option></select>
+    <label>类型:</label>
+    <select id="a-type"><option value="">全部</option><option value="Stock">个股</option><option value="ETF">ETF</option></select>
+    <label>Tier:</label>
+    <select id="a-tier"><option value="">全部</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
+    <label>通过:</label>
+    <select id="a-pass"><option value="">全部</option><option value="buffett">Buffett ✓</option><option value="graham">Graham ✓</option></select>
+  </div>
+  <div id="narr-container"></div>
+</div>
+
+<div class="tab-body" id="tab-etf-overbought">
+  <div class="alert-box">
+    <b>🌡️ ETF 超买/超卖热力分析</b> — 按 RSI + MFI + 距 52W 高的综合定位，识别哪些 ETF 处于极端区域。
+  </div>
+  <div class="group-header">极度超买区 (RSI ≥ 70 或 MFI ≥ 80) — 短期回调风险高</div>
+  <div id="etf-overbought"></div>
+  <div class="group-header">超卖/被冷落区 (RSI ≤ 40 或 距 52W 高 ≤ -10%) — 潜在 mean reversion</div>
+  <div id="etf-oversold"></div>
+  <div class="group-header">技术健康区 (40 ≤ RSI ≤ 65, 中性 MFI)</div>
+  <div id="etf-neutral"></div>
+  <div class="group-header">全部 ETF 技术指标汇总</div>
+  <div style="overflow-x:auto;">
+    <table id="etf-full-table">
+      <thead><tr>
+        <th>Ticker</th><th>名称</th><th>类别</th>
+        <th class="right">价格</th><th class="right">YTD</th><th class="right">1M</th><th class="right">3M</th>
+        <th class="right">距52W高</th><th class="right">RSI</th><th class="right">MFI</th>
+        <th class="right">U/D</th><th class="right">Vol×</th><th class="right">MA排列</th><th class="right">Tier</th>
+      </tr></thead>
+      <tbody id="etf-full-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const DATA = [{"ticker": "ASML", "name": "ASML Holding N.V.", "type": "Stock", "sector": "基础设施", "pe": 53.47, "fwd_pe": 33.78, "pb": 1420.83, "roic": 39.51, "fcf_y": 1.33, "ev_eb": 48.27, "div_y": 0.55, "mcap_b": 618.9, "eps_cagr": 19.55, "valuation_bias": "EUV/High-NA 独家光刻机商，PE 53 fwd 34 反映了 AI 芯片需求长周期，但 PB 1420（账面已被分红回购侵蚀）让传统格雷厄姆指标失真，本质看 ROIC 40% 和 backlog。", "mr_market_wrong": "AI 算力对先进制程的需求让 EUV 进入二轮扩张周期；High-NA 在 2026-2027 量产后单机售价 3 亿美元 + 服务费，营收结构进一步抬升。", "mr_market_right": "中国大陆出口管制 + 客户集中度（TSMC/三星/英特尔三家占大头），任何一家资本开支砍单都直接打到收入；当前估值已无安全边际。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 30, "price": 1607.550048828125, "ma21": 1544.1428629557292, "ma63": 1438.772484188988, "ma200": 1196.0452249145508, "ma_align": "多头", "rsi": 58.80579357053982, "mfi": 45.35563062380234, "ud": 0.9069631672797345, "volx": 0.2418730349507488, "dist_52w": -1.5524511731839774, "r_1m": 11.713775616069144, "r_3m": 18.378569434264236, "r_ytd": 38.61607807774365, "rs_1m": 6.5367769685653165, "rs_3m": 6.972454611792568, "tier": "B", "score": 3, "narr": "价格 $1,607.55，距 52W 高 -1.6%。 MA21/63/200 完美多头排列。 RSI 59 (健康偏强)，MFI 45 (资金偏弱)，U/D 50d 0.91 (中性)。 3M RS vs SPY +7.0pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "AMAT", "name": "Applied Materials, Inc.", "type": "Stock", "sector": "基础设施", "pe": 42.38, "fwd_pe": 27.81, "pb": 14.93, "roic": 26.71, "fcf_y": 0.85, "ev_eb": 38.39, "div_y": 0.47, "mcap_b": 357.0, "eps_cagr": 2.36, "valuation_bias": "前道设备龙头，PE 42 fwd 28，在 HBM 沉积/先进封装上份额上升，但被叠加在'非EUV 也能涨价'的故事里，估值已经在中性偏高。", "mr_market_wrong": "HBM3E/HBM4 的 TSV 与混合键合直接拉动 AMAT 沉积设备需求；先进封装 CAPEX 2025-2027 复合 20%+，AMAT 是首选受益方。", "mr_market_right": "前道存储设备周期性强，DRAM 涨价见顶后订单急冻；中国营收占比仍 30%+，地缘下行风险未充分定价。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 20, "price": 452.5150146484375, "ma21": 429.0241452171689, "ma63": 387.80356658451143, "ma200": 293.17945671081543, "ma_align": "多头", "rsi": 62.73874806595502, "mfi": 58.08994419600044, "ud": 1.310064224052205, "volx": 0.19635659318232315, "dist_52w": -0.5221042281694177, "r_1m": 14.851473185053088, "r_3m": 28.96435479606463, "r_ytd": 68.72190981031545, "rs_1m": 9.67447453754926, "rs_3m": 17.55823997359296, "tier": "A", "score": 5, "narr": "价格 $452.52，距 52W 高 -0.5%。 MA21/63/200 完美多头排列。 RSI 63 (健康偏强)，MFI 58 (资金健康)，U/D 50d 1.31 (机构吸筹)。 3M RS vs SPY +17.6pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "LRCX", "name": "Lam Research Corporation", "type": "Stock", "sector": "基础设施", "pe": 60.23, "fwd_pe": 40.04, "pb": 37.57, "roic": 38.49, "fcf_y": 1.09, "ev_eb": 50.55, "div_y": 0.33, "mcap_b": 397.7, "eps_cagr": 5.18, "valuation_bias": "刻蚀设备双寡头之一，PE 60 PB 38 ROIC 38%，估值反映 HBM 刻蚀环节量价齐升，PB 高是回购密集所致。", "mr_market_wrong": "HBM 需要更多刻蚀步骤（每层 TSV），LRCX 在 3D NAND/HBM 刻蚀市占率 50%+，结构性受益最纯粹的设备股。", "mr_market_right": "存储周期回落即 backlog 反转；中国敞口 + 客户集中度让任何一家砍单都形成放大。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 25, "price": 314.0, "ma21": 294.1066632952009, "ma63": 255.4107920328776, "ma200": 193.65747329711914, "ma_align": "多头", "rsi": 63.27903507737038, "mfi": 61.48876297056151, "ud": 1.126018767220327, "volx": 0.25927782200833965, "dist_52w": -2.6899692800299024, "r_1m": 21.77151083441544, "r_3m": 44.69379657539636, "r_ytd": 69.87798568862267, "rs_1m": 16.594512186911615, "rs_3m": 33.2876817529247, "tier": "A", "score": 4, "narr": "价格 $314.00，距 52W 高 -2.7%。 MA21/63/200 完美多头排列。 RSI 63 (健康偏强)，MFI 61 (资金健康)，U/D 50d 1.13 (中性)。 3M RS vs SPY +33.3pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "KLAC", "name": "KLA Corporation", "type": "Stock", "sector": "基础设施", "pe": 54.64, "fwd_pe": 38.66, "pb": 43.21, "roic": 40.92, "fcf_y": 1.15, "ev_eb": 43.24, "div_y": 0.48, "mcap_b": 251.8, "eps_cagr": 6.93, "valuation_bias": "量测设备绝对垄断（市占率 55%+），PE 55 ROIC 41% FCF margin 极高，是设备股里现金流质量最高的。", "mr_market_wrong": "先进制程节点缩到 2nm/A14 后，量测/检测步骤指数级增加，KLAC 量价齐升；护城河比 LRCX/AMAT 更深（行业第二相距甚远）。", "mr_market_right": "PB 43 ROIC 41%，估值已经把'AI 半导体长周期'写进价格；任何 capex 节奏放缓都会形成估值收缩。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 25, "price": 1903.6949462890625, "ma21": 1837.0535191127233, "ma63": 1677.3347536117312, "ma200": 1350.660305480957, "ma_align": "多头", "rsi": 56.37343245395988, "mfi": 60.429825908240566, "ud": 0.9512384077243468, "volx": 0.16931503123565134, "dist_52w": -5.354260863137405, "r_1m": 8.8996339466205, "r_3m": 32.245790710153784, "r_ytd": 49.75649193200673, "rs_1m": 3.722635299116673, "rs_3m": 20.839675887682116, "tier": "B", "score": 3, "narr": "价格 $1,903.69，距 52W 高 -5.4%。 MA21/63/200 完美多头排列。 RSI 56 (健康偏强)，MFI 60 (资金健康)，U/D 50d 0.95 (中性)。 3M RS vs SPY +20.8pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "TEL", "name": "TE Connectivity plc", "type": "Stock", "sector": "基础设施", "pe": 21.51, "fwd_pe": 16.64, "pb": 4.76, "roic": 13.46, "fcf_y": 3.78, "ev_eb": 14.01, "div_y": 1.38, "mcap_b": 61.4, "eps_cagr": -8.8, "valuation_bias": "TE Connectivity 连接器/线缆，PE 21 fwd PE 17 ROIC 13%，是这组里唯一估值合理的票，AI 数据中心铜线/连接器需求被市场低估。", "mr_market_wrong": "数据中心高速连接器/AEC 铜缆每柜需求量从几百美元提到几千；TEL 在汽车 EV + 工业自动化也是双轮驱动，PE 17 在这组里属于反常便宜。", "mr_market_right": "传统工业连接器业务占比仍大，全球工业周期下行直接拖累；AI 增量在公司整体营收中占比有限。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 42, "price": 211.3350067138672, "ma21": 206.4394989013672, "ma63": 210.41897728329613, "ma200": 219.82780052185058, "ma_align": "空头", "rsi": 52.44936334966994, "mfi": 66.24282383073422, "ud": 0.8883572840139503, "volx": 0.1379087057885306, "dist_52w": -14.537336772313559, "r_1m": 0.23240081117748002, "r_3m": 3.8382369666810856, "r_ytd": -8.754808801511672, "rs_1m": -4.944597836326348, "rs_3m": -7.567877855790583, "tier": "D", "score": -3, "narr": "价格 $211.34，距 52W 高 -14.5%。 跌破 MA200，长期趋势破位。 RSI 52 (健康偏强)，MFI 66 (资金健康)，U/D 50d 0.89 (中性)。 3M RS vs SPY -7.6pt，跑输大盘；综合定位 D 级。"}, {"ticker": "SNPS", "name": "Synopsys, Inc.", "type": "Stock", "sector": "基础设施", "pe": 109.99, "fwd_pe": 27.94, "pb": 3.16, "roic": 4.22, "fcf_y": 3.85, "ev_eb": 59.18, "div_y": null, "mcap_b": 92.0, "eps_cagr": 10.6, "valuation_bias": "EDA 三巨头之一（与 CDNS 双寡头），PE 110 反映 Ansys 并购摊薄 + 收入确认变化，fwd PE 28 才是真实水位，护城河极深。", "mr_market_wrong": "AI 芯片设计复杂度爆炸 → EDA 工具用量翻倍；Ansys 并购拿下多物理仿真，闭环 chip-to-system；订阅模式 ARR 增速 15%+。", "mr_market_right": "TTM PE 110 让短期估值脆弱；监管对 EDA 出口管制中国的不确定性还在；Ansys 整合执行风险。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 24, "price": 477.54998779296875, "ma21": 503.83238002232144, "ma63": 455.1239701528398, "ma200": 468.3292512512207, "ma_align": "混合", "rsi": 44.484949967150996, "mfi": 25.919123474376306, "ud": 1.12550776900939, "volx": 0.2919868311776925, "dist_52w": -26.001393684196984, "r_1m": -1.0464190316366584, "r_3m": 12.54477270690597, "r_ytd": -0.5973992661730265, "rs_1m": -6.223417679140486, "rs_3m": 1.138657884434302, "tier": "C", "score": 1, "narr": "价格 $477.55，距 52W 高 -26.0%。 站稳长期均线之上，趋势完整。 RSI 44 (中性偏弱)，MFI 26 (资金偏弱)，U/D 50d 1.13 (中性)。 3M RS vs SPY +1.1pt，同步大盘；综合定位 C 级。"}, {"ticker": "CDNS", "name": "Cadence Design Systems, Inc.", "type": "Stock", "sector": "基础设施", "pe": 86.94, "fwd_pe": 39.83, "pb": 15.72, "roic": 15.02, "fcf_y": 1.45, "ev_eb": 51.96, "div_y": null, "mcap_b": 103.1, "eps_cagr": 9.31, "valuation_bias": "EDA 双寡头另一家，PE 87 ROIC 15% FCF margin 高，订阅 ARR 模型让收入确定性极高。", "mr_market_wrong": "AI 芯片设计 = EDA 工具量价齐升；CDNS 在仿真/验证环节市占率上升，与 NVDA/AMD/AVGO 深度绑定，每一颗 AI 芯片都是它的客户。", "mr_market_right": "估值已经定价 AI 长周期；同 SNPS 都有出口管制 + 中国 EDA 替代的尾部风险。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 19, "price": 390.7900085449219, "ma21": 359.89857119605654, "ma63": 317.9604768298921, "ma200": 323.2952003479004, "ma_align": "混合", "rsi": 71.76880504344214, "mfi": 44.448479344790655, "ud": 1.4806375329093455, "volx": 0.4022608408277104, "dist_52w": 0.0, "r_1m": 18.568528440496102, "r_3m": 29.990354321836342, "r_ytd": 25.898845434657723, "rs_1m": 13.391529792992275, "rs_3m": 18.584239499364674, "tier": "A", "score": 4, "narr": "价格 $390.79，距 52W 高 +0.0%。 站稳长期均线之上，趋势完整。 RSI 72 (超买)，MFI 44 (资金偏弱)，U/D 50d 1.48 (机构吸筹)。 3M RS vs SPY +18.6pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "TSM", "name": "Taiwan Semiconductor Manufacturing Company Limited", "type": "Stock", "sector": "基础设施", "pe": 36.37, "fwd_pe": 21.77, "pb": 94.03, "roic": 26.7, "fcf_y": 32.64, "ev_eb": 3.07, "div_y": 0.9, "mcap_b": 2203.5, "eps_cagr": 19.57, "valuation_bias": "晶圆代工独家先进制程，PE 36 fwd 22 ROIC 27% FCF margin 33%，这组里估值最合理的旗舰票。CoWoS 封装是 GPU 真正瓶颈。", "mr_market_wrong": "3nm/2nm 先进制程独家，毛利结构升级；CoWoS-L 产能 2025-2026 翻倍仍供不应求；ADR 折价被地缘风险长期压制。", "mr_market_right": "中国大陆地缘风险是永远悬剑；美国/日本厂效率/成本低于中国台湾，全球化布局短期压低毛利。", "buffett_pass": true, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 70, "price": 441.69000244140625, "ma21": 408.79095168340774, "ma63": 373.9081396678137, "ma200": 321.36652793884275, "ma_align": "多头", "rsi": 67.56596642438903, "mfi": 50.05709047209565, "ud": 1.2881773913616819, "volx": 0.48840454980980086, "dist_52w": 0.0, "r_1m": 11.520982973308724, "r_3m": 25.43102648877489, "r_ytd": 38.585971516204445, "rs_1m": 6.343984325804897, "rs_3m": 14.024911666303222, "tier": "A", "score": 5, "narr": "价格 $441.69，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 68 (健康偏强)，MFI 50 (资金健康)，U/D 50d 1.29 (机构吸筹)。 3M RS vs SPY +14.0pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "NVDA", "name": "NVIDIA Corporation", "type": "Stock", "sector": "基础设施", "pe": 32.81, "fwd_pe": 16.93, "pb": 33.1, "roic": 72.57, "fcf_y": 0.89, "ev_eb": 31.08, "div_y": 0.47, "mcap_b": 5189.3, "eps_cagr": 201.8, "valuation_bias": "AI 算力旗舰，PE 33 fwd 27 ROIC 73% 是这组里盈利能力最高的，但 PB 33 + EV/EBITDA 31 已经隐含了多年高增长。", "mr_market_wrong": "Blackwell/Rubin 路线图清晰，CUDA 生态护城河没法快速突破；推理需求接力训练成为下一波拉动；网络（InfiniBand/Spectrum-X）+ 软件构成第二、第三增长曲线。", "mr_market_right": "客户集中度极高（Mag7 占 50%+），任一家自研 ASIC 替代都直接打折估值；中国市场被实质性切断后增量看亚太/中东能否补。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 35, "price": 221.25999450683594, "ma21": 215.73428635370163, "ma63": 196.4330303858197, "ma200": 187.83952011108397, "ma_align": "多头", "rsi": 58.266938604431544, "mfi": 38.0065649351555, "ud": 1.2571569679057855, "volx": 0.43526445077675613, "dist_52w": -6.142364744599115, "r_1m": 10.86836016765782, "r_3m": 22.894736708286167, "r_ytd": 17.1681047954541, "rs_1m": 5.6913615201539915, "rs_3m": 11.4886218858145, "tier": "A", "score": 4, "narr": "价格 $221.26，距 52W 高 -6.1%。 MA21/63/200 完美多头排列。 RSI 58 (健康偏强)，MFI 38 (资金偏弱)，U/D 50d 1.26 (机构吸筹)。 3M RS vs SPY +11.5pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "AMD", "name": "Advanced Micro Devices, Inc.", "type": "Stock", "sector": "基础设施", "pe": 172.7, "fwd_pe": 39.98, "pb": 13.1, "roic": 5.1, "fcf_y": 0.85, "ev_eb": 112.56, "div_y": null, "mcap_b": 844.8, "eps_cagr": 48.64, "valuation_bias": "PE 173 但 fwd PE 21 反映了 MI300/MI400 量产前盈利低谷；ROIC 5% 远逊 NVDA，本质是赔率游戏（市占从 0→10% 估值翻倍）。", "mr_market_wrong": "MI300X/MI325 在 Meta、Microsoft、Oracle 出现真实订单；ROCm 软件栈追赶 CUDA 中；CPU EPYC 在数据中心市占率持续抢英特尔。", "mr_market_right": "GPU 与 NVDA 性能差距仍在 1-2 代；Xilinx FPGA 业务整合慢；客户机会主义采购，一旦 NVDA 供给宽松就回流。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 10, "price": 504.5199890136719, "ma21": 443.17238362630206, "ma63": 306.2057146344866, "ma200": 239.18300003051758, "ma_align": "多头", "rsi": 71.68622847357875, "mfi": 67.44984336413833, "ud": 2.2057178017389685, "volx": 0.35933400507871244, "dist_52w": -2.619243208397548, "r_1m": 42.32277438358778, "r_3m": 164.21576175799794, "r_ytd": 125.76631595191094, "rs_1m": 37.14577573608395, "rs_3m": 152.80964693552627, "tier": "A", "score": 5, "narr": "价格 $504.52，距 52W 高 -2.6%。 MA21/63/200 完美多头排列。 RSI 72 (超买)，MFI 67 (资金健康)，U/D 50d 2.21 (机构吸筹)。 3M RS vs SPY +152.8pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "AVGO", "name": "Broadcom Inc.", "type": "Stock", "sector": "基础设施", "pe": 83.32, "fwd_pe": 23.19, "pb": 25.29, "roic": 13.99, "fcf_y": 1.26, "ev_eb": 55.66, "div_y": 0.61, "mcap_b": 2019.7, "eps_cagr": 26.24, "valuation_bias": "ASIC（Google TPU、Meta MTIA）+ 网络芯片 + VMware 软件三驾马车，PE 83 fwd 36 ROIC 14% 反映 VMware 并购摊薄。", "mr_market_wrong": "TPU/MTIA 的 ASIC 是 NVDA 唯一替代叙事的真实承载者；网络芯片（Tomahawk）受益于 AI 集群以太网化；VMware 私有云 AI 平台叙事。", "mr_market_right": "客户集中度（Google + Apple + Meta）；ASIC 项目周期性强、客户随时可换；VMware 整合摩擦持续。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 18, "price": 453.94000244140625, "ma21": 424.38333275204616, "ma63": 375.7795681423611, "ma200": 352.12084503173827, "ma_align": "多头", "rsi": 68.11614779124498, "mfi": 41.33966146009379, "ud": 1.4075118870159289, "volx": 0.4310234060971732, "dist_52w": 0.0, "r_1m": 8.746379130927085, "r_3m": 44.94399058620113, "r_ytd": 30.85905853338009, "rs_1m": 3.5693804834232576, "rs_3m": 33.53787576372946, "tier": "A", "score": 5, "narr": "价格 $453.94，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 68 (健康偏强)，MFI 41 (资金偏弱)，U/D 50d 1.41 (机构吸筹)。 3M RS vs SPY +33.5pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "MRVL", "name": "Marvell Technology, Inc.", "type": "Stock", "sector": "基础设施", "pe": 70.39, "fwd_pe": 37.03, "pb": 12.13, "roic": 15.16, "fcf_y": 1.3, "ev_eb": 67.02, "div_y": 0.12, "mcap_b": 179.3, "eps_cagr": null, "valuation_bias": "AWS Trainium ASIC 主要合作方，PE 70 fwd 26 ROIC 15%，规模小于 AVGO 但 AI ASIC 弹性更高。", "mr_market_wrong": "AWS Trainium 2/3 是 Marvell 设计代工，单一客户 ASIC 项目放量带来 2026 营收阶跃；光 DSP 也是收入增量。", "mr_market_right": "AWS 单一客户依赖度太高，类似当年的 Inphi 故事；ASIC 项目利润率低于自研芯片，长期 ROIC 上不去。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 14, "price": 212.69500732421875, "ma21": 181.94833301362536, "ma63": 136.31905316549634, "ma200": 99.04163919448852, "ma_align": "多头", "rsi": 72.21656749418338, "mfi": 58.39415892332857, "ud": 2.4453419481329206, "volx": 0.37003329065482743, "dist_52w": 0.0, "r_1m": 28.78898891000594, "r_3m": 174.54711832652703, "r_ytd": 138.23088973362715, "rs_1m": 23.61199026250211, "rs_3m": 163.14100350405536, "tier": "A", "score": 5, "narr": "价格 $212.70，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 72 (超买)，MFI 58 (资金健康)，U/D 50d 2.45 (机构吸筹)。 3M RS vs SPY +163.1pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "ARM", "name": "Arm Holdings plc", "type": "Stock", "sector": "基础设施", "pe": 399.13, "fwd_pe": 109.74, "pb": 43.06, "roic": 8.56, "fcf_y": 0.21, "ev_eb": 333.41, "div_y": null, "mcap_b": 358.1, "eps_cagr": 19.93, "valuation_bias": "PE 399 PB 43 ROIC 9%，纯叙事股，IP 授权模式弹性大但当前估值无法用传统框架解释。", "mr_market_wrong": "数据中心 ARM 化（Grace、Graviton、Cobalt）份额持续上升；移动端 v9 架构开始收高费率；AI 推理端从云到端 ARM 处处都有 IP 抽成。", "mr_market_right": "估值已透支 5-10 年增长；与 Qualcomm 法律纠纷未完；客户自研 RISC-V 替代是长期尾部威胁。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 10, "price": 403.95001220703125, "ma21": 256.3228578113374, "ma63": 186.87547750321644, "ma200": 152.15357540130614, "ma_align": "多头", "rsi": 82.14358256150754, "mfi": 81.2002350691792, "ud": 1.9723957193533586, "volx": 0.7290979639568476, "dist_52w": 0.0, "r_1m": 92.06447229926262, "r_3m": 231.86822884974157, "r_ytd": 252.0875101435434, "rs_1m": 86.8874736517588, "rs_3m": 220.4621140272699, "tier": "A", "score": 4, "narr": "价格 $403.95，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 82 (极度超买，警惕回踩)，MFI 81 (资金极度超买)，U/D 50d 1.97 (机构吸筹)。 3M RS vs SPY +220.5pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "MU", "name": "Micron Technology, Inc.", "type": "Stock", "sector": "基础设施", "pe": 43.67, "fwd_pe": 8.8, "pb": 14.38, "roic": 13.63, "fcf_y": 0.28, "ev_eb": 28.2, "div_y": 0.06, "mcap_b": 1041.5, "eps_cagr": -0.57, "valuation_bias": "HBM3E/HBM4 周期股，PE 44 fwd 11 ROIC 14%，市场已经把这轮上行周期定价，下一步看 2027 DRAM 供需是否反转。", "mr_market_wrong": "HBM 结构性需求让 micron 摆脱传统纯周期叙事；fwd PE 11 暗示市场仍按周期股估值，存在结构性重估空间。", "mr_market_right": "DRAM 仍是周期性大宗商品，三星 HBM3E 通过验证后供给恢复即砸价；中国长鑫 + 长存追赶速度。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 8, "price": 1030.0, "ma21": 764.7276204427084, "ma63": 537.4653872535342, "ma200": 343.1254295730591, "ma_align": "多头", "rsi": 80.52073367557739, "mfi": 65.44304339163776, "ud": 1.336844971231922, "volx": 0.33996981802489, "dist_52w": 0.0, "r_1m": 99.16467891689382, "r_3m": 171.39504009687903, "r_ytd": 226.68589165997105, "rs_1m": 93.98768026939, "rs_3m": 159.98892527440736, "tier": "A", "score": 4, "narr": "价格 $1,030.00，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 81 (极度超买，警惕回踩)，MFI 65 (资金健康)，U/D 50d 1.34 (机构吸筹)。 3M RS vs SPY +160.0pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "ANET", "name": "Arista Networks, Inc.", "type": "Stock", "sector": "基础设施", "pe": 53.54, "fwd_pe": 34.9, "pb": 14.5, "roic": 25.75, "fcf_y": 2.23, "ev_eb": 43.23, "div_y": null, "mcap_b": 195.5, "eps_cagr": 37.44, "valuation_bias": "PE 54 fwd 39 ROIC 26%，AI 集群以太网化的最大受益方，估值不便宜但 backlog 可见性高。", "mr_market_wrong": "Meta/Microsoft 等超大规模客户的 AI 集群从 InfiniBand 切换到以太网，ANET 是 Spectrum-X 之外的唯一选择；800G/1.6T 升级周期。", "mr_market_right": "客户集中度极高（Meta + Microsoft 占 40%+），任一家砍单或自研都是估值杀；NVDA Spectrum-X 是直接竞品。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 36, "price": 166.9600067138672, "ma21": 151.23714265369233, "ma63": 146.47793663872613, "ma200": 140.2942496109009, "ma_align": "多头", "rsi": 62.720421133061784, "mfi": 71.48924397735506, "ud": 1.0476116206597337, "volx": 0.22032383669762695, "dist_52w": -6.059747522968673, "r_1m": -3.329280167029447, "r_3m": 33.99679675641738, "r_ytd": 24.970059196332418, "rs_1m": -8.506278814533275, "rs_3m": 22.590681933945714, "tier": "B", "score": 3, "narr": "价格 $166.96，距 52W 高 -6.1%。 MA21/63/200 完美多头排列。 RSI 63 (健康偏强)，MFI 71 (资金超买)，U/D 50d 1.05 (中性)。 3M RS vs SPY +22.6pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "COHR", "name": "Coherent Corp.", "type": "Stock", "sector": "基础设施", "pe": 178.65, "fwd_pe": 46.56, "pb": 6.9, "roic": 2.86, "fcf_y": -0.27, "ev_eb": 57.16, "div_y": null, "mcap_b": 73.7, "eps_cagr": -40.53, "valuation_bias": "PE 179 ROIC 3% FCF margin 微负，光模块/激光器并购整合期，财务质量是这组里最弱的之一。", "mr_market_wrong": "800G/1.6T 光模块需求爆炸 + 数据中心激光器份额上升；II-VI + Finisar 并购整合接近完成，2026 利润释放。", "mr_market_right": "高杠杆资产负债表，并购消化期长；光模块毛利被价格战压制；执行风险仍大。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 0, "price": 349.2875061035156, "ma21": 362.8003612699963, "ma63": 307.81091453915553, "ma200": 204.34898796081544, "ma_align": "多头", "rsi": 48.75537024004966, "mfi": 53.032904293125696, "ud": 1.0556795883244132, "volx": 0.2848372018788681, "dist_52w": -13.743393095855827, "r_1m": 9.251357617515499, "r_3m": 24.385708892231793, "r_ytd": 79.73936232819925, "rs_1m": 4.074358970011671, "rs_3m": 12.979594069760125, "tier": "A", "score": 4, "narr": "价格 $349.29，距 52W 高 -13.7%。 站稳长期均线之上，趋势完整。 RSI 49 (中性偏弱)，MFI 53 (资金健康)，U/D 50d 1.06 (中性)。 3M RS vs SPY +13.0pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "LITE", "name": "Lumentum Holdings Inc.", "type": "Stock", "sector": "基础设施", "pe": 151.52, "fwd_pe": 47.55, "pb": 72.58, "roic": -3.19, "fcf_y": 0.14, "ev_eb": 121.56, "div_y": null, "mcap_b": 67.0, "eps_cagr": -49.31, "valuation_bias": "PE 152 ROIC -3%，财务状况比 COHR 更弱，纯叙事股，靠光模块订单预期支撑估值。", "mr_market_wrong": "Lumentum 的 EML 激光器是 800G 光模块核心，受益于 NVDA/AVGO 光互联放量；Cloud Light 并购拓展 transceiver 整机。", "mr_market_right": "ROIC 为负 + 高估值，任何订单不达预期都直接打折；光器件历史毛利波动巨大。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 0, "price": 847.3400268554688, "ma21": 935.2500029064361, "ma63": 823.8893655443949, "ma200": 461.59007526397704, "ma_align": "多头", "rsi": 44.63377622050077, "mfi": 24.61545678376767, "ud": 0.8379700938643154, "volx": 0.4251699503154656, "dist_52w": -19.53773615197001, "r_1m": -6.093179805664528, "r_3m": 22.019503159777678, "r_ytd": 119.45561083688241, "rs_1m": -11.270178453168356, "rs_3m": 10.61338833730601, "tier": "A", "score": 4, "narr": "价格 $847.34，距 52W 高 -19.5%。 站稳长期均线之上，趋势完整。 RSI 45 (中性偏弱)，MFI 25 (资金偏弱)，U/D 50d 0.84 (中性)。 3M RS vs SPY +10.6pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "FN", "name": "Fabrinet", "type": "Stock", "sector": "基础设施", "pe": 57.53, "fwd_pe": 38.68, "pb": 10.38, "roic": 16.77, "fcf_y": -0.33, "ev_eb": 47.93, "div_y": null, "mcap_b": 23.9, "eps_cagr": 18.39, "valuation_bias": "Fabrinet 光通信 EMS 代工，PE 58 ROIC 17% 是这组光通信里财务最稳的，但市场已经定价 NVDA 业务放量。", "mr_market_wrong": "NVDA 800G/CPO 光模块代工大头，独立 EMS 模型让 NVDA 不愿做的复杂组装外包给它；毛利低但稳定。", "mr_market_right": "单一大客户依赖（NVDA 占 30%+）；EMS 商业模式天花板低，毛利长期被压在 10-12%。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 24, "price": 628.9099731445312, "ma21": 677.4176228841146, "ma63": 620.3374624100942, "ma200": 490.8022508239746, "ma_align": "多头", "rsi": 43.55714084606849, "mfi": 29.65162144799352, "ud": 0.9377830716822452, "volx": 0.22004268248624095, "dist_52w": -15.748791267230756, "r_1m": -7.982793670139554, "r_3m": 13.72076376108009, "r_ytd": 31.181418282474425, "rs_1m": -13.159792317643381, "rs_3m": 2.3146489386084212, "tier": "B", "score": 3, "narr": "价格 $628.91，距 52W 高 -15.7%。 站稳长期均线之上，趋势完整。 RSI 44 (中性偏弱)，MFI 30 (资金偏弱)，U/D 50d 0.94 (中性)。 3M RS vs SPY +2.3pt，同步大盘；综合定位 B 级。"}, {"ticker": "CRDO", "name": "Credo Technology Group Holding Ltd", "type": "Stock", "sector": "基础设施", "pe": 122.17, "fwd_pe": 40.31, "pb": 22.16, "roic": 5.3, "fcf_y": 0.42, "ev_eb": 113.42, "div_y": null, "mcap_b": 41.0, "eps_cagr": null, "valuation_bias": "PE 122 ROIC 5%，AEC 有源铜缆 + DSP 芯片小盘股，弹性大波动大，估值已经定价超大规模客户放量。", "mr_market_wrong": "AEC 在机柜内 GPU-GPU 互联取代 DAC + 光模块，单价更高且性价比好；亚马逊/微软订单放量是核心催化。", "mr_market_right": "客户集中度极高 + 小盘股波动大；AEC 渗透率假设非常激进，实际增速若慢即估值杀；CPO 技术替代是中期风险。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 0, "price": 234.2899932861328, "ma21": 197.31119065057663, "ma63": 150.91373031858413, "ma200": 145.79480037689208, "ma_align": "多头", "rsi": 68.12476034263372, "mfi": 59.38969090141786, "ud": 1.8837338038303233, "volx": 0.4677180034485314, "dist_52w": -0.7371967555662606, "r_1m": 34.64168765141176, "r_3m": 140.79135245402253, "r_ytd": 63.58748169893542, "rs_1m": 29.464689003907928, "rs_3m": 129.38523763155086, "tier": "A", "score": 5, "narr": "价格 $234.29，距 52W 高 -0.7%。 MA21/63/200 完美多头排列。 RSI 68 (健康偏强)，MFI 59 (资金健康)，U/D 50d 1.88 (机构吸筹)。 3M RS vs SPY +129.4pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "CEG", "name": "Constellation Energy Corporation", "type": "Stock", "sector": "电力&DC", "pe": 24.87, "fwd_pe": 21.07, "pb": 3.1, "roic": 11.33, "fcf_y": -4.33, "ev_eb": 15.75, "div_y": 0.6, "mcap_b": 103.4, "eps_cagr": null, "valuation_bias": "美国最大独立核电运营商，PE 25 fwd 27 ROIC 11%，估值已经定价 Three Mile Island 重启 + Microsoft PPA 长协。", "mr_market_wrong": "无碳基载能源 + 监管壁垒 + 长协锁定 20 年现金流，是 AI 数据中心 PPA 首选；下一波 hyperscaler 续约价格上调。", "mr_market_right": "FCF Yield -4% 警示自由现金流被资本开支吃掉；任何核电事件或电力市场监管变化都是估值杀；股价对天然气价格高度敏感。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 36, "price": 270.0899963378906, "ma21": 291.0066208612351, "ma63": 295.92602684384303, "ma200": 322.01106101989745, "ma_align": "空头", "rsi": 40.86138111964198, "mfi": 31.530673434459885, "ud": 0.7606363037776315, "volx": 1.1845730576595594, "dist_52w": -32.867200180592306, "r_1m": -13.575201694765305, "r_3m": -16.621368999173868, "r_ytd": -26.041740918305557, "rs_1m": -18.752200342269134, "rs_3m": -28.027483821645536, "tier": "D", "score": -5, "narr": "价格 $270.09，距 52W 高 -32.9%。 MA21/63 空头排列，中期承压。 RSI 41 (中性偏弱)，MFI 32 (资金偏弱)，U/D 50d 0.76 (中性)。 3M RS vs SPY -28.0pt，跑输大盘；综合定位 D 级。"}, {"ticker": "VST", "name": "Vistra Corp.", "type": "Stock", "sector": "电力&DC", "pe": 26.8, "fwd_pe": 14.63, "pb": 20.67, "roic": 7.8, "fcf_y": 0.88, "ev_eb": 11.16, "div_y": 0.57, "mcap_b": 54.0, "eps_cagr": null, "valuation_bias": "PE 27 fwd 23 ROIC 8%，核电 + 燃气混合发电，估值仅次于 CEG 但弹性更大（与亚马逊数据中心 PPA 谈判中）。", "mr_market_wrong": "Energy Harbor 并购后核电产能翻倍；数据中心 PPA 单价持续上调；德州 ERCOT 电价波动给予套利空间。", "mr_market_right": "燃气资产占比仍大，碳价/环保政策反复；ROIC 不到 10% 反映监管制约；与亚马逊 PPA 谈判结果若不如预期即估值杀。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 20, "price": 155.4199981689453, "ma21": 151.47761826288132, "ma63": 155.94716002449158, "ma200": 172.6620713043213, "ma_align": "空头", "rsi": 51.75892577199534, "mfi": 38.437254492179406, "ud": 0.8793972210326687, "volx": 0.23385520373633686, "dist_52w": -28.483385960630493, "r_1m": -1.5331970508696613, "r_3m": -3.752621604906481, "r_ytd": -5.808866516573974, "rs_1m": -6.710195698373489, "rs_3m": -15.158736427378148, "tier": "D", "score": -5, "narr": "价格 $155.42，距 52W 高 -28.5%。 跌破 MA200，长期趋势破位。 RSI 52 (健康偏强)，MFI 38 (资金偏弱)，U/D 50d 0.88 (中性)。 3M RS vs SPY -15.2pt，跑输大盘；综合定位 D 级。"}, {"ticker": "TLN", "name": "Talen Energy Corporation", "type": "Stock", "sector": "电力&DC", "pe": null, "fwd_pe": 11.15, "pb": 16.14, "roic": 1.36, "fcf_y": 7.96, "ev_eb": 35.34, "div_y": null, "mcap_b": 17.4, "eps_cagr": null, "valuation_bias": "PE 缺失（亏损/异常）PB 16 ROIC 1.4%，破产重整后重组上市的小盘核电运营商，纯赔率游戏。", "mr_market_wrong": "Susquehanna 核电厂直接与亚马逊签 PPA 是行业先例，被市场视为下一个 CEG；规模小波动大但叙事最纯。", "mr_market_right": "FCF 有但 ROIC 仅 1.4%，财务质量远低于 CEG/VST；监管阻力（FERC 否决 behind-the-meter 模式）让模式可复制性存疑；小盘流动性差。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 14, "price": 372.8699951171875, "ma21": 369.09047444661456, "ma63": 345.4234924316406, "ma200": 371.5973495483398, "ma_align": "混合", "rsi": 53.1754187380805, "mfi": 43.63037219254767, "ud": 1.2652329233958222, "volx": 0.23648366203786428, "dist_52w": -16.366858473908884, "r_1m": 0.12082639848258747, "r_3m": 9.221119282345725, "r_ytd": -6.014169638899059, "rs_1m": -5.05617224902124, "rs_3m": -2.184995540125943, "tier": "B", "score": 2, "narr": "价格 $372.87，距 52W 高 -16.4%。 站稳长期均线之上，趋势完整。 RSI 53 (健康偏强)，MFI 44 (资金偏弱)，U/D 50d 1.27 (机构吸筹)。 3M RS vs SPY -2.2pt，同步大盘；综合定位 B 级。"}, {"ticker": "GEV", "name": "GE Vernova Inc.", "type": "Stock", "sector": "电力&DC", "pe": 29.07, "fwd_pe": 40.63, "pb": 19.22, "roic": 9.54, "fcf_y": 3.48, "ev_eb": 76.95, "div_y": 0.2, "mcap_b": 267.6, "eps_cagr": null, "valuation_bias": "GE 拆分电力业务，PE 29 fwd 38 ROIC 10%，估值反映燃气轮机 backlog 2030+ 排队。", "mr_market_wrong": "数据中心 + 电网扩张让燃气轮机重新进入扩张周期；核能小堆（SMR）BWRX-300 未来 10 年放量；电网设备订单饱满。", "mr_market_right": "燃气轮机交期已经 4-5 年，2030 后景气度存疑；风电业务持续亏损拖累；执行 + 供应链风险。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 11, "price": 948.1400146484375, "ma21": 1044.2947474888392, "ma63": 967.6725793263269, "ma200": 749.3273004150391, "ma_align": "多头", "rsi": 37.888181224683585, "mfi": 34.58990282431344, "ud": 0.8162024698469326, "volx": 0.3598621082311479, "dist_52w": -17.51933481647455, "r_1m": -12.489612091615498, "r_3m": 12.673795174015856, "r_ytd": 39.71186359429333, "rs_1m": -17.666610739119328, "rs_3m": 1.267680351544188, "tier": "B", "score": 3, "narr": "价格 $948.14，距 52W 高 -17.5%。 站稳长期均线之上，趋势完整。 RSI 38 (偏弱)，MFI 35 (资金偏弱)，U/D 50d 0.82 (中性)。 3M RS vs SPY +1.3pt，同步大盘；综合定位 B 级。"}, {"ticker": "ETN", "name": "Eaton Corporation plc", "type": "Stock", "sector": "电力&DC", "pe": 39.37, "fwd_pe": 25.57, "pb": 7.91, "roic": 14.63, "fcf_y": 1.7, "ev_eb": 27.94, "div_y": 1.09, "mcap_b": 156.1, "eps_cagr": 18.41, "valuation_bias": "PE 39 fwd 28 ROIC 15%，电气化龙头，AI 数据中心 + 工业电气化双轮，估值不便宜但护城河深。", "mr_market_wrong": "数据中心电力管理（开关柜、UPS、BMS）需求结构性扩张，ETN 是首选；商用航空 + EV 持续提供增量。", "mr_market_right": "工业周期敏感，PMI 回落即估值收缩；估值已经定价高景气度，安全边际有限。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 23, "price": 398.9599914550781, "ma21": 401.3085472470238, "ma63": 385.60925825815355, "ma200": 363.2143894958496, "ma_align": "多头", "rsi": 50.382932695303715, "mfi": 49.96121978432117, "ud": 1.1308323410669852, "volx": 0.13299124874770277, "dist_52w": -7.6089440046689045, "r_1m": -7.6089440046689045, "r_3m": 12.867023795011278, "r_ytd": 22.608541271042924, "rs_1m": -12.785942652172732, "rs_3m": 1.4609089725396096, "tier": "B", "score": 2, "narr": "价格 $398.96，距 52W 高 -7.6%。 站稳长期均线之上，趋势完整。 RSI 50 (健康偏强)，MFI 50 (资金偏弱)，U/D 50d 1.13 (中性)。 3M RS vs SPY +1.5pt，同步大盘；综合定位 B 级。"}, {"ticker": "PWR", "name": "Quanta Services, Inc.", "type": "Stock", "sector": "电力&DC", "pe": 100.01, "fwd_pe": 44.4, "pb": 12.11, "roic": 8.29, "fcf_y": 0.95, "ev_eb": 43.48, "div_y": 0.06, "mcap_b": 109.6, "eps_cagr": 27.93, "valuation_bias": "PE 100 fwd 30 ROIC 8%，电网建设 EPC 龙头，TTM PE 高是非现金项目摊销所致，看 fwd PE 较合理。", "mr_market_wrong": "电网现代化 + 数据中心新建 + 输电线扩张三重 backlog；劳动力 + 工程能力是竞争壁垒，新进入者难以追上。", "mr_market_right": "ROIC 8% 反映 EPC 商业模式资本回报有限；劳动力成本 + 项目延误风险持续；估值已经定价 backlog 满载。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 10, "price": 692.02001953125, "ma21": 743.8190452938989, "ma63": 636.0211578853547, "ma200": 502.4457328796387, "ma_align": "多头", "rsi": 45.85363584340026, "mfi": 38.15451382020614, "ud": 1.158606416074105, "volx": 0.16162587931158937, "dist_52w": -11.871526140091404, "r_1m": -4.912266106128726, "r_3m": 22.289034929859962, "r_ytd": 57.42266847460715, "rs_1m": -10.089264753632554, "rs_3m": 10.882920107388294, "tier": "A", "score": 4, "narr": "价格 $692.02，距 52W 高 -11.9%。 站稳长期均线之上，趋势完整。 RSI 46 (中性偏弱)，MFI 38 (资金偏弱)，U/D 50d 1.16 (中性)。 3M RS vs SPY +10.9pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "VRT", "name": "Vertiv Holdings Co", "type": "Stock", "sector": "电力&DC", "pe": 78.74, "fwd_pe": 35.55, "pb": 30.49, "roic": 20.4, "fcf_y": 1.63, "ev_eb": 50.96, "div_y": 0.08, "mcap_b": 120.7, "eps_cagr": 159.13, "valuation_bias": "PE 79 fwd 35 ROIC 20%，液冷/电源管理纯 AI 数据中心受益方，财务质量在这组中较高。", "mr_market_wrong": "液冷渗透率从 5%→30%+ 是结构性变化，VRT 是行业唯一全栈玩家；hyperscaler 与企业级订单同步放量。", "mr_market_right": "估值已经定价 2026-2027 高增长，任何放缓即估值杀；液冷竞争对手（CoolIT、Sub-Zero）追赶速度。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 30, "price": 318.840087890625, "ma21": 338.7009582519531, "ma63": 298.38756403847344, "ma200": 212.13339374542235, "ma_align": "多头", "rsi": 46.94231179918992, "mfi": 51.58390665901663, "ud": 0.6901787857347774, "volx": 0.3313428045799052, "dist_52w": -15.25394610207973, "r_1m": -2.937654915105592, "r_3m": 30.46799761835306, "r_ytd": 81.6046686440051, "rs_1m": -8.11465356260942, "rs_3m": 19.06188279588139, "tier": "B", "score": 3, "narr": "价格 $318.84，距 52W 高 -15.3%。 站稳长期均线之上，趋势完整。 RSI 47 (中性偏弱)，MFI 52 (资金健康)，U/D 50d 0.69 (机构派发)。 3M RS vs SPY +19.1pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "EQIX", "name": "Equinix, Inc.", "type": "Stock", "sector": "电力&DC", "pe": 74.06, "fwd_pe": 55.63, "pb": 7.38, "roic": 5.5, "fcf_y": 2.58, "ev_eb": 29.77, "div_y": 1.84, "mcap_b": 105.5, "eps_cagr": 24.18, "valuation_bias": "PE 74 ROIC 5% FCF Yield 2.6%，REIT 模式让 PE 失真，本质看 AFFO 增速 + WALT；估值在 REIT 里偏贵。", "mr_market_wrong": "AI 推理工作负载将外溢到 EQIX 第二梯队数据中心；互联节点价值随 AI 数据流动指数上升；全球 250+ 站点是壁垒。", "mr_market_right": "AI 训练算力主要去 hyperscaler 自建数据中心，EQIX 更多受益的是推理；高利率压制 REIT 估值；电力获取在主要市场遇瓶颈。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 16, "price": 1059.5198974609375, "ma21": 1069.8650483630952, "ma63": 1029.0523720393105, "ma200": 866.4791131591796, "ma_align": "多头", "rsi": 48.15052805322948, "mfi": 42.5083498421331, "ud": 0.9010408097155467, "volx": 0.08792477088621391, "dist_52w": -4.53064349188087, "r_1m": -1.6687538504518984, "r_3m": 9.542107976931714, "r_ytd": 40.10594321210095, "rs_1m": -6.845752497955726, "rs_3m": -1.8640068455399543, "tier": "A", "score": 4, "narr": "价格 $1,059.52，距 52W 高 -4.5%。 站稳长期均线之上，趋势完整。 RSI 48 (中性偏弱)，MFI 43 (资金偏弱)，U/D 50d 0.90 (中性)。 3M RS vs SPY -1.9pt，同步大盘；综合定位 A 级。"}, {"ticker": "DLR", "name": "Digital Realty Trust, Inc.", "type": "Stock", "sector": "电力&DC", "pe": 50.78, "fwd_pe": 66.84, "pb": 2.95, "roic": 4.29, "fcf_y": 4.76, "ev_eb": 30.12, "div_y": 2.55, "mcap_b": 68.5, "eps_cagr": 51.32, "valuation_bias": "PE 51 ROIC 4% FCF Yield 4.8%，相比 EQIX 估值更便宜但 occupancy 与租金增速也更慢。", "mr_market_wrong": "Hyperscale-ready 大型园区 + 与 Blackstone 合资模式让资本开支更灵活；AI 推理外溢直接受益方。", "mr_market_right": "客户集中度高，Hyperscaler 自建挤压；电力 + 土地获取是真实瓶颈；高利率与 REIT 估值压力。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 31, "price": 186.4499969482422, "ma21": 193.18237958635603, "ma63": 188.2454579671224, "ma200": 171.64214126586913, "ma_align": "多头", "rsi": 39.82683063744461, "mfi": 19.700546851814877, "ud": 0.8239671889702103, "volx": 0.10619475156921414, "dist_52w": -8.562604286349496, "r_1m": -7.2111104394901755, "r_3m": 5.383424550969473, "r_ytd": 21.08591964433648, "rs_1m": -12.388109086994003, "rs_3m": -6.022690271502195, "tier": "B", "score": 3, "narr": "价格 $186.45，距 52W 高 -8.6%。 站稳长期均线之上，趋势完整。 RSI 40 (偏弱)，MFI 20 (资金偏弱)，U/D 50d 0.82 (中性)。 3M RS vs SPY -6.0pt，跑输大盘；综合定位 B 级。"}, {"ticker": "NRG", "name": "NRG Energy, Inc.", "type": "Stock", "sector": "电力&DC", "pe": 151.1, "fwd_pe": 11.82, "pb": 25.39, "roic": 8.18, "fcf_y": 1.49, "ev_eb": 23.4, "div_y": 1.38, "mcap_b": 29.0, "eps_cagr": -10.89, "valuation_bias": "PE 151 fwd 17 ROIC 8%，TTM 异常但 fwd 估值合理，零售电力 + 数据中心电力双轮叙事。", "mr_market_wrong": "Texas 数据中心电力需求 + 零售电力业务现金流稳定；Vivint 智能家居整合接近完成；估值远低于 CEG/VST。", "mr_market_right": "核电/无碳标签不如 CEG/VST，hyperscaler 优先采购更绿；杠杆较高，利率敏感；零售电力业务受 ERCOT 监管影响。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 0, "price": 129.1999969482422, "ma21": 138.16428447905042, "ma63": 149.56776101248605, "ma200": 156.89915836334228, "ma_align": "空头", "rsi": 37.93453673032736, "mfi": 36.04766650539752, "ud": 0.8013134873636965, "volx": 0.16126594636635427, "dist_52w": -29.5790554175696, "r_1m": -16.7015971136931, "r_3m": -20.03229402008134, "r_ytd": -21.762016478739067, "rs_1m": -21.878595761196927, "rs_3m": -31.43840884255301, "tier": "D", "score": -5, "narr": "价格 $129.20，距 52W 高 -29.6%。 MA21/63 空头排列，中期承压。 RSI 38 (偏弱)，MFI 36 (资金偏弱)，U/D 50d 0.80 (中性)。 3M RS vs SPY -31.4pt，跑输大盘；综合定位 D 级。"}, {"ticker": "MSFT", "name": "Microsoft Corporation", "type": "Stock", "sector": "云&模型", "pe": 25.45, "fwd_pe": 22.08, "pb": 7.66, "roic": 26.86, "fcf_y": 1.17, "ev_eb": 17.45, "div_y": 0.85, "mcap_b": 3171.9, "eps_cagr": 11.87, "valuation_bias": "PE 25 fwd 28 ROIC 27% FCF margin 健康，是这组里财务质量最高 + 估值最合理的 AI 巨头。", "mr_market_wrong": "OpenAI 商业化分销独家 + Copilot 嵌入 Office/Windows/GitHub 全栈 + Azure OpenAI 服务护城河；AI 收入跑通至 100B+ ARR 路径清晰。", "mr_market_right": "Azure 资本开支占营收比例从 15%→30%+ 压制 FCF 增速；OpenAI 关系将随 Microsoft 自研模型/Inflection 团队加深矛盾；监管对 Activision/OpenAI 持续审查。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 43, "price": 460.5350036621094, "ma21": 419.0415271577381, "ma63": 403.0271146259611, "ma200": 456.1378274536133, "ma_align": "混合", "rsi": 73.32788239892453, "mfi": 65.10129424384733, "ud": 1.0932908922445885, "volx": 0.5298783093547139, "dist_52w": -14.503345521286848, "r_1m": 13.181730465406915, "r_3m": 14.260512992289453, "r_ytd": -2.189305698057953, "rs_1m": 8.004731817903087, "rs_3m": 2.8543981698177845, "tier": "C", "score": 1, "narr": "价格 $460.54，距 52W 高 -14.5%。 站稳长期均线之上，趋势完整。 RSI 73 (超买)，MFI 65 (资金健康)，U/D 50d 1.09 (中性)。 3M RS vs SPY +2.9pt，同步大盘；综合定位 C 级。"}, {"ticker": "GOOGL", "name": "Alphabet Inc.", "type": "Stock", "sector": "云&模型", "pe": 29.76, "fwd_pe": 26.92, "pb": 9.87, "roic": 28.75, "fcf_y": 0.59, "ev_eb": 29.11, "div_y": 0.23, "mcap_b": 4726.6, "eps_cagr": 30.14, "valuation_bias": "PE 30 ROIC 29% FCF margin 健康，估值是 Mag7 中最便宜的 AI 旗舰之一。", "mr_market_wrong": "Gemini 2/3 性能追上 GPT-5 + DeepMind 是唯一能与 OpenAI 抗衡的体系；TPU v6 + Cloud 增速重新加速；Search AI Overview 暂未明显失血。", "mr_market_right": "Search 业务面临 ChatGPT/Perplexity 替代的长期压力；DOJ 拆分裁决悬剑；YouTube 广告竞争加剧。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 35, "price": 376.2349853515625, "ma21": 390.43880934942337, "ma63": 339.8783574179998, "ma200": 300.5698030090332, "ma_align": "多头", "rsi": 49.67537006859094, "mfi": 35.18085463131176, "ud": 1.1757793762619768, "volx": 0.2582769907364424, "dist_52w": -6.5533282215517685, "r_1m": -2.225832305902886, "r_3m": 24.019982071704927, "r_ytd": 19.46686543461933, "rs_1m": -7.402830953406713, "rs_3m": 12.613867249233259, "tier": "A", "score": 4, "narr": "价格 $376.23，距 52W 高 -6.6%。 站稳长期均线之上，趋势完整。 RSI 50 (中性偏弱)，MFI 35 (资金偏弱)，U/D 50d 1.18 (中性)。 3M RS vs SPY +12.6pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "AMZN", "name": "Amazon.com, Inc.", "type": "Stock", "sector": "云&模型", "pe": 31.64, "fwd_pe": 27.79, "pb": 6.67, "roic": 16.79, "fcf_y": 0.33, "ev_eb": 19.5, "div_y": null, "mcap_b": 2947.4, "eps_cagr": null, "valuation_bias": "PE 32 fwd 27 ROIC 17%，FCF Yield 0.3% 反映物流与 AI capex 同时投入，AWS 是估值锚。", "mr_market_wrong": "Trainium 2/3 ASIC 让 AWS 摆脱完全依赖 NVDA；零售业务利润率持续修复；Bedrock 多模型策略让 AWS 在 AI 时代保持中立平台优势。", "mr_market_right": "AWS 增速被 Azure 反超 + 资本开支吞噬 FCF；零售业务受关税/消费疲软影响；广告业务增速放缓。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 27, "price": 263.9700012207031, "ma21": 268.51142955961683, "ma63": 240.4703180222284, "ma200": 231.71760009765626, "ma_align": "多头", "rsi": 51.63344606445756, "mfi": 56.25896692467635, "ud": 1.7799077906302683, "volx": 0.33441598574155473, "dist_52w": -4.007414598720304, "r_1m": -0.4112262687430479, "r_3m": 26.46481417326829, "r_ytd": 16.543046896557676, "rs_1m": -5.588224916246876, "rs_3m": 15.058699350796623, "tier": "A", "score": 5, "narr": "价格 $263.97，距 52W 高 -4.0%。 站稳长期均线之上，趋势完整。 RSI 52 (健康偏强)，MFI 56 (资金健康)，U/D 50d 1.78 (机构吸筹)。 3M RS vs SPY +15.1pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "META", "name": "Meta Platforms, Inc.", "type": "Stock", "sector": "云&模型", "pe": 23.09, "fwd_pe": 17.57, "pb": 6.62, "roic": 22.2, "fcf_y": 1.58, "ev_eb": 14.8, "div_y": 0.33, "mcap_b": 1612.6, "eps_cagr": 37.61, "valuation_bias": "PE 23 ROIC 22%，这组里估值最便宜 + 财务质量最高的 AI 巨头，资本开支已经在 PE 里反映。", "mr_market_wrong": "Llama 4/5 开源生态让 Meta 享受 AI 红利却无 token 推理成本；广告 AI 个性化让 ROAS 持续提升；Reality Labs 长尾期权。", "mr_market_right": "资本开支 2026 突破 100B 美元让 FCF 承压；Llama 开源策略是否能商业化变现仍待验证；监管对青少年内容/隐私持续施压。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 50, "price": 609.6749877929688, "ma21": 613.1516665504092, "ma63": 622.7543209015377, "ma200": 664.9832043457031, "ma_align": "空头", "rsi": 44.81488665801244, "mfi": 54.128386908701216, "ud": 1.2369129907979635, "volx": 0.4536694864977716, "dist_52w": -22.644703223479723, "r_1m": -0.3652474137784023, "r_3m": -6.851538422085768, "r_ytd": -6.182714123646205, "rs_1m": -5.5422460612822295, "rs_3m": -18.257653244557435, "tier": "D", "score": -4, "narr": "价格 $609.67，距 52W 高 -22.6%。 MA21/63 空头排列，中期承压。 RSI 45 (中性偏弱)，MFI 54 (资金健康)，U/D 50d 1.24 (中性)。 3M RS vs SPY -18.3pt，跑输大盘；综合定位 D 级。"}, {"ticker": "ORCL", "name": "Oracle Corporation", "type": "Stock", "sector": "云&模型", "pe": 36.64, "fwd_pe": 25.36, "pb": 17.46, "roic": 13.8, "fcf_y": -3.81, "ev_eb": 26.03, "div_y": 0.98, "mcap_b": 585.9, "eps_cagr": 22.81, "valuation_bias": "PE 37 fwd 30 ROIC 14% FCF Yield 负值，反映 OCI 资本开支吞噬现金流，估值赌的是 OpenAI Stargate 项目落地。", "mr_market_wrong": "Stargate 4500 亿数据中心承诺 + 与 OpenAI/xAI 算力合作让 OCI 增速跳到 50%+；数据库业务 + 多云策略是稳定基本盘。", "mr_market_right": "FCF Yield -3.8% 警示资本开支可能让股东回报受损；Stargate 项目执行风险极高；竞争对手 Hyperscaler 在 AI 算力上规模更大。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 23, "price": 234.40499877929688, "ma21": 193.66738092331659, "ma63": 168.68627009316097, "ma200": 205.946556930542, "ma_align": "混合", "rsi": 77.63499262327706, "mfi": 63.23427234499554, "ud": 1.3767030104430371, "volx": 0.6478142265241549, "dist_52w": -28.04350599869858, "r_1m": 45.241340644265236, "r_3m": 57.857648503611614, "r_ytd": 20.507614149485942, "rs_1m": 40.06434199676141, "rs_3m": 46.45153368113995, "tier": "B", "score": 2, "narr": "价格 $234.40，距 52W 高 -28.0%。 站稳长期均线之上，趋势完整。 RSI 78 (超买)，MFI 63 (资金健康)，U/D 50d 1.38 (机构吸筹)。 3M RS vs SPY +46.5pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "CRWV", "name": "CoreWeave, Inc.", "type": "Stock", "sector": "云&模型", "pe": null, "fwd_pe": -170.43, "pb": 11.95, "roic": 0.05, "fcf_y": -14.68, "ev_eb": 30.15, "div_y": null, "mcap_b": 58.3, "eps_cagr": null, "valuation_bias": "PE 缺失 FCF Yield -15% ROIC 0%，纯 AI GPU 云租赁，叙事 + 杠杆双高，Graham 框架完全不适用。", "mr_market_wrong": "NVDA 战略伙伴 + 微软长期合同 + OpenAI 直接客户三重背书；2026-2027 营收预计 100% 复合增长。", "mr_market_right": "杠杆 + 客户集中度（Microsoft 占 60%+）让单一客户砍单即崩盘；GPU 折旧周期假设激进；现金流持续为负，融资需求大。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 0, "price": 125.66000366210938, "ma21": 113.27214195614769, "ma63": 99.33071390787761, "ma200": 99.68669982910156, "ma_align": "混合", "rsi": 62.47067266379704, "mfi": 54.9097944443777, "ud": 1.979626797955423, "volx": 0.7027939036501262, "dist_52w": -31.550276495937734, "r_1m": 12.598571129235857, "r_3m": 70.31716690319377, "r_ytd": 58.42158868579639, "rs_1m": 7.42157248173203, "rs_3m": 58.9110520807221, "tier": "B", "score": 2, "narr": "价格 $125.66，距 52W 高 -31.6%。 站稳长期均线之上，趋势完整。 RSI 62 (健康偏强)，MFI 55 (资金健康)，U/D 50d 1.98 (机构吸筹)。 3M RS vs SPY +58.9pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "NBIS", "name": "Nebius Group N.V.", "type": "Stock", "sector": "云&模型", "pe": 87.73, "fwd_pe": 626.6, "pb": 8.01, "roic": 0.61, "fcf_y": -10.7, "ev_eb": -1507.38, "div_y": null, "mcap_b": 57.5, "eps_cagr": -51.99, "valuation_bias": "PE 88 ROIC 0.6% FCF Yield -10.7%，前 Yandex 拆分欧洲 AI 算力，纯叙事股，估值远低于 CRWV 但执行风险更高。", "mr_market_wrong": "CoreWeave 的便宜替代品；欧洲数据中心稀缺性 + 与 NVDA 合作让 Sovereign AI 故事落地；管理层有原 Yandex 工程文化背书。", "mr_market_right": "Yandex 拆分历史让公司治理 + 资本结构复杂；欧洲电力 + 监管 + 客户体量都小于美国；规模化能否复制 CoreWeave 模式存疑。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 0, "price": 266.82000732421875, "ma21": 202.0047621954055, "ma63": 150.4062704661536, "ma200": 113.56957561492919, "ma_align": "多头", "rsi": 74.42382447158663, "mfi": 52.335318617266616, "ud": 1.377120119431576, "volx": 0.4623484027459688, "dist_52w": 0.0, "r_1m": 93.02612715849283, "r_3m": 207.3963109945021, "r_ytd": 196.63148012973107, "rs_1m": 87.849128510989, "rs_3m": 195.99019617203044, "tier": "A", "score": 5, "narr": "价格 $266.82，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 74 (超买)，MFI 52 (资金健康)，U/D 50d 1.38 (机构吸筹)。 3M RS vs SPY +196.0pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "SNOW", "name": "Snowflake Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": null, "fwd_pe": 92.27, "pb": 42.75, "roic": -18.61, "fcf_y": 1.91, "ev_eb": -46.05, "div_y": null, "mcap_b": 82.9, "eps_cagr": null, "valuation_bias": "PE 缺失 ROIC -19% FCF Yield 1.9%，传统 Graham 完全不适用，看 Product NRR + Cortex AI ARR 增速。", "mr_market_wrong": "Cortex AI + Snowpark Container Services 让 SNOW 从数仓变成 AI 推理 + 训练平台；存量数据壁垒 + zero-copy 数据共享是真实护城河；估值已经从 PE 200+ 大幅修复。", "mr_market_right": "Databricks 在 AI 工作负载市场份额持续侵蚀；Cortex 变现节奏低于市场预期；ROIC -19% 反映持续亏损。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 0, "price": 275.92999267578125, "ma21": 171.37857128324964, "ma63": 161.62841288248697, "ma200": 203.43245048522948, "ma_align": "混合", "rsi": 88.88047374252878, "mfi": 78.70603906464154, "ud": 1.2839629817307536, "volx": 0.5752457103954558, "dist_52w": -0.4366103444828129, "r_1m": 102.19095054417089, "r_3m": 66.43344221599705, "r_ytd": 27.32683499941242, "rs_1m": 97.01395189666707, "rs_3m": 55.02732739352538, "tier": "B", "score": 3, "narr": "价格 $275.93，距 52W 高 -0.4%。 站稳长期均线之上，趋势完整。 RSI 89 (极度超买，警惕回踩)，MFI 79 (资金超买)，U/D 50d 1.28 (机构吸筹)。 3M RS vs SPY +55.0pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "MDB", "name": "MongoDB, Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": null, "fwd_pe": 45.98, "pb": 8.88, "roic": -1.07, "fcf_y": 1.77, "ev_eb": -218.61, "div_y": null, "mcap_b": 26.2, "eps_cagr": null, "valuation_bias": "PE 缺失 ROIC -1% FCF Yield 1.8%，向量搜索 + Atlas 云数据库纯成长股，看 Atlas 占比与 AI 用例渗透率。", "mr_market_wrong": "AI 原生应用首选数据库 + Atlas Vector Search 是 RAG 标配；与 OpenAI/Anthropic 合作让推理时延优化深度集成。", "mr_market_right": "Atlas 增速从 40% 滑到 20% 区间已经被认为是减速；Postgres + 向量插件竞争（PGVector）成本更低；ROIC 长期为负考验耐心。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 0, "price": 381.3299865722656, "ma21": 307.4485706147693, "ma63": 272.68444364033047, "ma200": 325.34505012512204, "ma_align": "混合", "rsi": 72.42254131067997, "mfi": 73.01672809882879, "ud": 1.5002072711453607, "volx": 0.5681335946340017, "dist_52w": -13.45211500458422, "r_1m": 52.02726300225782, "r_3m": 50.88434021237689, "r_ytd": -4.58401291229944, "rs_1m": 46.85026435475399, "rs_3m": 39.47822538990522, "tier": "B", "score": 3, "narr": "价格 $381.33，距 52W 高 -13.5%。 站稳长期均线之上，趋势完整。 RSI 72 (超买)，MFI 73 (资金超买)，U/D 50d 1.50 (机构吸筹)。 3M RS vs SPY +39.5pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "ESTC", "name": "Elastic N.V.", "type": "Stock", "sector": "数据/应用/安全", "pe": 16.8, "fwd_pe": 17.33, "pb": 7.59, "roic": -0.33, "fcf_y": 6.49, "ev_eb": -321.97, "div_y": null, "mcap_b": 6.0, "eps_cagr": null, "valuation_bias": "PE 17 ROIC -0.3% FCF Yield 6.5%，是这组里 FCF Yield 最高、PE 最低的票，搜索 + 向量是企业 RAG 落地的实际承载。", "mr_market_wrong": "企业搜索 + 向量 + 安全 SIEM 三合一让 ESTC 成为 RAG 落地首选；估值已经从高点跌回合理区间，PE 17 在 SaaS 里偏便宜。", "mr_market_right": "开源版与商业版分流，自部署用户增速放缓；ROIC 仍为负但接近转正；OpenSearch (AWS 分叉) 抢用户。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 26, "price": 66.30999755859375, "ma21": 53.3480951218378, "ma63": 51.06428570217557, "ma200": 69.4258500289917, "ma_align": "混合", "rsi": 77.50777109963224, "mfi": 70.74928074562642, "ud": 0.9748325869262056, "volx": 0.4071921122574458, "dist_52w": -29.80840827589415, "r_1m": 42.817137890911994, "r_3m": 25.873191295480737, "r_ytd": -8.61356148055682, "rs_1m": 37.640139243408164, "rs_3m": 14.467076473009069, "tier": "D", "score": -2, "narr": "价格 $66.31，距 52W 高 -29.8%。 跌破 MA200，长期趋势破位。 RSI 78 (超买)，MFI 71 (资金超买)，U/D 50d 0.97 (中性)。 3M RS vs SPY +14.5pt，跑赢大盘；综合定位 D 级。"}, {"ticker": "DDOG", "name": "Datadog, Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": 592.74, "fwd_pe": 79.14, "pb": 20.1, "roic": 2.48, "fcf_y": 1.17, "ev_eb": 2214.35, "div_y": null, "mcap_b": 80.2, "eps_cagr": null, "valuation_bias": "PE 593 ROIC 2.5% FCF Yield 1.2%，TTM PE 异常，fwd PE 90+ 仍贵，市场赌的是 LLM 监控新模块放量。", "mr_market_wrong": "LLM 监控（token 消耗、prompt 注入、模型漂移）成为企业 AI 落地必备；Datadog 既有客户群无缝升级；多产品交叉销售成功率高。", "mr_market_right": "TTM PE 593 警示估值脆弱；New Relic/Splunk/Grafana 抢份额；ROIC 2.5% 远不能支撑 90+ fwd PE。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 0, "price": 264.2200012207031, "ma21": 202.03714352562315, "ma63": 149.4420637100462, "ma200": 144.55375049591063, "ma_align": "多头", "rsi": 89.77452320859028, "mfi": 81.3294842286126, "ud": 1.929804598237187, "volx": 0.3669339651122337, "dist_52w": 0.0, "r_1m": 99.87895933190538, "r_3m": 136.39617889985317, "r_ytd": 97.51812273440868, "rs_1m": 94.70196068440156, "rs_3m": 124.9900640773815, "tier": "A", "score": 4, "narr": "价格 $264.22，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 90 (极度超买，警惕回踩)，MFI 81 (资金极度超买)，U/D 50d 1.93 (机构吸筹)。 3M RS vs SPY +125.0pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "PLTR", "name": "Palantir Technologies Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": 161.06, "fwd_pe": 69.1, "pb": 40.66, "roic": 18.87, "fcf_y": 0.51, "ev_eb": 166.44, "div_y": null, "mcap_b": 343.6, "eps_cagr": null, "valuation_bias": "PE 161 ROIC 19%，是这组里 ROIC 最高的成长股，但估值已经定价 5-10 年 30% 复合增长，安全边际为零。", "mr_market_wrong": "AIP（Artificial Intelligence Platform）让企业落地 LLM 闭环，是市场上唯一'工业级'AI agent 平台；政府/国防订单提供安全垫。", "mr_market_right": "PE 161 + EV/EBITDA 166 让任何业绩不达预期都是估值杀；商业客户 ACV 仍小；Bootcamp 转付费的 conversion rate 是关键变量。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 14, "price": 156.22000122070312, "ma21": 138.68404715401786, "ma63": 144.1319836813306, "ma200": 161.64334991455078, "ma_align": "空头", "rsi": 66.98302547057828, "mfi": 73.58646850341789, "ud": 1.1333555623773661, "volx": 0.5155624682002778, "dist_52w": -24.596965564539865, "r_1m": 12.299619391331063, "r_3m": 6.113299772703962, "r_ytd": -6.934349664794781, "rs_1m": 7.122620743827236, "rs_3m": -5.2928150497677064, "tier": "D", "score": -3, "narr": "价格 $156.22，距 52W 高 -24.6%。 跌破 MA200，长期趋势破位。 RSI 67 (健康偏强)，MFI 74 (资金超买)，U/D 50d 1.13 (中性)。 3M RS vs SPY -5.3pt，跑输大盘；综合定位 D 级。"}, {"ticker": "CRM", "name": "Salesforce, Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": 20.41, "fwd_pe": 11.38, "pb": 2.77, "roic": 9.51, "fcf_y": 11.47, "ev_eb": 14.24, "div_y": 1.0, "mcap_b": 144.3, "eps_cagr": 229.74, "valuation_bias": "PE 20 ROIC 10% FCF Yield 11.5%，估值是 SaaS 里最便宜的之一，市场赌 Agentforce 能否兑现。", "mr_market_wrong": "Agentforce 是企业 AI agent 真实使用案例，按对话计费模式有 ARR 加速潜力；Slack + Tableau + Mulesoft 全栈交叉销售壁垒深。", "mr_market_right": "增长率持续放缓到 8-10%；Agentforce 收入贡献仍小；MSFT Copilot 在 CRM 用例上构成直接竞争。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 65, "price": 205.8800048828125, "ma21": 180.30904860723587, "ma63": 184.03829108344183, "ma200": 220.422721786499, "ma_align": "空头", "rsi": 69.04164669075955, "mfi": 52.73465595970829, "ud": 0.9872719029503777, "volx": 0.6823312671306119, "dist_52w": -24.44121434330666, "r_1m": 16.62607279582542, "r_3m": 5.276663743301491, "r_ytd": -18.62041062803389, "rs_1m": 11.449074148321591, "rs_3m": -6.1294510791701775, "tier": "D", "score": -3, "narr": "价格 $205.88，距 52W 高 -24.4%。 跌破 MA200，长期趋势破位。 RSI 69 (健康偏强)，MFI 53 (资金健康)，U/D 50d 0.99 (中性)。 3M RS vs SPY -6.1pt，跑输大盘；综合定位 D 级。"}, {"ticker": "NOW", "name": "ServiceNow, Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": 64.34, "fwd_pe": 21.63, "pb": 9.56, "roic": 12.21, "fcf_y": 4.56, "ev_eb": 37.88, "div_y": null, "mcap_b": 112.1, "eps_cagr": 75.21, "valuation_bias": "PE 64 fwd 45 ROIC 12% FCF Yield 4.5%，是大型 SaaS 里增长最稳的，估值贵但兑现能力强。", "mr_market_wrong": "Now Assist + AI agent 在 IT 服务管理 + 客服 + HR 全场景落地；ACV 升级周期 + 政府订单成为新增长引擎。", "mr_market_right": "fwd PE 45 已经定价高增长；MSFT Copilot 是 IT 工作流的直接竞争者；20% 增长能维持几年是关键。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 24, "price": 132.83999633789062, "ma21": 99.06761968703498, "ma63": 101.78714292011564, "ma200": 141.27402992248534, "ma_align": "空头", "rsi": 77.25017709470957, "mfi": 76.3130255334608, "ud": 1.293378949042513, "volx": 1.0218612726039353, "dist_52w": -36.42133355962965, "r_1m": 50.42464048280739, "r_3m": 17.360185062860435, "r_ytd": -9.908444159195174, "rs_1m": 45.24764183530356, "rs_3m": 5.954070240388766, "tier": "D", "score": -3, "narr": "价格 $132.84，距 52W 高 -36.4%。 跌破 MA200，长期趋势破位。 RSI 77 (超买)，MFI 76 (资金超买)，U/D 50d 1.29 (机构吸筹)。 3M RS vs SPY +6.0pt，跑赢大盘；综合定位 D 级。"}, {"ticker": "ADBE", "name": "Adobe Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": 14.06, "fwd_pe": 9.15, "pb": 8.57, "roic": 41.37, "fcf_y": 9.55, "ev_eb": 10.23, "div_y": null, "mcap_b": 97.6, "eps_cagr": 14.45, "valuation_bias": "PE 14 ROIC 41% FCF Yield 9.6%，是这组里财务质量最高 + 估值最便宜的票，市场担心 Sora/Veo 颠覆。", "mr_market_wrong": "Firefly + Express 让 ADBE 在生成式 AI 中保持商业级渠道优势；C-suite 工具壁垒（Photoshop/Illustrator）仍是行业标准；估值已经定价最悲观情景。", "mr_market_right": "Sora、Veo、Midjourney 让生成模型平价化，专业用户向 Canva/Figma 迁移；订阅 ARR 增速从 13% 滑到 9%；Figma 并购失败后缺乏并购选项。", "buffett_pass": true, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 85, "price": 267.1050109863281, "ma21": 248.90547761462983, "ma63": 249.23166692824591, "ma200": 303.5093249511719, "ma_align": "空头", "rsi": 62.92442188378495, "mfi": 59.3788208668666, "ud": 1.1537308327990983, "volx": 0.6323971740564434, "dist_52w": -35.933751706878425, "r_1m": 8.535150086090315, "r_3m": -1.4336246311853817, "r_ytd": -19.860479817286414, "rs_1m": 3.3581514385864875, "rs_3m": -12.83973945365705, "tier": "D", "score": -5, "narr": "价格 $267.11，距 52W 高 -35.9%。 跌破 MA200，长期趋势破位。 RSI 63 (健康偏强)，MFI 59 (资金健康)，U/D 50d 1.15 (中性)。 3M RS vs SPY -12.8pt，跑输大盘；综合定位 D 级。"}, {"ticker": "INTU", "name": "Intuit Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": 19.09, "fwd_pe": 11.47, "pb": 4.56, "roic": 15.83, "fcf_y": 6.11, "ev_eb": 13.38, "div_y": 1.53, "mcap_b": 85.6, "eps_cagr": 23.26, "valuation_bias": "PE 19 ROIC 16% FCF Yield 6.1%，财务质量极高，估值反映 IRS Direct File 政策风险。", "mr_market_wrong": "Intuit Assist 让 TurboTax/QuickBooks 全部 AI 化；Mailchimp + Credit Karma 多业务交叉销售；小企业 SaaS 龙头。", "mr_market_right": "IRS Direct File 免费报税扩张是长期威胁；TurboTax 用户增长见顶；Credit Karma 受消费贷款周期影响。", "buffett_pass": true, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 66, "price": 349.2049865722656, "ma21": 368.55452328636534, "ma63": 401.9184768918961, "ma200": 546.5307093811035, "ma_align": "空头", "rsi": 45.51306103841284, "mfi": 45.27792103253816, "ud": 0.8477417847048726, "volx": 0.2620859633041908, "dist_52w": -56.455908080717144, "r_1m": -10.114546570845395, "r_3m": -19.168310343984775, "r_ytd": -44.249157117243534, "rs_1m": -15.291545218349222, "rs_3m": -30.574425166456443, "tier": "D", "score": -5, "narr": "价格 $349.20，距 52W 高 -56.5%。 MA21/63 空头排列，中期承压。 RSI 46 (中性偏弱)，MFI 45 (资金偏弱)，U/D 50d 0.85 (中性)。 3M RS vs SPY -30.6pt，跑输大盘；综合定位 D 级。"}, {"ticker": "VEEV", "name": "Veeva Systems Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": 30.22, "fwd_pe": 16.63, "pb": 3.73, "roic": 9.67, "fcf_y": 3.91, "ev_eb": 20.69, "div_y": null, "mcap_b": 26.8, "eps_cagr": 23.06, "valuation_bias": "PE 30 ROIC 10% FCF Yield 3.9%，制药 CRM + 数据云垄断，AI 是延展机会而非主线。", "mr_market_wrong": "Veeva Data Cloud + Vault 是制药行业事实标准；从 Salesforce 平台独立后利润率上升空间；AI 在临床试验匹配 + 监管文件生成是真实需求。", "mr_market_right": "制药 IT 预算受 GLP-1 后续创新影响；从 Salesforce 平台迁移期客户流失风险；增长率回到 15%。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 29, "price": 184.8300018310547, "ma21": 164.55619158063615, "ma63": 170.86523849245103, "ma200": 225.55275016784668, "ma_align": "空头", "rsi": 68.68766068703657, "mfi": 63.152314801157985, "ud": 0.6286440211407179, "volx": 0.2904335982061379, "dist_52w": -39.6414339056052, "r_1m": 18.503558623118586, "r_3m": -0.5809272281106392, "r_ytd": -15.791153489760534, "rs_1m": 13.326559975614758, "rs_3m": -11.987042050582307, "tier": "D", "score": -6, "narr": "价格 $184.83，距 52W 高 -39.6%。 跌破 MA200，长期趋势破位。 RSI 69 (健康偏强)，MFI 63 (资金健康)，U/D 50d 0.63 (机构派发)。 3M RS vs SPY -12.0pt，跑输大盘；综合定位 D 级。"}, {"ticker": "DUOL", "name": "Duolingo, Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": 12.43, "fwd_pe": 13.71, "pb": 3.66, "roic": 7.95, "fcf_y": 6.17, "ev_eb": 22.0, "div_y": null, "mcap_b": 5.1, "eps_cagr": null, "valuation_bias": "PE 12 ROIC 8% FCF Yield 6.2%，是这组里 PE 最便宜的成长股，市场担心 ChatGPT 替代效应。", "mr_market_wrong": "MAU 持续创新高 + 付费转化稳定；Duolingo Max（GPT-4o 集成）ARPU 翻倍；游戏化 + 习惯壁垒难以被 ChatGPT 复制。", "mr_market_right": "GPT-5/Gemini 3 等通用模型让免费替代成为现实威胁；MAU 增速放缓；娱乐化深耕（Music、Chess）是否能维持留存仍待验证。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 42, "price": 114.80000305175781, "ma21": 108.81071435837518, "ma63": 102.406983875093, "ma200": 185.64122512817383, "ma_align": "混合", "rsi": 61.00715461391659, "mfi": 62.3566266554869, "ud": 0.8812227656736328, "volx": 0.2932601327491353, "dist_52w": -78.21011514253509, "r_1m": 4.268850720049233, "r_3m": 12.981008131263128, "r_ytd": -34.95013268869675, "rs_1m": -0.9081479274545945, "rs_3m": 1.5748933087914594, "tier": "D", "score": -3, "narr": "价格 $114.80，距 52W 高 -78.2%。 跌破 MA200，长期趋势破位。 RSI 61 (健康偏强)，MFI 62 (资金健康)，U/D 50d 0.88 (中性)。 3M RS vs SPY +1.6pt，同步大盘；综合定位 D 级。"}, {"ticker": "TEM", "name": "Tempus AI, Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": null, "fwd_pe": -373.02, "pb": 18.59, "roic": -10.49, "fcf_y": -0.61, "ev_eb": -53.38, "div_y": null, "mcap_b": 9.2, "eps_cagr": null, "valuation_bias": "PE 缺失 ROIC -10% FCF Yield -0.6%，AI + 医疗诊断纯叙事股，Graham 不适用。", "mr_market_wrong": "肿瘤基因组测序数据库 + AI 临床决策是真实需求；与制药厂的数据授权合作扩张；联合创始人 Eric Lefkofsky 有 Groupon 上市经验。", "mr_market_right": "ROIC -10% 持续烧钱；与 Foundation Medicine、Guardant 竞争激烈；医疗 AI 监管 + 报销路径不清晰。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 0, "price": 51.09000015258789, "ma21": 48.705238342285156, "ma63": 49.49880933004712, "ma200": 65.94589984893798, "ma_align": "空头", "rsi": 56.367030308989236, "mfi": 63.79488141234501, "ud": 0.7993730421661277, "volx": 0.36604955070228296, "dist_52w": -50.51815965851052, "r_1m": -7.912760320602342, "r_3m": -0.603115494335027, "r_ytd": -18.072482917668363, "rs_1m": -13.08975896810617, "rs_3m": -12.009230316806695, "tier": "D", "score": -5, "narr": "价格 $51.09，距 52W 高 -50.5%。 跌破 MA200，长期趋势破位。 RSI 56 (健康偏强)，MFI 64 (资金健康)，U/D 50d 0.80 (中性)。 3M RS vs SPY -12.0pt，跑输大盘；综合定位 D 级。"}, {"ticker": "GTLB", "name": "GitLab Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": null, "fwd_pe": 28.47, "pb": 4.79, "roic": -4.27, "fcf_y": 6.0, "ev_eb": -54.59, "div_y": null, "mcap_b": 4.7, "eps_cagr": null, "valuation_bias": "PE 缺失 ROIC -4% FCF Yield 6%，DevOps + AI（Duo）的成长股，相对 GitHub Copilot 是独立替代。", "mr_market_wrong": "GitLab Duo 提供完整 DevSecOps + AI 闭环；自部署 + 安全合规让金融/政府客户首选；ARR 增长 30%+。", "mr_market_right": "GitHub Copilot 客户基数 + 微软分销渠道压制；ROIC 仍为负；ARR 增速从 38% 滑到 30%。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 22, "price": 32.30500030517578, "ma21": 25.75595238095238, "ma63": 23.372936490982298, "ma200": 35.49094997406006, "ma_align": "混合", "rsi": 75.3841867027417, "mfi": 69.29770738873924, "ud": 1.7150174031827008, "volx": 0.5415101137539382, "dist_52w": -36.706505239603196, "r_1m": 45.912381191302075, "r_3m": 20.992507048974574, "r_ytd": -10.710337112533564, "rs_1m": 40.735382543798245, "rs_3m": 9.586392226502905, "tier": "D", "score": -2, "narr": "价格 $32.31，距 52W 高 -36.7%。 跌破 MA200，长期趋势破位。 RSI 75 (超买)，MFI 69 (资金健康)，U/D 50d 1.72 (机构吸筹)。 3M RS vs SPY +9.6pt，跑赢大盘；综合定位 D 级。"}, {"ticker": "CRWD", "name": "CrowdStrike Holdings, Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": null, "fwd_pe": 108.74, "pb": 38.39, "roic": -1.15, "fcf_y": 0.94, "ev_eb": -3553.26, "div_y": null, "mcap_b": 170.8, "eps_cagr": null, "valuation_bias": "PE 缺失（7 月事件影响）ROIC -1.1% FCF Yield 0.94%，云原生 EDR 龙头，估值贵但 ARR 质量高。", "mr_market_wrong": "Falcon 平台 + AI 威胁检测让模块交叉销售加速；7 月事件后客户留存好于预期；Charlotte AI 给 SOC 提供 agentic 自动化。", "mr_market_right": "TTM 财务被 7 月事件扭曲；竞品 SentinelOne + Microsoft Defender 攻击份额；估值 EV/Sales 仍 18x。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 0, "price": 757.010009765625, "ma21": 590.5447649274554, "ma63": 476.59634883820064, "ma200": 471.86550048828127, "ma_align": "多头", "rsi": 85.41443978039092, "mfi": 92.63238847632566, "ud": 1.7824918731193826, "volx": 0.356073987187225, "dist_52w": 0.0, "r_1m": 69.82838132711721, "r_3m": 93.40094624604254, "r_ytd": 66.8966956603179, "rs_1m": 64.65138267961339, "rs_3m": 81.99483142357087, "tier": "A", "score": 4, "narr": "价格 $757.01，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 85 (极度超买，警惕回踩)，MFI 93 (资金极度超买)，U/D 50d 1.78 (机构吸筹)。 3M RS vs SPY +82.0pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "PANW", "name": "Palo Alto Networks, Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": 143.21, "fwd_pe": 64.77, "pb": 19.29, "roic": 14.52, "fcf_y": 1.37, "ev_eb": 134.24, "div_y": null, "mcap_b": 209.1, "eps_cagr": null, "valuation_bias": "PE 143 fwd PE 50 ROIC 15% FCF Yield 1.4%，平台化战略让 ARR 集中度提升。", "mr_market_wrong": "Cortex XSIAM AI SOC 平台 + Prisma AIRS（AI 安全运行时）是企业 AI 落地必备；Platform Bundle 锁定客户多年合同。", "mr_market_right": "fwd PE 50 已经定价高增长；竞品（CrowdStrike、Zscaler）在各自细分领域领先；Platform 折扣是否拖累毛利。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 8, "price": 290.2200012207031, "ma21": 231.35904729933966, "ma63": 187.942381359282, "ma200": 189.97590019226075, "ma_align": "混合", "rsi": 82.0848058056508, "mfi": 77.79933788631291, "ud": 1.9533456895425365, "volx": 0.37313467510500375, "dist_52w": 0.0, "r_1m": 61.844740891612915, "r_3m": 85.93119868646741, "r_ytd": 61.79963713055474, "rs_1m": 56.667742244109085, "rs_3m": 74.52508386399575, "tier": "B", "score": 3, "narr": "价格 $290.22，距 52W 高 +0.0%。 站稳长期均线之上，趋势完整。 RSI 82 (极度超买，警惕回踩)，MFI 78 (资金超买)，U/D 50d 1.95 (机构吸筹)。 3M RS vs SPY +74.5pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "ZS", "name": "Zscaler, Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": null, "fwd_pe": 28.29, "pb": 8.89, "roic": -0.29, "fcf_y": 5.27, "ev_eb": -318.4, "div_y": null, "mcap_b": 21.0, "eps_cagr": null, "valuation_bias": "PE 缺失 ROIC -0.3% FCF Yield 5.3%，零信任 SASE 龙头，FCF Yield 在 SaaS 安全里最高。", "mr_market_wrong": "AI 时代 SaaS 应用爆炸让 Zero Trust 渗透加速；与 Microsoft Entra 集成深度让 Mid-market 客户加速签约。", "mr_market_right": "竞品 Netskope/Cisco 抢份额；CEO 销售模式过于激进；增速从 50% 滑到 25%。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 14, "price": 153.10000610351562, "ma21": 154.3328559512184, "ma63": 146.2401584443592, "ma200": 220.91547527313233, "ma_align": "混合", "rsi": 50.68053248498886, "mfi": 53.51402303844837, "ud": 1.3607310920802453, "volx": 0.6235551613535987, "dist_52w": -54.47110622253866, "r_1m": 17.15642384780256, "r_3m": -1.0150592125273028, "r_ytd": -30.588928222470468, "rs_1m": 11.979425200298733, "rs_3m": -12.421174034998971, "tier": "D", "score": -3, "narr": "价格 $153.10，距 52W 高 -54.5%。 跌破 MA200，长期趋势破位。 RSI 51 (健康偏强)，MFI 54 (资金健康)，U/D 50d 1.36 (机构吸筹)。 3M RS vs SPY -12.4pt，跑输大盘；综合定位 D 级。"}, {"ticker": "NET", "name": "Cloudflare, Inc.", "type": "Stock", "sector": "数据/应用/安全", "pe": null, "fwd_pe": 149.57, "pb": 52.8, "roic": -1.4, "fcf_y": 0.94, "ev_eb": -2204.61, "div_y": null, "mcap_b": 80.6, "eps_cagr": null, "valuation_bias": "PE 缺失 ROIC -1.4% FCF Yield 0.9%，CDN + AI 边缘推理 + Zero Trust 三栖玩家，估值贵但叙事独特。", "mr_market_wrong": "Workers AI + R2 让 Cloudflare 成为 AI Agent 边缘推理首选；Zero Trust + DDoS 持续抢市占；AI 流量爆炸的关键基础设施。", "mr_market_right": "ROIC 仍为负；与 Akamai/Fastly 在 CDN 价格战；AI 边缘推理变现节奏慢于 hyperscaler。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 0, "price": 256.9169006347656, "ma21": 217.09270876929872, "ma63": 208.60899837433345, "ma200": 204.7748346710205, "ma_align": "多头", "rsi": 67.92739087736612, "mfi": 84.02917364036682, "ud": 1.1436401137171013, "volx": 0.3622000301835527, "dist_52w": 0.0, "r_1m": 25.34365961101217, "r_3m": 43.60119354755623, "r_ytd": 31.066674336798883, "rs_1m": 20.166660963508342, "rs_3m": 32.19507872508456, "tier": "A", "score": 4, "narr": "价格 $256.92，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 68 (健康偏强)，MFI 84 (资金极度超买)，U/D 50d 1.14 (中性)。 3M RS vs SPY +32.2pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "PH", "name": "Parker-Hannifin Corporation", "type": "Stock", "sector": "二阶受益", "pe": 31.45, "fwd_pe": 25.06, "pb": 7.36, "roic": 16.91, "fcf_y": 2.58, "ev_eb": 21.29, "div_y": 0.94, "mcap_b": 107.5, "eps_cagr": 38.97, "valuation_bias": "PE 31 ROIC 17% FCF Yield 2.6%，运动控制 + 流体管理工业 conglomerate，AI 数据中心是新增长极。", "mr_market_wrong": "数据中心液冷管路 + 冷却剂泵 + 航空航天三大主轴；Aerospace 长周期订单 + 工业数字化升级。", "mr_market_right": "工业周期敏感，PMI 下行即估值收缩；Meggitt 整合接近尾声，无大型并购弹药。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 35, "price": 826.1950073242188, "ma21": 867.2735508510044, "ma63": 913.2503943064856, "ma200": 863.3255947875977, "ma_align": "混合", "rsi": 29.093844410564174, "mfi": 53.6076482705614, "ud": 0.7220596525671781, "volx": 0.13905021585502128, "dist_52w": -19.057061499602945, "r_1m": -8.946091958778002, "r_3m": -16.244804582251106, "r_ytd": -7.200863303966731, "rs_1m": -14.12309060628183, "rs_3m": -27.650919404722774, "tier": "D", "score": -5, "narr": "价格 $826.20，距 52W 高 -19.1%。 MA21/63 空头排列，中期承压。 RSI 29 (超卖)，MFI 54 (资金健康)，U/D 50d 0.72 (机构派发)。 3M RS vs SPY -27.7pt，跑输大盘；综合定位 D 级。"}, {"ticker": "CARR", "name": "Carrier Global Corporation", "type": "Stock", "sector": "二阶受益", "pe": 42.54, "fwd_pe": 19.93, "pb": 3.94, "roic": 7.63, "fcf_y": 1.6, "ev_eb": 20.55, "div_y": 1.5, "mcap_b": 53.0, "eps_cagr": -25.12, "valuation_bias": "PE 43 ROIC 8% FCF Yield 1.6%，HVAC 三大家之一，数据中心冷却 + 商业楼宇 + 住宅 HVAC。", "mr_market_wrong": "数据中心 HVAC + 工业制冷需求结构性扩张；Viessmann 并购拓展欧洲热泵；EPA 制冷剂新规带来更换周期。", "mr_market_right": "ROIC 8% 反映资本回报有限；Viessmann 并购消化期长；HVAC 行业竞争激烈，毛利率压力。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 8, "price": 63.90999984741211, "ma21": 64.93619083222889, "ma63": 60.97847263396732, "ma200": 59.085800628662106, "ma_align": "多头", "rsi": 50.893560250438924, "mfi": 47.72539039220561, "ud": 1.0798032737731, "volx": 0.1562284089449436, "dist_52w": -19.905323227108852, "r_1m": -4.514452416760872, "r_3m": 4.851463863638705, "r_ytd": 20.352691463250537, "rs_1m": -9.691451064264701, "rs_3m": -6.554650958832963, "tier": "B", "score": 2, "narr": "价格 $63.91，距 52W 高 -19.9%。 站稳长期均线之上，趋势完整。 RSI 51 (健康偏强)，MFI 48 (资金偏弱)，U/D 50d 1.08 (中性)。 3M RS vs SPY -6.6pt，跑输大盘；综合定位 B 级。"}, {"ticker": "JCI", "name": "Johnson Controls International plc", "type": "Stock", "sector": "二阶受益", "pe": 41.64, "fwd_pe": 23.91, "pb": 6.15, "roic": 8.47, "fcf_y": 3.46, "ev_eb": 21.28, "div_y": 1.18, "mcap_b": 83.1, "eps_cagr": 29.03, "valuation_bias": "PE 42 ROIC 8% FCF Yield 3.5%，楼宇技术 + HVAC，OpenBlue 平台是 AI 楼宇能效管理叙事。", "mr_market_wrong": "数据中心定制 HVAC + 楼宇能效软件（OpenBlue）让 ARR 模式占比上升；商用工程 backlog 饱满。", "mr_market_right": "PE 42 不便宜；ROIC 8% 偏低；CEO 战略调整频繁，激进股东压力。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 16, "price": 133.07000732421875, "ma21": 139.8547617594401, "ma63": 137.60340396941655, "ma200": 122.89121147155761, "ma_align": "多头", "rsi": 39.22341279723296, "mfi": 37.432596916455324, "ud": 0.9440882648464155, "volx": 0.15029144650974233, "dist_52w": -8.874882944199204, "r_1m": -8.874882944199204, "r_3m": -4.370099665515381, "r_ytd": 9.132707998154688, "rs_1m": -14.051881591703031, "rs_3m": -15.77621448798705, "tier": "B", "score": 2, "narr": "价格 $133.07，距 52W 高 -8.9%。 站稳长期均线之上，趋势完整。 RSI 39 (偏弱)，MFI 37 (资金偏弱)，U/D 50d 0.94 (中性)。 3M RS vs SPY -15.8pt，跑输大盘；综合定位 B 级。"}, {"ticker": "TT", "name": "Trane Technologies plc", "type": "Stock", "sector": "二阶受益", "pe": 34.98, "fwd_pe": 26.57, "pb": 11.68, "roic": 23.92, "fcf_y": 2.66, "ev_eb": 24.46, "div_y": 0.93, "mcap_b": 100.0, "eps_cagr": 18.44, "valuation_bias": "PE 35 ROIC 24% FCF Yield 2.7%，是 HVAC 里财务质量最高的，AI 数据中心定制冷却高端市场。", "mr_market_wrong": "ROIC 24% 在工业里属顶级；数据中心 + 商用 HVAC 双轮驱动；服务业务长周期现金流。", "mr_market_right": "估值已经反映高景气度；商用楼宇 capex 周期下行风险；Carrier/JCI 在中端市场压制。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 41, "price": 447.72149658203125, "ma21": 465.10531180245533, "ma63": 451.8407578241257, "ma200": 427.1973075866699, "ma_align": "多头", "rsi": 41.983607303969215, "mfi": 58.74392947596447, "ud": 0.9764629824389593, "volx": 0.1412392244326478, "dist_52w": -9.099466273875901, "r_1m": -9.099466273875901, "r_3m": 0.6665041375953917, "r_ytd": 12.764181437420042, "rs_1m": -14.276464921379729, "rs_3m": -10.739610684876276, "tier": "B", "score": 2, "narr": "价格 $447.72，距 52W 高 -9.1%。 站稳长期均线之上，趋势完整。 RSI 42 (中性偏弱)，MFI 59 (资金健康)，U/D 50d 0.98 (中性)。 3M RS vs SPY -10.7pt，跑输大盘；综合定位 B 级。"}, {"ticker": "MLM", "name": "Martin Marietta Materials, Inc.", "type": "Stock", "sector": "二阶受益", "pe": 36.1, "fwd_pe": 24.97, "pb": 3.06, "roic": 7.66, "fcf_y": 2.44, "ev_eb": 18.93, "div_y": 0.58, "mcap_b": 34.5, "eps_cagr": 9.46, "valuation_bias": "PE 36 ROIC 8% FCF Yield 2.4%，骨料/水泥龙头，AI 数据中心 + 基建法案双轮。", "mr_market_wrong": "数据中心混凝土用量爆炸 + 美国基建 + 制造业回流，骨料定价权强；地理稀缺性是真护城河。", "mr_market_right": "周期股本质，住宅建设下行直接拖累；估值已经定价高景气度。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 32, "price": 564.5, "ma21": 574.7376127697173, "ma63": 594.6785665845114, "ma200": 619.0833346557617, "ma_align": "空头", "rsi": 44.21493525767629, "mfi": 50.34450107146872, "ud": 0.8252953295258676, "volx": 0.19152573071089607, "dist_52w": -20.182825526360826, "r_1m": -8.81483623477165, "r_3m": -14.05037077568675, "r_ytd": -10.914606970796225, "rs_1m": -13.991834882275478, "rs_3m": -25.456485598158416, "tier": "D", "score": -4, "narr": "价格 $564.50，距 52W 高 -20.2%。 MA21/63 空头排列，中期承压。 RSI 44 (中性偏弱)，MFI 50 (资金健康)，U/D 50d 0.83 (中性)。 3M RS vs SPY -25.5pt，跑输大盘；综合定位 D 级。"}, {"ticker": "VMC", "name": "Vulcan Materials Company", "type": "Stock", "sector": "二阶受益", "pe": 32.79, "fwd_pe": 25.56, "pb": 4.24, "roic": 9.85, "fcf_y": 0.67, "ev_eb": 17.5, "div_y": 0.75, "mcap_b": 35.9, "eps_cagr": 23.21, "valuation_bias": "PE 33 ROIC 10% FCF Yield 0.67%，类似 MLM 但 FCF 转化更弱，地理布局偏南部。", "mr_market_wrong": "Sunbelt 数据中心建设集中地区独家骨料供给；并购 U.S. Concrete 拓宽产品线；定价权 + 周转改善空间。", "mr_market_right": "FCF Yield 0.67% 偏低；住宅周期下行 + 高利率压制；油价反弹推升运输成本。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 31, "price": 277.42498779296875, "ma21": 276.6471543085007, "ma63": 278.73981391059027, "ma200": 290.65794250488284, "ma_align": "空头", "rsi": 50.173932115480355, "mfi": 58.45172021809751, "ud": 1.516112416879076, "volx": 0.16538412734554087, "dist_52w": -15.69962132505166, "r_1m": -7.875475359345618, "r_3m": -7.165608884411013, "r_ytd": -4.8340469562146, "rs_1m": -13.052474006849446, "rs_3m": -18.57172370688268, "tier": "D", "score": -3, "narr": "价格 $277.42，距 52W 高 -15.7%。 跌破 MA200，长期趋势破位。 RSI 50 (健康偏强)，MFI 58 (资金健康)，U/D 50d 1.52 (机构吸筹)。 3M RS vs SPY -18.6pt，跑输大盘；综合定位 D 级。"}, {"ticker": "CRH", "name": "CRH plc", "type": "Stock", "sector": "二阶受益", "pe": 19.81, "fwd_pe": 15.97, "pb": 3.09, "roic": 10.51, "fcf_y": 1.1, "ev_eb": 11.87, "div_y": 1.46, "mcap_b": 71.3, "eps_cagr": -1.15, "valuation_bias": "PE 20 ROIC 11% FCF Yield 1.1%，是这组水泥/骨料里估值最便宜的，欧美双地理布局。", "mr_market_wrong": "美国基建 + 欧洲数据中心 + 北美住宅修复三重驱动；PE 20 在水泥里偏便宜；并购历史拉动 ROIC。", "mr_market_right": "欧洲建筑周期疲软；爱尔兰 → 美国上市迁移让 ESG 资金部分流失；并购整合复杂度。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 43, "price": 104.84500122070312, "ma21": 107.28929646809895, "ma63": 108.55257137238033, "ma200": 115.1547887802124, "ma_align": "空头", "rsi": 45.12070165081871, "mfi": 57.03180409730632, "ud": 1.0567214264224545, "volx": 0.13016867778862135, "dist_52w": -19.624775670426953, "r_1m": -11.141449992929331, "r_3m": -7.003987212767749, "r_ytd": -16.48452143873308, "rs_1m": -16.31844864043316, "rs_3m": -18.41010203523942, "tier": "D", "score": -4, "narr": "价格 $104.85，距 52W 高 -19.6%。 MA21/63 空头排列，中期承压。 RSI 45 (中性偏弱)，MFI 57 (资金健康)，U/D 50d 1.06 (中性)。 3M RS vs SPY -18.4pt，跑输大盘；综合定位 D 级。"}, {"ticker": "ACN", "name": "Accenture plc", "type": "Stock", "sector": "二阶受益", "pe": 14.62, "fwd_pe": 11.97, "pb": 3.51, "roic": 22.03, "fcf_y": 11.08, "ev_eb": 8.64, "div_y": 3.65, "mcap_b": 109.8, "eps_cagr": 3.74, "valuation_bias": "PE 15 ROIC 22% FCF Yield 11%，是这组里财务质量最高 + 估值最便宜的，市场担心 AI agent 颠覆咨询业务。", "mr_market_wrong": "GenAI 落地是企业级集成服务的最大机会，ACN 是 hyperscaler 首选实施伙伴；客户 capex 重新加速。", "mr_market_right": "AI agent 替代部分外包人天；订单转化为收入周期拉长；估值已经从 PE 30 降到 15 反映悲观。", "buffett_pass": true, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 83, "price": 193.77000427246094, "ma21": 176.76143028622582, "ma63": 188.2782498314267, "ma200": 230.00403610229492, "ma_align": "空头", "rsi": 63.47517800014625, "mfi": 63.597268681330824, "ud": 0.6695282428092922, "volx": 0.3265034542580057, "dist_52w": -38.80389128827121, "r_1m": 8.42705891825426, "r_3m": -6.897308896204468, "r_ytd": -24.82661280870201, "rs_1m": 3.250060270750433, "rs_3m": -18.303423718676136, "tier": "D", "score": -6, "narr": "价格 $193.77，距 52W 高 -38.8%。 跌破 MA200，长期趋势破位。 RSI 63 (健康偏强)，MFI 64 (资金健康)，U/D 50d 0.67 (机构派发)。 3M RS vs SPY -18.3pt，跑输大盘；综合定位 D 级。"}, {"ticker": "IBM", "name": "International Business Machines Corporation", "type": "Stock", "sector": "二阶受益", "pe": 23.36, "fwd_pe": 19.64, "pb": 7.53, "roic": 10.32, "fcf_y": 5.27, "ev_eb": 18.45, "div_y": 2.56, "mcap_b": 248.3, "eps_cagr": 86.23, "valuation_bias": "PE 23 ROIC 10% FCF Yield 5.3%，混合云 + Watsonx + 咨询三栖，估值已经反映稳定低增长。", "mr_market_wrong": "Watsonx + Red Hat OpenShift 让 IBM 在私有 AI 部署有差异化；HashiCorp 并购拓展 IaC 平台；咨询业务在政府/银行壁垒深。", "mr_market_right": "营收增速持续 3-5%；Watsonx ARR 仍小；咨询业务受 GenAI 替代威胁。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 52, "price": 316.61749267578125, "ma21": 239.3157944452195, "ma63": 241.40611460852244, "ma200": 267.5922792816162, "ma_align": "空头", "rsi": 83.73984700377419, "mfi": 84.06787466120653, "ud": 1.6060615647234135, "volx": 1.328296217163444, "dist_52w": 0.0, "r_1m": 38.08459718290664, "r_3m": 30.034163208201935, "r_ytd": 10.039880873906704, "rs_1m": 32.90759853540281, "rs_3m": 18.628048385730267, "tier": "B", "score": 2, "narr": "价格 $316.62，距 52W 高 +0.0%。 站稳长期均线之上，趋势完整。 RSI 84 (极度超买，警惕回踩)，MFI 84 (资金极度超买)，U/D 50d 1.61 (机构吸筹)。 3M RS vs SPY +18.6pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "INFY", "name": "Infosys Limited", "type": "Stock", "sector": "二阶受益", "pe": 15.88, "fwd_pe": 14.59, "pb": 10.5, "roic": 34.24, "fcf_y": 6.17, "ev_eb": 11.0, "div_y": 4.07, "mcap_b": 51.4, "eps_cagr": 3.58, "valuation_bias": "PE 16 ROIC 34% FCF Yield 6.2%，印度 IT 服务里财务质量最高，ROIC 34% 接近软件公司水平。", "mr_market_wrong": "GenAI 工具内化让 INFY 人均产出上升 + 项目利润率改善；估值便宜 + 派息稳定；金融客户 capex 回暖。", "mr_market_right": "美国 H1-B 政策 + AI agent 替代是双重压制；客户 IT 预算放缓；INR/USD 汇率影响利润。", "buffett_pass": true, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 61, "price": 12.845000267028809, "ma21": 12.438809531075615, "ma63": 13.16182537684365, "ma200": 15.761781387329101, "ma_align": "空头", "rsi": 52.72060219548336, "mfi": 57.10377231978481, "ud": 1.2563200497064746, "volx": 0.1466904403546411, "dist_52w": -36.473784850500934, "r_1m": 3.0898894679224354, "r_3m": -9.669479424611138, "r_ytd": -29.22864717906284, "rs_1m": -2.0871091795813923, "rs_3m": -21.075594247082805, "tier": "D", "score": -4, "narr": "价格 $12.85，距 52W 高 -36.5%。 跌破 MA200，长期趋势破位。 RSI 53 (健康偏强)，MFI 57 (资金健康)，U/D 50d 1.26 (机构吸筹)。 3M RS vs SPY -21.1pt，跑输大盘；综合定位 D 级。"}, {"ticker": "CTSH", "name": "Cognizant Technology Solutions Corporation", "type": "Stock", "sector": "二阶受益", "pe": 11.68, "fwd_pe": 8.74, "pb": 1.69, "roic": 14.4, "fcf_y": 7.49, "ev_eb": 6.45, "div_y": 2.45, "mcap_b": 25.5, "eps_cagr": -0.88, "valuation_bias": "PE 12 ROIC 14% FCF Yield 7.5%，是这组 IT 服务里 PE 最便宜的，但增长长期掉队。", "mr_market_wrong": "PE 12 + FCF Yield 7.5% 让股价具备 mean reversion 弹性；新 CEO 转型计划开始见效；医疗/保险垂直行业壁垒。", "mr_market_right": "营收增速持续 0-3%，长期掉队 ACN/INFY；员工流失率高于同业；AI agent 替代风险最大。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": true, "graham_index": 72, "price": 55.72999954223633, "ma21": 51.065155392601376, "ma63": 57.054987105112225, "ma200": 68.06189390182494, "ma_align": "空头", "rsi": 59.59203221671854, "mfi": 70.63599802382532, "ud": 1.02932616028407, "volx": 0.2458389141002672, "dist_52w": -34.93822302380434, "r_1m": 6.092567644947078, "r_3m": -12.771258986089705, "r_ytd": -30.599706784849612, "rs_1m": 0.9155689974432502, "rs_3m": -24.177373808561374, "tier": "D", "score": -5, "narr": "价格 $55.73，距 52W 高 -34.9%。 跌破 MA200，长期趋势破位。 RSI 60 (健康偏强)，MFI 71 (资金超买)，U/D 50d 1.03 (中性)。 3M RS vs SPY -24.2pt，跑输大盘；综合定位 D 级。"}, {"ticker": "NYT", "name": "The New York Times Company", "type": "Stock", "sector": "二阶受益", "pe": 32.19, "fwd_pe": 23.5, "pb": 6.03, "roic": 16.89, "fcf_y": 3.27, "ev_eb": 21.21, "div_y": 1.23, "mcap_b": 12.1, "eps_cagr": 25.53, "valuation_bias": "PE 32 ROIC 17% FCF Yield 3.3%，订阅增长稳定 + 与 OpenAI 法律诉讼提供期权价值。", "mr_market_wrong": "起诉 OpenAI 树立内容授权先例，未来 AI 数据授权收入是新利润源；订阅 ARPU + 游戏/烹饪交叉销售。", "mr_market_right": "诉讼结果不确定，授权金额可能远低于市场预期；订阅渗透率接近饱和；编辑成本上升压制利润。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 35, "price": 74.44000244140625, "ma21": 76.65238226027716, "ma63": 79.67046901157924, "ma200": 68.94495388031005, "ma_align": "混合", "rsi": 40.24335068777053, "mfi": 47.968906260619534, "ud": 0.8789987119114661, "volx": 0.06970646392119657, "dist_52w": -13.3007198785979, "r_1m": -5.80791649852973, "r_3m": -8.3097388551977, "r_ytd": 7.185892987458797, "rs_1m": -10.984915146033558, "rs_3m": -19.71585367766937, "tier": "C", "score": 1, "narr": "价格 $74.44，距 52W 高 -13.3%。 MA21/63 空头排列，中期承压。 RSI 40 (中性偏弱)，MFI 48 (资金偏弱)，U/D 50d 0.88 (中性)。 3M RS vs SPY -19.7pt，跑输大盘；综合定位 C 级。"}, {"ticker": "RELX", "name": "RELX PLC", "type": "Stock", "sector": "二阶受益", "pe": 21.92, "fwd_pe": 15.15, "pb": 75.49, "roic": 23.95, "fcf_y": 3.69, "ev_eb": 21.03, "div_y": 2.78, "mcap_b": 58.4, "eps_cagr": 8.12, "valuation_bias": "PE 22 ROIC 24% FCF Yield 3.7%，法律/科研/医疗专有数据库，是 AI 时代最隐蔽的护城河。", "mr_market_wrong": "Lexis+ AI + ScienceDirect AI 让 RELX 在垂直 AI 搜索独家护城河；高 ROIC + 高现金流稳定增长。", "mr_market_right": "估值已经定价稳定增长；Perplexity/Springer Nature 在科研搜索抢份额；汇率与监管。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 43, "price": 33.76499938964844, "ma21": 33.49246461050851, "ma63": 33.76652738783095, "ma200": 38.6813938331604, "ma_align": "空头", "rsi": 51.819850381655414, "mfi": 39.07167270709173, "ud": 0.8364558946543279, "volx": 0.4224359992816581, "dist_52w": -36.57564342857994, "r_1m": -5.913889228447067, "r_3m": -1.4707764906408682, "r_ytd": -13.50223571412098, "rs_1m": -11.090887875950894, "rs_3m": -12.876891313112537, "tier": "D", "score": -5, "narr": "价格 $33.76，距 52W 高 -36.6%。 跌破 MA200，长期趋势破位。 RSI 52 (健康偏强)，MFI 39 (资金偏弱)，U/D 50d 0.84 (中性)。 3M RS vs SPY -12.9pt，跑输大盘；综合定位 D 级。"}, {"ticker": "TRI", "name": "Thomson Reuters Corporation", "type": "Stock", "sector": "二阶受益", "pe": 24.35, "fwd_pe": 16.7, "pb": 3.18, "roic": 11.88, "fcf_y": 4.55, "ev_eb": 18.02, "div_y": 3.1, "mcap_b": 36.9, "eps_cagr": 3.93, "valuation_bias": "PE 24 ROIC 12% FCF Yield 4.5%，法律 + 税务 + 新闻三栖数据公司，CoCounsel AI 是 LegalTech 重要叙事。", "mr_market_wrong": "CoCounsel + Westlaw Precision AI 让法律工作流深度集成 LLM；Casetext 并购完成，已有真实付费客户。", "mr_market_right": "LegalTech 竞品（Harvey、Spellbook）速度更快；汤森路透传统新闻业务利润率低；并购整合执行。", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": 42, "price": 89.33000183105469, "ma21": 87.34221612839471, "ma63": 90.27047232976035, "ma200": 120.53526077270507, "ma_align": "空头", "rsi": 53.72024988535195, "mfi": 46.90304957128673, "ud": 0.6549086929153316, "volx": 0.16692564265537643, "dist_52w": -56.67343787859569, "r_1m": -4.488399846968205, "r_3m": -13.336761277075082, "r_ytd": -27.12152265827329, "rs_1m": -9.665398494472033, "rs_3m": -24.74287609954675, "tier": "D", "score": -6, "narr": "价格 $89.33，距 52W 高 -56.7%。 跌破 MA200，长期趋势破位。 RSI 54 (健康偏强)，MFI 47 (资金偏弱)，U/D 50d 0.65 (机构派发)。 3M RS vs SPY -24.7pt，跑输大盘；综合定位 D 级。"}, {"ticker": "SMH", "name": "VanEck Semiconductor", "type": "ETF", "sector": "半导体ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 603.780029296875, "ma21": 563.788575671968, "ma63": 469.19095333038814, "ma200": 389.80169723510744, "ma_align": "多头", "rsi": 71.97430485411238, "mfi": 44.92530996840898, "ud": 1.764319610600222, "volx": 0.19668199566666275, "dist_52w": 0.0, "r_1m": 19.154568172235443, "r_3m": 54.39575335403841, "r_ytd": 61.741240032327546, "rs_1m": 13.977569524731615, "rs_3m": 42.98963853156674, "tier": "A", "score": 5, "narr": "价格 $603.78，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 72 (超买)，MFI 45 (资金偏弱)，U/D 50d 1.76 (机构吸筹)。 3M RS vs SPY +43.0pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "SOXX", "name": "iShares Semiconductor", "type": "ETF", "sector": "半导体ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 568.280029296875, "ma21": 521.9771437872024, "ma63": 420.3246789357019, "ma200": 337.4815409088135, "ma_align": "多头", "rsi": 72.35363005378456, "mfi": 54.96241109833392, "ud": 1.926796247833001, "volx": 0.2894550953252712, "dist_52w": -0.3174932858547641, "r_1m": 23.153611800059593, "r_3m": 69.8518796820342, "r_ytd": 81.27136434411129, "rs_1m": 17.976613152555764, "rs_3m": 58.44576485956253, "tier": "A", "score": 5, "narr": "价格 $568.28，距 52W 高 -0.3%。 MA21/63/200 完美多头排列。 RSI 72 (超买)，MFI 55 (资金健康)，U/D 50d 1.93 (机构吸筹)。 3M RS vs SPY +58.4pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "SOXL", "name": "Direxion 3x半导体杠杆", "type": "ETF", "sector": "半导体ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 222.95010375976562, "ma21": 178.85857645670572, "ma63": 106.9417476351299, "ma200": 64.1007927417755, "ma_align": "多头", "rsi": 70.73309298777207, "mfi": 56.36194536077703, "ud": 2.356660990901386, "volx": 0.28380303822325204, "dist_52w": -1.257757035657614, "r_1m": 75.57890838375985, "r_3m": 317.35325983102217, "r_ytd": 371.95193869222913, "rs_1m": 70.40190973625603, "rs_3m": 305.9471450085505, "tier": "A", "score": 5, "narr": "价格 $222.95，距 52W 高 -1.3%。 MA21/63/200 完美多头排列。 RSI 71 (超买)，MFI 56 (资金健康)，U/D 50d 2.36 (机构吸筹)。 3M RS vs SPY +305.9pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "XSD", "name": "SPDR半导体等权", "type": "ETF", "sector": "半导体ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 600.0349731445312, "ma21": 563.769757952009, "ma63": 432.8320452977741, "ma200": 361.55319641113283, "ma_align": "多头", "rsi": 64.6236421856882, "mfi": 36.85516237584764, "ud": 1.6056411869560658, "volx": 0.33555028241034723, "dist_52w": -5.092293677745019, "r_1m": 22.935314726086766, "r_3m": 77.39857297604742, "r_ytd": 79.02252993163492, "rs_1m": 17.758316078582936, "rs_3m": 65.99245815357575, "tier": "A", "score": 4, "narr": "价格 $600.03，距 52W 高 -5.1%。 MA21/63/200 完美多头排列。 RSI 65 (健康偏强)，MFI 37 (资金偏弱)，U/D 50d 1.61 (机构吸筹)。 3M RS vs SPY +66.0pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "PSI", "name": "Invesco Dynamic Semis", "type": "ETF", "sector": "半导体ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 153.01499938964844, "ma21": 149.3569052559989, "ma63": 120.13274855840774, "ma200": 92.07885816574097, "ma_align": "多头", "rsi": 60.43830667392922, "mfi": 46.61987536398387, "ud": 1.8249965382694315, "volx": 0.4339451842459902, "dist_52w": -5.3300780999234965, "r_1m": 14.463650339030941, "r_3m": 60.431799985457445, "r_ytd": 84.65046517578038, "rs_1m": 9.286651691527114, "rs_3m": 49.02568516298578, "tier": "A", "score": 4, "narr": "价格 $153.01，距 52W 高 -5.3%。 MA21/63/200 完美多头排列。 RSI 60 (健康偏强)，MFI 47 (资金偏弱)，U/D 50d 1.82 (机构吸筹)。 3M RS vs SPY +49.0pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "BOTZ", "name": "Robotics & AI", "type": "ETF", "sector": "AI主题ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 40.33000183105469, "ma21": 40.07333392188663, "ma63": 37.07222260369195, "ma200": 36.44856591224671, "ma_align": "多头", "rsi": 56.94788604962073, "mfi": 51.97186689742118, "ud": 0.965374311850656, "volx": 0.3498783164950167, "dist_52w": -3.1227461054672556, "r_1m": 4.889469520966294, "r_3m": 9.295393396583563, "r_ytd": 9.861081004802298, "rs_1m": -0.2875291265375335, "rs_3m": -2.110721425888105, "tier": "B", "score": 3, "narr": "价格 $40.33，距 52W 高 -3.1%。 MA21/63/200 完美多头排列。 RSI 57 (健康偏强)，MFI 52 (资金健康)，U/D 50d 0.97 (中性)。 3M RS vs SPY -2.1pt，同步大盘；综合定位 B 级。"}, {"ticker": "AIQ", "name": "AI & Tech", "type": "ETF", "sector": "AI主题ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 68.44000244140625, "ma21": 62.153333391462056, "ma63": 54.18492059859018, "ma200": 51.24051050186157, "ma_align": "多头", "rsi": 80.287544428216, "mfi": 69.09806659262614, "ud": 1.8714548901734105, "volx": 0.5637381778324454, "dist_52w": 0.0, "r_1m": 22.476737890503863, "r_3m": 40.21716966977353, "r_ytd": 33.07408523293092, "rs_1m": 17.299739243000033, "rs_3m": 28.811054847301865, "tier": "A", "score": 4, "narr": "价格 $68.44，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 80 (极度超买，警惕回踩)，MFI 69 (资金健康)，U/D 50d 1.87 (机构吸筹)。 3M RS vs SPY +28.8pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "ROBO", "name": "Robotics", "type": "ETF", "sector": "AI主题ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 88.43000030517578, "ma21": 85.7442859468006, "ma63": 77.58920627170139, "ma200": 71.80320650100708, "ma_align": "多头", "rsi": 63.36499303216619, "mfi": 41.992565819625376, "ud": 1.4178016453557405, "volx": 0.2762148570233082, "dist_52w": -1.7335232755037233, "r_1m": 8.303733805991364, "r_3m": 18.237731277813896, "r_ytd": 25.06010670362786, "rs_1m": 3.126735158487536, "rs_3m": 6.831616455342228, "tier": "A", "score": 4, "narr": "价格 $88.43，距 52W 高 -1.7%。 MA21/63/200 完美多头排列。 RSI 63 (健康偏强)，MFI 42 (资金偏弱)，U/D 50d 1.42 (机构吸筹)。 3M RS vs SPY +6.8pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "IRBO", "name": "iShares Robotics & AI", "type": "ETF", "sector": "AI主题ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 74.66000366210938, "ma21": 67.42618942260742, "ma63": 57.088888440813335, "ma200": 50.764599838256835, "ma_align": "多头", "rsi": 72.98326932660699, "mfi": 67.59488598895007, "ud": 2.019034812695176, "volx": 1.3391797239888767, "dist_52w": 0.0, "r_1m": 23.120060048770764, "r_3m": 47.54941880145225, "r_ytd": 50.46353339224767, "rs_1m": 17.943061401266938, "rs_3m": 36.14330397898058, "tier": "A", "score": 5, "narr": "价格 $74.66，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 73 (超买)，MFI 68 (资金健康)，U/D 50d 2.02 (机构吸筹)。 3M RS vs SPY +36.1pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "CHAT", "name": "Roundhill Gen AI", "type": "ETF", "sector": "AI主题ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 100.64990234375, "ma21": 88.01428113664899, "ma63": 74.58745883759998, "ma200": 64.39699171066285, "ma_align": "多头", "rsi": 78.35121558392565, "mfi": 73.66234961627075, "ud": 2.3241935845042825, "volx": 0.6256824298585513, "dist_52w": 0.0, "r_1m": 29.05488537076519, "r_3m": 64.13878480864614, "r_ytd": 66.66650664183081, "rs_1m": 23.877886723261362, "rs_3m": 52.73266998617447, "tier": "A", "score": 5, "narr": "价格 $100.65，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 78 (超买)，MFI 74 (资金超买)，U/D 50d 2.32 (机构吸筹)。 3M RS vs SPY +52.7pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "WTAI", "name": "WisdomTree AI", "type": "ETF", "sector": "AI主题ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 44.9900016784668, "ma21": 40.84047626313709, "ma63": 34.21857149638827, "ma200": 30.567858142852785, "ma_align": "多头", "rsi": 76.2149686232185, "mfi": 75.44537384856417, "ud": 2.959146720175816, "volx": 0.6778393445966618, "dist_52w": 0.0, "r_1m": 26.447440593437356, "r_3m": 56.269538894673275, "r_ytd": 52.1474539830368, "rs_1m": 21.270441945933527, "rs_3m": 44.86342407220161, "tier": "A", "score": 5, "narr": "价格 $44.99，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 76 (超买)，MFI 75 (资金超买)，U/D 50d 2.96 (机构吸筹)。 3M RS vs SPY +44.9pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "THNQ", "name": "ROBO Global AI", "type": "ETF", "sector": "AI主题ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 90.86250305175781, "ma21": 81.02873883928571, "ma63": 69.30210361783466, "ma200": 65.53144401550293, "ma_align": "多头", "rsi": 80.53107083323064, "mfi": 79.40693259982487, "ud": 3.1020125786163524, "volx": 0.5111679303058336, "dist_52w": 0.0, "r_1m": 27.05554594807502, "r_3m": 48.95492303566855, "r_ytd": 41.11275650418036, "rs_1m": 21.878547300571192, "rs_3m": 37.54880821319688, "tier": "A", "score": 4, "narr": "价格 $90.86，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 81 (极度超买，警惕回踩)，MFI 79 (资金超买)，U/D 50d 3.10 (机构吸筹)。 3M RS vs SPY +37.5pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "DTCR", "name": "Data Center Infra", "type": "ETF", "sector": "数据中心ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 31.584999084472656, "ma21": 30.351190476190474, "ma63": 27.33579363141741, "ma200": 23.438482093811036, "ma_align": "多头", "rsi": 70.21585478119627, "mfi": 71.58406590322973, "ud": 2.0502379507051374, "volx": 0.21750973455957254, "dist_52w": -0.20537293788642774, "r_1m": 9.518026759228192, "r_3m": 26.694740063501786, "r_ytd": 43.89520722842528, "rs_1m": 4.3410281117243645, "rs_3m": 15.288625241030118, "tier": "A", "score": 5, "narr": "价格 $31.58，距 52W 高 -0.2%。 MA21/63/200 完美多头排列。 RSI 70 (超买)，MFI 72 (资金超买)，U/D 50d 2.05 (机构吸筹)。 3M RS vs SPY +15.3pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "VPN", "name": "Data Center REITs", "type": "ETF", "sector": "数据中心ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 31.59000015258789, "ma21": 30.220476241338822, "ma63": 27.236666664244638, "ma200": 23.35831217765808, "ma_align": "多头", "rsi": 70.29182657420571, "mfi": 75.5060956495606, "ud": 2.11962795235241, "volx": 0.9969609848672986, "dist_52w": -0.1895717746146608, "r_1m": 11.981570995426427, "r_3m": 24.664561808858988, "r_ytd": 43.91799113704218, "rs_1m": 6.8045723479225995, "rs_3m": 13.25844698638732, "tier": "A", "score": 5, "narr": "价格 $31.59，距 52W 高 -0.2%。 MA21/63/200 完美多头排列。 RSI 70 (超买)，MFI 76 (资金超买)，U/D 50d 2.12 (机构吸筹)。 3M RS vs SPY +13.3pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "SRVR", "name": "Pacer Data REIT", "type": "ETF", "sector": "数据中心ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 34.27009963989258, "ma21": 34.65571939377558, "ma63": 33.490640216403534, "ma200": 31.262144956588745, "ma_align": "多头", "rsi": 48.45965686711362, "mfi": 33.233853468390265, "ud": 0.8352775843799595, "volx": 0.18558976861713045, "dist_52w": -4.1127643244063705, "r_1m": -2.6970515272219053, "r_3m": 5.044956621911156, "r_ytd": 18.94477747986898, "rs_1m": -7.874050174725733, "rs_3m": -6.361158200560512, "tier": "A", "score": 4, "narr": "价格 $34.27，距 52W 高 -4.1%。 站稳长期均线之上，趋势完整。 RSI 48 (中性偏弱)，MFI 33 (资金偏弱)，U/D 50d 0.84 (中性)。 3M RS vs SPY -6.4pt，跑输大盘；综合定位 A 级。"}, {"ticker": "XLU", "name": "公用事业大盘", "type": "ETF", "sector": "电力/基建ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 43.61000061035156, "ma21": 44.99428522019159, "ma63": 45.738158816383, "ma200": 44.03663297653198, "ma_align": "混合", "rsi": 35.31863004643928, "mfi": 47.91225707964603, "ud": 1.2177034587871518, "volx": 0.36542556083660316, "dist_52w": -7.993094391643862, "r_1m": -6.915684032645664, "r_3m": -6.70300255870816, "r_ytd": 1.7019356915248585, "rs_1m": -12.09268268014949, "rs_3m": -18.10911738117983, "tier": "D", "score": -3, "narr": "价格 $43.61，距 52W 高 -8.0%。 MA21/63 空头排列，中期承压。 RSI 35 (偏弱)，MFI 48 (资金偏弱)，U/D 50d 1.22 (中性)。 3M RS vs SPY -18.1pt，跑输大盘；综合定位 D 级。"}, {"ticker": "NLR", "name": "Uranium+Nuclear", "type": "ETF", "sector": "电力/基建ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 131.08999633789062, "ma21": 135.970951625279, "ma63": 137.6907928709, "ma200": 135.592878074646, "ma_align": "混合", "rsi": 43.79216122119733, "mfi": 31.01160794531063, "ud": 0.8681362904295968, "volx": 0.22622590747609778, "dist_52w": -20.24700356994591, "r_1m": -10.193878713691518, "r_3m": -8.756178736956299, "r_ytd": -1.465722374209888, "rs_1m": -15.370877361195346, "rs_3m": -20.162293559427965, "tier": "D", "score": -3, "narr": "价格 $131.09，距 52W 高 -20.2%。 MA21/63 空头排列，中期承压。 RSI 44 (中性偏弱)，MFI 31 (资金偏弱)，U/D 50d 0.87 (中性)。 3M RS vs SPY -20.2pt，跑输大盘；综合定位 D 级。"}, {"ticker": "URA", "name": "Uranium", "type": "ETF", "sector": "电力/基建ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 49.845001220703125, "ma21": 52.187857128324964, "ma63": 51.579127175467356, "ma200": 48.49621616363525, "ma_align": "多头", "rsi": 44.34444329177474, "mfi": 40.87800498839249, "ud": 1.08173526272521, "volx": 0.284475475428013, "dist_52w": -19.35770892533605, "r_1m": -11.653663880941412, "r_3m": -4.14422842172476, "r_ytd": 8.2175417597945, "rs_1m": -16.830662528445238, "rs_3m": -15.550343244196428, "tier": "B", "score": 2, "narr": "价格 $49.85，距 52W 高 -19.4%。 站稳长期均线之上，趋势完整。 RSI 44 (中性偏弱)，MFI 41 (资金偏弱)，U/D 50d 1.08 (中性)。 3M RS vs SPY -15.6pt，跑输大盘；综合定位 B 级。"}, {"ticker": "GRID", "name": "电网现代化", "type": "ETF", "sector": "电力/基建ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 192.05999755859375, "ma21": 193.33428591773622, "ma63": 179.48922220865884, "ma200": 162.763125, "ma_align": "多头", "rsi": 53.11733385937204, "mfi": 52.40635651047581, "ud": 1.5495669623848554, "volx": 0.2946253797377396, "dist_52w": -3.8738765640354056, "r_1m": 0.5602345853997992, "r_3m": 13.53792603409012, "r_ytd": 23.33094285014119, "rs_1m": -4.6167640621040285, "rs_3m": 2.1318112116184516, "tier": "A", "score": 4, "narr": "价格 $192.06，距 52W 高 -3.9%。 站稳长期均线之上，趋势完整。 RSI 53 (健康偏强)，MFI 52 (资金健康)，U/D 50d 1.55 (机构吸筹)。 3M RS vs SPY +2.1pt，同步大盘；综合定位 A 级。"}, {"ticker": "PAVE", "name": "美国基建", "type": "ETF", "sector": "电力/基建ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 55.435001373291016, "ma21": 56.10261953444708, "ma63": 53.900555867997426, "ma200": 50.37953493118286, "ma_align": "多头", "rsi": 49.14754920361738, "mfi": 54.85335845672949, "ud": 1.0086925194115186, "volx": 0.1535623979435421, "dist_52w": -4.995710671908437, "r_1m": -2.3859826032611497, "r_3m": 2.1655051384170676, "r_ytd": 13.48004729756218, "rs_1m": -7.562981250764977, "rs_3m": -9.2406096840546, "tier": "A", "score": 4, "narr": "价格 $55.44，距 52W 高 -5.0%。 站稳长期均线之上，趋势完整。 RSI 49 (中性偏弱)，MFI 55 (资金健康)，U/D 50d 1.01 (中性)。 3M RS vs SPY -9.2pt，跑输大盘；综合定位 A 级。"}, {"ticker": "WCLD", "name": "Cloud Computing", "type": "ETF", "sector": "云软件ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 34.672000885009766, "ma21": 29.733762014479865, "ma63": 28.262650868249317, "ma200": 31.999065027236938, "ma_align": "混合", "rsi": 74.7132729591518, "mfi": 61.068355641814414, "ud": 1.8110458450496356, "volx": 0.294356610535527, "dist_52w": -5.986985138713585, "r_1m": 27.940960874368017, "r_3m": 22.602546121516575, "r_ytd": 2.4344165760364245, "rs_1m": 22.763962226864187, "rs_3m": 11.196431299044907, "tier": "B", "score": 3, "narr": "价格 $34.67，距 52W 高 -6.0%。 站稳长期均线之上，趋势完整。 RSI 75 (超买)，MFI 61 (资金健康)，U/D 50d 1.81 (机构吸筹)。 3M RS vs SPY +11.2pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "SKYY", "name": "First Trust Cloud", "type": "ETF", "sector": "云软件ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 151.0050048828125, "ma21": 131.06119028727213, "ma63": 119.05341266450428, "ma200": 125.40582508087158, "ma_align": "混合", "rsi": 83.51764858360455, "mfi": 69.97707744191703, "ud": 2.2167517075947307, "volx": 0.6893514424428924, "dist_52w": 0.0, "r_1m": 27.140699798637158, "r_3m": 37.43970247375839, "r_ytd": 18.185026884405865, "rs_1m": 21.96370115113333, "rs_3m": 26.03358765128672, "tier": "B", "score": 3, "narr": "价格 $151.01，距 52W 高 +0.0%。 站稳长期均线之上，趋势完整。 RSI 84 (极度超买，警惕回踩)，MFI 70 (资金健康)，U/D 50d 2.22 (机构吸筹)。 3M RS vs SPY +26.0pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "IGV", "name": "iShares Software", "type": "ETF", "sector": "云软件ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 104.62000274658203, "ma21": 92.2857150123233, "ma63": 86.12603202698723, "ma200": 98.81574996948243, "ma_align": "混合", "rsi": 79.06436632447239, "mfi": 68.73838821611251, "ud": 1.3087976273574307, "volx": 0.7019963426367377, "dist_52w": -11.180913546634685, "r_1m": 24.681203885853865, "r_3m": 24.36994689807348, "r_ytd": 1.9489377767207383, "rs_1m": 19.50420523835004, "rs_3m": 12.963832075601811, "tier": "B", "score": 3, "narr": "价格 $104.62，距 52W 高 -11.2%。 站稳长期均线之上，趋势完整。 RSI 79 (超买)，MFI 69 (资金健康)，U/D 50d 1.31 (机构吸筹)。 3M RS vs SPY +13.0pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "CLOU", "name": "Global X Cloud", "type": "ETF", "sector": "云软件ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 25.489999771118164, "ma21": 22.579523813156854, "ma63": 20.550952275594074, "ma200": 21.765955018997193, "ma_align": "混合", "rsi": 76.1267476361866, "mfi": 61.820003425592546, "ud": 1.5582802101576183, "volx": 0.8401681859268129, "dist_52w": 0.0, "r_1m": 27.641465435966705, "r_3m": 32.9681777238993, "r_ytd": 15.391578067200484, "rs_1m": 22.46446678846288, "rs_3m": 21.562062901427634, "tier": "A", "score": 4, "narr": "价格 $25.49，距 52W 高 +0.0%。 站稳长期均线之上，趋势完整。 RSI 76 (超买)，MFI 62 (资金健康)，U/D 50d 1.56 (机构吸筹)。 3M RS vs SPY +21.6pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "HACK", "name": "Cyber Security", "type": "ETF", "sector": "安全ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 102.74500274658203, "ma21": 89.39214288620721, "ma63": 81.2173811897399, "ma200": 82.16849510192871, "ma_align": "混合", "rsi": 78.82446295397489, "mfi": 84.14795664514477, "ud": 1.879990947768625, "volx": 0.6683416046929755, "dist_52w": 0.0, "r_1m": 29.646691162879524, "r_3m": 36.538209630009334, "r_ytd": 29.581285862315454, "rs_1m": 24.469692515375698, "rs_3m": 25.132094807537666, "tier": "A", "score": 4, "narr": "价格 $102.75，距 52W 高 +0.0%。 站稳长期均线之上，趋势完整。 RSI 79 (超买)，MFI 84 (资金极度超买)，U/D 50d 1.88 (机构吸筹)。 3M RS vs SPY +25.1pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "CIBR", "name": "First Trust Cyber", "type": "ETF", "sector": "安全ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 91.95999908447266, "ma21": 78.67380995977493, "ma63": 69.49768332829551, "ma200": 71.62206165313721, "ma_align": "混合", "rsi": 83.03147537448493, "mfi": 86.09535934020623, "ud": 2.125003251418358, "volx": 0.5576569889384745, "dist_52w": 0.0, "r_1m": 36.33803298025089, "r_3m": 44.140051436987115, "r_ytd": 30.333761962472682, "rs_1m": 31.161034332747057, "rs_3m": 32.73393661451544, "tier": "B", "score": 3, "narr": "价格 $91.96，距 52W 高 +0.0%。 站稳长期均线之上，趋势完整。 RSI 83 (极度超买，警惕回踩)，MFI 86 (资金极度超买)，U/D 50d 2.13 (机构吸筹)。 3M RS vs SPY +32.7pt，跑赢大盘；综合定位 B 级。"}, {"ticker": "QQQ", "name": "Nasdaq 100", "type": "ETF", "sector": "大科技ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 738.9500122070312, "ma21": 710.4638119652158, "ma63": 644.5825476267981, "ma200": 617.6280947875977, "ma_align": "多头", "rsi": 77.38581569813871, "mfi": 61.559009272544415, "ud": 1.781746807423945, "volx": 0.24821049753629362, "dist_52w": 0.0, "r_1m": 10.664333874576194, "r_3m": 22.98974743177864, "r_ytd": 20.674866646173683, "rs_1m": 5.487335227072366, "rs_3m": 11.58363260930697, "tier": "A", "score": 5, "narr": "价格 $738.95，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 77 (超买)，MFI 62 (资金健康)，U/D 50d 1.78 (机构吸筹)。 3M RS vs SPY +11.6pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "QQQM", "name": "QQQ低费率", "type": "ETF", "sector": "大科技ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 304.2200012207031, "ma21": 292.5076192220052, "ma63": 265.3830350845579, "ma200": 254.26132293701173, "ma_align": "多头", "rsi": 77.45489229524856, "mfi": 63.21394796572453, "ud": 1.7647224093292273, "volx": 0.31358167896926614, "dist_52w": 0.0, "r_1m": 10.665699518079808, "r_3m": 22.976324603737464, "r_ytd": 20.676977257914398, "rs_1m": 5.488700870575981, "rs_3m": 11.570209781265795, "tier": "A", "score": 5, "narr": "价格 $304.22，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 77 (超买)，MFI 63 (资金健康)，U/D 50d 1.76 (机构吸筹)。 3M RS vs SPY +11.6pt，跑赢大盘；综合定位 A 级。"}, {"ticker": "MAGS", "name": "Mag7等权", "type": "ETF", "sector": "大科技ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 70.15499877929688, "ma21": 69.3250002179827, "ma63": 64.2178573002891, "ma200": 63.971774921417236, "ma_align": "多头", "rsi": 61.809013940527336, "mfi": 61.39562471845197, "ud": 1.421913231290709, "volx": 0.9287587887688894, "dist_52w": -1.1065740556715609, "r_1m": 5.910327659700432, "r_3m": 14.46401979335532, "r_ytd": 7.35271678250855, "rs_1m": 0.7333290121966041, "rs_3m": 3.0579049708836514, "tier": "A", "score": 4, "narr": "价格 $70.15，距 52W 高 -1.1%。 MA21/63/200 完美多头排列。 RSI 62 (健康偏强)，MFI 61 (资金健康)，U/D 50d 1.42 (机构吸筹)。 3M RS vs SPY +3.1pt，同步大盘；综合定位 A 级。"}, {"ticker": "XLK", "name": "SPDR Tech", "type": "ETF", "sector": "大科技ETF", "pe": null, "fwd_pe": null, "pb": null, "roic": null, "fcf_y": null, "ev_eb": null, "div_y": null, "mcap_b": null, "eps_cagr": null, "valuation_bias": "", "mr_market_wrong": "", "mr_market_right": "", "buffett_pass": false, "graham_a_pass": false, "graham_b_pass": false, "graham_index": null, "price": 193.74000549316406, "ma21": 176.92333475748697, "ma63": 154.4000258672805, "ma200": 145.4350493621826, "ma_align": "多头", "rsi": 81.34609894716309, "mfi": 57.71032094824604, "ud": 2.0798177249874614, "volx": 0.6600741494997995, "dist_52w": 0.0, "r_1m": 21.46708808348845, "r_3m": 41.07700991443344, "r_ytd": 34.42889599592425, "rs_1m": 16.29008943598462, "rs_3m": 29.67089509196177, "tier": "A", "score": 4, "narr": "价格 $193.74，距 52W 高 +0.0%。 MA21/63/200 完美多头排列。 RSI 81 (极度超买，警惕回踩)，MFI 58 (资金健康)，U/D 50d 2.08 (机构吸筹)。 3M RS vs SPY +29.7pt，跑赢大盘；综合定位 A 级。"}];
+
+// ============ Tabs ============
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-body').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tab-'+t.dataset.tab).classList.add('active');
+  });
+});
+
+// ============ Helpers ============
+function fmtNum(v, suf='', dec=1) {
+  if (v === null || v === undefined || (typeof v==='number' && isNaN(v))) return '<span class="muted">—</span>';
+  return v.toFixed(dec) + suf;
+}
+function fmtPct(v) {
+  if (v === null || v === undefined || isNaN(v)) return '<span class="muted">—</span>';
+  const cls = v >= 10 ? 'color:#0a7a0a;font-weight:600' :
+              v >= 0  ? 'color:#3b7d3b' :
+              v >= -10 ? 'color:#a85a00' : 'color:#c0392b;font-weight:600';
+  return `<span style="${cls}">${v >= 0 ? '+' : ''}${v.toFixed(1)}%</span>`;
+}
+function fmtRSI(v) {
+  if (v === null || v === undefined || isNaN(v)) return '<span class="muted">—</span>';
+  if (v >= 80) return `<span class="rsi-extreme-high">${v.toFixed(0)}</span>`;
+  if (v >= 70) return `<span class="rsi-high">${v.toFixed(0)}</span>`;
+  if (v <= 20) return `<span class="rsi-extreme-low">${v.toFixed(0)}</span>`;
+  if (v <= 30) return `<span class="rsi-low">${v.toFixed(0)}</span>`;
+  return v.toFixed(0);
+}
+function fmtUD(v) {
+  if (v === null || v === undefined || isNaN(v)) return '<span class="muted">—</span>';
+  const cls = v >= 1.25 ? 'color:#0a7a0a;font-weight:600' :
+              v <= 0.75 ? 'color:#c0392b;font-weight:600' : '';
+  return `<span style="${cls}">${v.toFixed(2)}</span>`;
+}
+function fmtPrice(v) {
+  if (v === null || v === undefined || isNaN(v)) return '<span class="muted">—</span>';
+  return '$' + v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function tierPill(t) {
+  return t ? `<span class="tier-pill tier-${t}">${t}</span>` : '';
+}
+
+// ============ Sector filter populate ============
+const sectors = [...new Set(DATA.map(r=>r.sector))];
+const fSec = document.getElementById('f-sector');
+sectors.forEach(s=>{
+  const o = document.createElement('option');
+  o.value = s; o.textContent = s;
+  fSec.appendChild(o);
+});
+
+// ============ Main table ============
+const COLS = [
+  {key:'ticker', label:'Ticker', fmt:(v,r)=>`<span class="${r.type==='ETF'?'tk-etf':'tk'}">${v}</span>`},
+  {key:'name', label:'名称'},
+  {key:'type', label:'类型', fmt:(v)=>`<span class="tag-type tag-${v}">${v}</span>`},
+  {key:'sector', label:'赛道'},
+  {key:'tier', label:'Tier', fmt:tierPill, right:true},
+  {key:'buffett_pass', label:'Buffett', fmt:(v)=>v?'<span class="pass-pill pass-buffett">✓</span>':'<span class="muted">·</span>', right:true},
+  {key:'graham_a_pass', label:'Graham', fmt:(v)=>v?'<span class="pass-pill pass-graham">✓</span>':'<span class="muted">·</span>', right:true},
+  {key:'graham_index', label:'GI', fmt:(v)=>v===null||v===undefined?'<span class="muted">—</span>':v.toFixed(0), right:true},
+  {key:'price', label:'Price', fmt:fmtPrice, right:true},
+  {key:'r_ytd', label:'YTD', fmt:fmtPct, right:true},
+  {key:'r_1m', label:'1M', fmt:fmtPct, right:true},
+  {key:'r_3m', label:'3M', fmt:fmtPct, right:true},
+  {key:'rs_3m', label:'3M RS', fmt:(v)=>fmtPct(v).replace('%','pt'), right:true},
+  {key:'dist_52w', label:'距52W高', fmt:fmtPct, right:true},
+  {key:'rsi', label:'RSI', fmt:fmtRSI, right:true},
+  {key:'mfi', label:'MFI', fmt:fmtRSI, right:true},
+  {key:'ud', label:'U/D 50d', fmt:fmtUD, right:true},
+  {key:'volx', label:'Vol×', fmt:(v)=>fmtNum(v,'',2), right:true},
+  {key:'ma_align', label:'MA排列', right:true},
+  {key:'pe', label:'PE', fmt:(v)=>fmtNum(v,'',1), right:true},
+  {key:'fwd_pe', label:'fwd PE', fmt:(v)=>fmtNum(v,'',1), right:true},
+  {key:'pb', label:'PB', fmt:(v)=>fmtNum(v,'',1), right:true},
+  {key:'roic', label:'ROIC%', fmt:(v)=>fmtNum(v,'%',1), right:true},
+  {key:'fcf_y', label:'FCF Y%', fmt:(v)=>fmtNum(v,'%',1), right:true},
+  {key:'ev_eb', label:'EV/EB', fmt:(v)=>fmtNum(v,'',1), right:true},
+  {key:'mcap_b', label:'市值 B', fmt:(v)=>v?'$'+v.toLocaleString('en-US',{maximumFractionDigits:0}):'<span class="muted">—</span>', right:true},
+];
+
+const thead = document.getElementById('thead-row');
+COLS.forEach((c,i)=>{
+  const th = document.createElement('th');
+  th.textContent = c.label;
+  if (c.right) th.classList.add('right');
+  th.dataset.col = i;
+  th.addEventListener('click', ()=>sortBy(i));
+  thead.appendChild(th);
+});
+
+let sortState = {col: 4, dir: 'asc'};
+let currentRows = [...DATA];
+
+function applyFilters() {
+  const ty = document.getElementById('f-type').value;
+  const se = document.getElementById('f-sector').value;
+  const ti = document.getElementById('f-tier').value;
+  const rs = document.getElementById('f-rsi').value;
+  const sr = document.getElementById('f-search').value.toLowerCase();
+  currentRows = DATA.filter(r=>{
+    if (ty && r.type !== ty) return false;
+    if (se && r.sector !== se) return false;
+    if (ti && r.tier !== ti) return false;
+    if (rs) {
+      const v = r.rsi;
+      if (v === null || isNaN(v)) return false;
+      if (rs === 'extreme-high' && v < 80) return false;
+      if (rs === 'high' && !(v >= 70 && v < 80)) return false;
+      if (rs === 'mid' && !(v > 30 && v < 70)) return false;
+      if (rs === 'low' && !(v > 20 && v <= 30)) return false;
+      if (rs === 'extreme-low' && v > 20) return false;
+    }
+    if (sr && !(r.ticker.toLowerCase().includes(sr) || (r.name||'').toLowerCase().includes(sr))) return false;
+    return true;
+  });
+  sortRows();
+  render();
+  renderStats();
+}
+
+function sortBy(colIdx) {
+  if (sortState.col === colIdx) {
+    sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortState.col = colIdx;
+    sortState.dir = 'asc';
+  }
+  sortRows();
+  render();
+}
+
+function sortRows() {
+  const key = COLS[sortState.col].key;
+  const dir = sortState.dir === 'asc' ? 1 : -1;
+  currentRows.sort((a,b)=>{
+    let av = a[key], bv = b[key];
+    if (av === null || av === undefined || (typeof av==='number' && isNaN(av))) av = dir === 1 ? Infinity : -Infinity;
+    if (bv === null || bv === undefined || (typeof bv==='number' && isNaN(bv))) bv = dir === 1 ? Infinity : -Infinity;
+    if (typeof av === 'string') return av.localeCompare(bv) * dir;
+    return (av - bv) * dir;
+  });
+  document.querySelectorAll('th').forEach((th,i)=>{
+    th.classList.remove('sort-asc','sort-desc');
+    if (i === sortState.col) th.classList.add('sort-' + sortState.dir);
+  });
+}
+
+function render() {
+  const body = document.getElementById('main-body');
+  body.innerHTML = currentRows.map(r=>{
+    return '<tr>' + COLS.map(c=>{
+      const val = r[c.key];
+      const cell = c.fmt ? c.fmt(val, r) : (val === null || val === undefined ? '<span class="muted">—</span>' : val);
+      return `<td class="${c.right?'right':''}">${cell}</td>`;
+    }).join('') + '</tr>';
+  }).join('');
+}
+
+function renderStats() {
+  const n = currentRows.length;
+  const tcount = {A:0,B:0,C:0,D:0};
+  currentRows.forEach(r=>{if(r.tier) tcount[r.tier]++});
+  document.getElementById('stats').innerHTML =
+    `<b>${n}</b> 项 · ` +
+    `<span class="tier-pill tier-A">A</span>${tcount.A} ` +
+    `<span class="tier-pill tier-B">B</span>${tcount.B} ` +
+    `<span class="tier-pill tier-C">C</span>${tcount.C} ` +
+    `<span class="tier-pill tier-D">D</span>${tcount.D}`;
+}
+
+function clearFilters() {
+  ['f-type','f-sector','f-tier','f-rsi'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-search').value='';
+  applyFilters();
+}
+
+['f-type','f-sector','f-tier','f-rsi'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',applyFilters);
+});
+document.getElementById('f-search').addEventListener('input',applyFilters);
+
+// ============ Analysis tab ============
+const sectorOrder = ['基础设施','电力&DC','云&模型','数据/应用/安全','二阶受益',
+                     '半导体ETF','AI主题ETF','数据中心ETF','电力/基建ETF','云软件ETF','安全ETF','大科技ETF'];
+
+const fASec = document.getElementById('a-sector');
+sectorOrder.forEach(s=>{
+  if (DATA.some(r=>r.sector===s)) {
+    const o = document.createElement('option');
+    o.value = s; o.textContent = s;
+    fASec.appendChild(o);
+  }
+});
+
+function renderAnalysis() {
+  const ty = document.getElementById('a-type').value;
+  const se = document.getElementById('a-sector').value;
+  const ti = document.getElementById('a-tier').value;
+  const ps = document.getElementById('a-pass').value;
+  const narrContainer = document.getElementById('narr-container');
+  narrContainer.innerHTML = '';
+
+  const filtered = DATA.filter(r=>{
+    if (ty && r.type !== ty) return false;
+    if (se && r.sector !== se) return false;
+    if (ti && r.tier !== ti) return false;
+    if (ps === 'buffett' && !r.buffett_pass) return false;
+    if (ps === 'graham' && !r.graham_a_pass) return false;
+    return true;
+  });
+
+  const grouped = {};
+  filtered.forEach(r=>{
+    if (!grouped[r.sector]) grouped[r.sector] = [];
+    grouped[r.sector].push(r);
+  });
+
+  sectorOrder.forEach(sec=>{
+    if (!grouped[sec]) return;
+    const rows = grouped[sec].sort((a,b)=>{
+      const order = {A:0,B:1,C:2,D:3};
+      return (order[a.tier]||9) - (order[b.tier]||9) || (b.graham_index||0) - (a.graham_index||0);
+    });
+    const counts = {A:0,B:0,C:0,D:0};
+    rows.forEach(r=>{if(r.tier) counts[r.tier]++});
+    let html = `<div class="group-header">${sec} (${rows.length}) ` +
+      `<span class="tier-pill tier-A">A ${counts.A}</span>` +
+      `<span class="tier-pill tier-B">B ${counts.B}</span>` +
+      `<span class="tier-pill tier-C">C ${counts.C}</span>` +
+      `<span class="tier-pill tier-D">D ${counts.D}</span></div>`;
+    rows.forEach(r=>{
+      const passTags = (r.buffett_pass?'<span class="pass-pill pass-buffett">Buffett ✓</span>':'') +
+                       (r.graham_a_pass?'<span class="pass-pill pass-graham">Graham ✓</span>':'');
+      const metaParts = [
+        r.type, r.sector,
+        r.pe?`PE ${r.pe.toFixed(1)}`:null,
+        r.roic!==null&&r.roic!==undefined?`ROIC ${r.roic.toFixed(1)}%`:null,
+        r.fcf_y!==null&&r.fcf_y!==undefined?`FCF Y ${r.fcf_y.toFixed(1)}%`:null,
+        r.graham_index!==null?`GI ${r.graham_index.toFixed(0)}`:null,
+      ].filter(x=>x).join(' · ');
+
+      html += `<div class="narr-card narr-${r.tier}">
+        <h3>${r.ticker} · ${r.name} ${tierPill(r.tier)} ${passTags}</h3>
+        <div class="meta">${metaParts}</div>`;
+
+      // Deep analysis FIRST (main content)
+      if (r.valuation_bias) {
+        html += `<div class="deep-analysis"><span class="label">📊 估值偏差：</span>${r.valuation_bias}</div>`;
+      }
+      if (r.mr_market_wrong) {
+        html += `<div class="bull-case"><span class="label">🐂 Bull case：</span>${r.mr_market_wrong}</div>`;
+      }
+      if (r.mr_market_right) {
+        html += `<div class="bear-case"><span class="label">🐻 Bear case：</span>${r.mr_market_right}</div>`;
+      }
+      // Technical readout as supporting context
+      html += `<div class="tech-readout"><b>📈 技术读数：</b>${r.narr}</div>`;
+      html += '</div>';
+    });
+    narrContainer.innerHTML += html;
+  });
+
+  if (filtered.length === 0) {
+    narrContainer.innerHTML = '<p style="color:#888;padding:20px;text-align:center;">无匹配项。</p>';
+  }
+}
+['a-type','a-sector','a-tier','a-pass'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', renderAnalysis);
+});
+renderAnalysis();
+
+// ============ Scatter plots (Plotly) ============
+const stocksOnly = DATA.filter(r=>r.type==='Stock' && r.roic!==null && r.fcf_y!==null);
+const tierColors = {A:'#27ae60',B:'#3498db',C:'#95a5a6',D:'#c0392b'};
+
+// Buffett scatter: ROIC vs FCF Yield
+function buildBuffettScatter() {
+  const traces = ['A','B','C','D'].map(tier=>{
+    const pts = stocksOnly.filter(r=>r.tier===tier);
+    return {
+      x: pts.map(r=>Math.min(Math.max(r.fcf_y, -15), 20)),
+      y: pts.map(r=>Math.min(Math.max(r.roic, -25), 80)),
+      text: pts.map(r=>`<b>${r.ticker}</b> · ${r.name}<br>` +
+        `ROIC ${r.roic.toFixed(1)}% · FCF Y ${r.fcf_y.toFixed(1)}% · PE ${r.pe?r.pe.toFixed(1):'—'}<br>` +
+        `Tier ${r.tier} · GI ${r.graham_index||0}<br>` +
+        `<br><i>${(r.valuation_bias||'').substring(0,140)}${(r.valuation_bias||'').length>140?'...':''}</i>`),
+      mode: 'markers+text',
+      type: 'scatter',
+      name: 'Tier ' + tier,
+      marker: {
+        size: pts.map(r=>Math.max(Math.min(Math.log10((r.mcap_b||1)+1)*8, 30), 8)),
+        color: tierColors[tier],
+        opacity: 0.75,
+        line: {color:'#fff', width:1.5}
+      },
+      textposition: 'top center',
+      textfont: {size: 9, color:'#222'},
+      hovertemplate: '%{text}<extra></extra>',
+      cliponaxis: false,
+    };
+  });
+  // labels above marker
+  traces.forEach(tr=>{
+    tr.textTemplate = '';
+    const tickers = stocksOnly.filter(r=>r.tier===tr.name.split(' ')[1]);
+    tr.text = tickers.map(r=>`<b>${r.ticker}</b> · ${r.name}<br>` +
+      `ROIC ${r.roic.toFixed(1)}% · FCF Y ${r.fcf_y.toFixed(1)}% · PE ${r.pe?r.pe.toFixed(1):'—'}<br>` +
+      `Tier ${r.tier} · GI ${r.graham_index||0}<br>` +
+      `<br><i>${(r.valuation_bias||'').substring(0,140)}${(r.valuation_bias||'').length>140?'...':''}</i>`);
+    tr.hovertext = tr.text;
+    tr.text = tickers.map(r=>r.ticker);
+  });
+  const layout = {
+    xaxis: {
+      title: 'FCF Yield % (clip -15 to 20)',
+      zeroline: true, zerolinecolor: '#aaa',
+      gridcolor:'#eee',
+    },
+    yaxis: {
+      title: 'ROIC % (clip -25 to 80)',
+      zeroline: true, zerolinecolor: '#aaa',
+      gridcolor:'#eee',
+    },
+    shapes: [
+      {type:'line', x0:5, x1:5, y0:-25, y1:80, line:{color:'#f39c12', width:1.5, dash:'dash'}},
+      {type:'line', x0:-15, x1:20, y0:15, y1:15, line:{color:'#f39c12', width:1.5, dash:'dash'}},
+    ],
+    annotations: [
+      {x:18, y:75, text:'<b>优等生</b><br>(Buffett 三件套)', showarrow:false, font:{color:'#16a34a',size:11}, bgcolor:'rgba(255,255,255,0.7)'},
+      {x:-13, y:75, text:'<b>高质量但贵</b>', showarrow:false, font:{color:'#0c4a6e',size:11}, bgcolor:'rgba(255,255,255,0.7)'},
+      {x:18, y:-20, text:'<b>价值陷阱</b>', showarrow:false, font:{color:'#a85a00',size:11}, bgcolor:'rgba(255,255,255,0.7)'},
+      {x:-13, y:-20, text:'<b>双低规避</b>', showarrow:false, font:{color:'#c0392b',size:11}, bgcolor:'rgba(255,255,255,0.7)'},
+    ],
+    margin: {l:60,r:30,t:20,b:50},
+    hovermode:'closest',
+    showlegend: true,
+    legend: {x:0.01, y:0.99, bgcolor:'rgba(255,255,255,0.8)'},
+    paper_bgcolor:'#fff', plot_bgcolor:'#fafafa',
+  };
+  Plotly.newPlot('scatter-buffett', traces, layout, {responsive:true, displaylogo:false});
+}
+
+// Graham scatter: PE vs PB
+function buildGrahamScatter() {
+  const pts_all = DATA.filter(r=>r.type==='Stock' && r.pe!==null && r.pb!==null && r.pe>0 && r.pb>0);
+  const traces = ['A','B','C','D'].map(tier=>{
+    const pts = pts_all.filter(r=>r.tier===tier);
+    return {
+      x: pts.map(r=>Math.min(r.pe, 200)),
+      y: pts.map(r=>Math.min(r.pb, 100)),
+      text: pts.map(r=>r.ticker),
+      hovertext: pts.map(r=>`<b>${r.ticker}</b> · ${r.name}<br>` +
+        `PE ${r.pe.toFixed(1)} · PB ${r.pb.toFixed(1)} · PE×PB ${(r.pe*r.pb).toFixed(0)}<br>` +
+        `Tier ${r.tier} · GI ${r.graham_index||0}<br>` +
+        `<br><i>${(r.valuation_bias||'').substring(0,140)}${(r.valuation_bias||'').length>140?'...':''}</i>`),
+      mode: 'markers+text',
+      type: 'scatter',
+      name: 'Tier ' + tier,
+      marker: {
+        size: pts.map(r=>Math.max(Math.min(Math.log10((r.mcap_b||1)+1)*8, 30), 8)),
+        color: tierColors[tier],
+        opacity: 0.75,
+        line: {color:'#fff', width:1.5}
+      },
+      textposition: 'top center',
+      textfont: {size: 9, color:'#222'},
+      hovertemplate: '%{hovertext}<extra></extra>',
+      cliponaxis: false,
+    };
+  });
+
+  // Graham curve PE×PB = 22.5 → PB = 22.5/PE
+  const peVals = [];
+  for (let pe=2; pe<=200; pe+=1) peVals.push(pe);
+  traces.push({
+    x: peVals,
+    y: peVals.map(pe=>22.5/pe),
+    mode:'lines',
+    type:'scatter',
+    name:'Graham PE×PB=22.5',
+    line:{color:'#16a34a', width:2.5},
+    hoverinfo:'skip',
+    showlegend: true,
+  });
+
+  const layout = {
+    xaxis: {title:'PE (TTM, log scale, clip ≤200)', type:'log', gridcolor:'#eee'},
+    yaxis: {title:'PB (log scale, clip ≤100)', type:'log', gridcolor:'#eee'},
+    margin: {l:60,r:30,t:20,b:50},
+    hovermode:'closest',
+    legend:{x:0.99, y:0.99, xanchor:'right', bgcolor:'rgba(255,255,255,0.8)'},
+    paper_bgcolor:'#fff', plot_bgcolor:'#fafafa',
+    annotations:[
+      {x:Math.log10(8), y:Math.log10(0.6), text:'<b>Graham 防御候选</b><br>(曲线左下)', showarrow:false, font:{color:'#16a34a',size:11}, bgcolor:'rgba(255,255,255,0.7)'},
+      {x:Math.log10(100), y:Math.log10(40), text:'<b>成长溢价区</b>', showarrow:false, font:{color:'#a85a00',size:11}, bgcolor:'rgba(255,255,255,0.7)'},
+    ],
+  };
+  Plotly.newPlot('scatter-graham', traces, layout, {responsive:true, displaylogo:false});
+}
+
+// Graham Index Top ranking
+function buildGITable() {
+  const ranked = DATA.filter(r=>r.type==='Stock' && r.graham_index!==null)
+    .sort((a,b)=>b.graham_index - a.graham_index)
+    .slice(0, 30);
+  const maxGI = ranked[0]?.graham_index || 100;
+  document.getElementById('gi-table').innerHTML = ranked.map((r,i)=>{
+    const passTags = (r.buffett_pass?'<span class="pass-pill pass-buffett">B</span>':'') +
+                     (r.graham_a_pass?'<span class="pass-pill pass-graham">G</span>':'');
+    return `<div class="gi-row">
+      <div class="gi-rank">${i+1}</div>
+      <div class="gi-ticker">${r.ticker} ${tierPill(r.tier)}</div>
+      <div class="gi-name">${r.name} · ${r.sector} ${passTags}</div>
+      <div class="gi-bar"><div class="gi-fill" style="width:${(r.graham_index/maxGI)*100}%;"></div></div>
+      <div class="gi-score">${r.graham_index.toFixed(0)}</div>
+    </div>`;
+  }).join('');
+}
+
+// Trigger scatter render on first switch (Plotly needs DOM visible)
+let scatterBuilt = false;
+document.querySelector('[data-tab="scatter"]').addEventListener('click', ()=>{
+  if (!scatterBuilt) {
+    setTimeout(()=>{
+      buildBuffettScatter();
+      buildGrahamScatter();
+      buildGITable();
+      scatterBuilt = true;
+    }, 50);
+  }
+});
+
+// ============ ETF Overbought/Oversold tab ============
+const etfs = DATA.filter(r=>r.type==='ETF');
+const etfOver = etfs.filter(r => r.rsi >= 70 || r.mfi >= 80);
+const etfUnder = etfs.filter(r => (r.rsi <= 40 || r.dist_52w <= -10) && !(r.rsi>=70||r.mfi>=80));
+const etfNeutral = etfs.filter(r => !etfOver.includes(r) && !etfUnder.includes(r));
+
+function etfCard(r) {
+  let signal = '';
+  if (r.rsi >= 80) signal = '<span class="signal-pill sig-sell">极度超买</span>';
+  else if (r.rsi >= 70) signal = '<span class="signal-pill sig-overbuy">超买</span>';
+  else if (r.rsi <= 20) signal = '<span class="signal-pill sig-buy">极度超卖</span>';
+  else if (r.rsi <= 30) signal = '<span class="signal-pill sig-oversell">超卖</span>';
+  if (r.mfi >= 80) signal += '<span class="signal-pill sig-sell">资金超买</span>';
+  if (r.mfi <= 20) signal += '<span class="signal-pill sig-buy">资金超卖</span>';
+  if (r.ud >= 1.5) signal += '<span class="signal-pill sig-buy">机构吸筹</span>';
+  if (r.ud <= 0.5) signal += '<span class="signal-pill sig-sell">机构派发</span>';
+  return `<div class="narr-card narr-${r.tier}">
+    <h3>${r.ticker} · ${r.name} ${tierPill(r.tier)} ${signal}</h3>
+    <div class="meta">${r.sector} · 价格 ${r.price?'$'+r.price.toFixed(2):'—'} · YTD ${r.r_ytd?(r.r_ytd>=0?'+':'')+r.r_ytd.toFixed(1):'—'}% · 距52W高 ${r.dist_52w?(r.dist_52w>=0?'+':'')+r.dist_52w.toFixed(1):'—'}%</div>
+    <p>${r.narr}</p>
+  </div>`;
+}
+
+document.getElementById('etf-overbought').innerHTML = etfOver.length
+  ? etfOver.sort((a,b)=>b.rsi-a.rsi).map(etfCard).join('')
+  : '<p style="color:#888;padding:10px;">无 ETF 在超买区。</p>';
+document.getElementById('etf-oversold').innerHTML = etfUnder.length
+  ? etfUnder.sort((a,b)=>a.rsi-b.rsi).map(etfCard).join('')
+  : '<p style="color:#888;padding:10px;">无 ETF 在超卖区。</p>';
+document.getElementById('etf-neutral').innerHTML = etfNeutral.length
+  ? etfNeutral.map(etfCard).join('')
+  : '<p style="color:#888;padding:10px;">无中性区 ETF。</p>';
+
+const etfBody = document.getElementById('etf-full-body');
+etfBody.innerHTML = etfs.sort((a,b)=>(b.rsi||0)-(a.rsi||0)).map(r=>{
+  return `<tr>
+    <td><span class="tk-etf">${r.ticker}</span></td>
+    <td>${r.name}</td>
+    <td>${r.sector}</td>
+    <td class="right">${fmtPrice(r.price)}</td>
+    <td class="right">${fmtPct(r.r_ytd)}</td>
+    <td class="right">${fmtPct(r.r_1m)}</td>
+    <td class="right">${fmtPct(r.r_3m)}</td>
+    <td class="right">${fmtPct(r.dist_52w)}</td>
+    <td class="right">${fmtRSI(r.rsi)}</td>
+    <td class="right">${fmtRSI(r.mfi)}</td>
+    <td class="right">${fmtUD(r.ud)}</td>
+    <td class="right">${fmtNum(r.volx,'',2)}</td>
+    <td class="right">${r.ma_align||'—'}</td>
+    <td class="right">${tierPill(r.tier)}</td>
+  </tr>`;
+}).join('');
+
+// initial render
+applyFilters();
+</script>
+
+</body>
+</html>
