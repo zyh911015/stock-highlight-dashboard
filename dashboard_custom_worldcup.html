@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Graham × Buffett Value Screener · 2026-06-01</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  .font-mono, td.num, th.num, .num { font-family: 'JetBrains Mono', monospace; }
+  .tab-btn.active { background-color: #0f172a; color: #fff; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .heatmap-cell {
+    width: 56px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500;
+    border-right: 1px solid #f1f5f9;
+  }
+  .h-pass { background-color: #ecfdf5; color: #047857; }
+  .h-near { background-color: #fffbeb; color: #b45309; }
+  .h-fail { background-color: #fef2f2; color: #be123c; }
+  .h-na { background-color: #f8fafc; color: #94a3b8; }
+  .compare-pill { transition: transform 0.2s ease; }
+  .compare-pill:hover { transform: translateY(-2px); }
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+  details[open] > summary .arrow { transform: rotate(90deg); }
+  .arrow { transition: transform 0.2s; }
+  table.sortable th { cursor: pointer; user-select: none; }
+  table.sortable th:hover { background-color: #f1f5f9; }
+  table.sortable th.sorted-asc::after { content: ' ▲'; color: #0f172a; }
+  table.sortable th.sorted-desc::after { content: ' ▼'; color: #0f172a; }
+  .sector-row td { background-color: #f8fafc; font-weight: 600; color: #334155; padding: 6px 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .modal-backdrop { background: rgba(15,23,42,0.5); }
+  .compare-btn.selected { background-color: #0f172a; color: #fff; border-color: #0f172a; }
+  /* Tooltip */
+  #tooltip {
+    position: fixed; z-index: 100; pointer-events: none;
+    background: #0f172a; color: #f1f5f9;
+    padding: 8px 12px; border-radius: 8px;
+    font-size: 12px; line-height: 1.5; max-width: 280px;
+    box-shadow: 0 8px 24px rgba(15,23,42,0.25);
+    white-space: pre-line; transition: opacity 0.12s;
+  }
+  #tooltip.hidden { display: none; }
+  [data-tt] { cursor: help; }
+  /* Insights column: wider + multi-line for full Bull/Bear visibility */
+  .insights-cell { font-size: 11px; line-height: 1.5; color: #475569; padding: 8px 12px; min-width: 460px; max-width: 640px; white-space: normal; word-break: break-word; vertical-align: top; }
+  .insights-cell .bull { color: #047857; }
+  .insights-cell .bear { color: #b45309; margin-top: 4px; }
+  .insights-cell .bull-tag, .insights-cell .bear-tag { font-weight: 600; margin-right: 3px; }
+  .insights-cell .why-fallback { color: #475569; }
+  body { background-color: #f8fafc; }
+</style>
+</head>
+<body class="text-slate-800">
+
+<!-- ============ HEADER ============ -->
+<header class="border-b border-slate-200 bg-white">
+  <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-2">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Graham × Buffett Value Screener</h1>
+      <p class="text-sm text-slate-500 mt-1">基于《聪明的投资者》框架的美股价值筛选研究面板</p>
+    </div>
+    <div class="flex items-center gap-4 text-sm">
+      <div class="px-3 py-1.5 bg-slate-100 rounded-lg font-mono text-slate-700">📅 2026-06-01</div>
+      <div class="px-3 py-1.5 bg-slate-100 rounded-lg font-mono text-slate-700">📊 17 stocks</div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ TAB NAV ============ -->
+<nav class="bg-white border-b border-slate-200 sticky top-0 z-30">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex gap-1 overflow-x-auto py-3" id="tab-nav">
+      <button class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition" data-tab="overview">📊 Overview</button>
+      <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition" data-tab="graham">📚 Graham A/B/C</button>
+      <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition" data-tab="buffett">💎 Buffett 修正</button>
+      <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition" data-tab="special">⚡ 特殊情况</button>
+      <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition" data-tab="quotes">📖 书摘</button>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-6 py-8">
+
+<!-- ============ TAB 1: OVERVIEW ============ -->
+<section id="tab-overview" class="tab-panel active">
+
+  <!-- Screening Logic Banner (collapsible) -->
+  <details class="bg-white rounded-2xl shadow-sm border border-slate-200 mb-6" id="screening-panel">
+    <summary class="p-5 flex items-center gap-3">
+      <span class="arrow text-slate-400">▶</span>
+      <h2 class="text-base font-semibold text-slate-900">📐 选股逻辑（点开查看完整规则）</h2>
+      <span id="active-scenario-tag" class="ml-auto"></span>
+    </summary>
+    <div class="px-5 pb-5 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-4">
+      <div id="active-scenario-detail" class="mb-4 p-3 bg-slate-50 rounded-lg"></div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="border border-slate-200 rounded-lg p-3">
+          <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-2">Tier 1 · Hard Knockout（一票否决）</div>
+          <ul class="text-xs space-y-1.5 list-disc list-inside text-slate-700">
+            <li>市值 &lt; $10B → 淘汰（不够"大型企业"）</li>
+            <li>PE ≤ 0（亏损）→ 淘汰</li>
+            <li>D/E &lt; 0（账面权益为负）→ 淘汰（Graham 第 9 章财务破损警告）</li>
+            <li>防御场景另需股息 &gt; 0 + 当前比率 ≥ 1.2（银行豁免）</li>
+            <li>Buffett 场景另需 ROIC ≥ 10%</li>
+          </ul>
+        </div>
+        <div class="border border-slate-200 rounded-lg p-3">
+          <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-2">Tier 2 · Combined Scoring</div>
+          <pre class="text-xs font-mono bg-slate-50 p-2 rounded overflow-x-auto">score =
+   3 × Graham A pass count
+ + 2 × Graham B pass count
+ + 5 × buffett_pass
+ − pe_pb / 500</pre>
+          <div class="text-xs text-slate-500 mt-2">Buffett 通过权重最高（质量信号最稀缺）；PE×PB 作为 tiebreak（越低越好）</div>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+        <div class="p-2 bg-emerald-50 rounded"><div class="font-semibold text-emerald-800">Graham A 防御型</div>PE&lt;15 · PB&lt;1.5 · CR&gt;2 · 10年盈利 · 20年分红</div>
+        <div class="p-2 bg-amber-50 rounded"><div class="font-semibold text-amber-800">Graham B 积极型</div>PE&lt;9 · PB&lt;1.2 · CR&gt;1.5 · 5年盈利 · 当期分红</div>
+        <div class="p-2 bg-indigo-50 rounded"><div class="font-semibold text-indigo-800">Buffett 三件套</div>ROIC&gt;15% · FCF Yield&gt;5% · EV/EBITDA&lt;15</div>
+        <div class="p-2 bg-rose-50 rounded"><div class="font-semibold text-rose-800">Tiebreak</div>PE×PB ≤ 22.5（Graham Number）</div>
+      </div>
+    </div>
+  </details>
+
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+      <div class="text-xs text-slate-500 uppercase tracking-wide">分析股票总数</div>
+      <div class="text-3xl font-bold text-slate-900 mt-2 font-mono">17</div>
+      <div class="text-xs text-slate-500 mt-1">覆盖 5 个板块</div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+      <div class="text-xs text-slate-500 uppercase tracking-wide">通过 Graham 防御型</div>
+      <div class="text-3xl font-bold text-emerald-600 mt-2 font-mono">0</div>
+      <div class="text-xs text-slate-500 mt-1">5 项硬性条件全通过</div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+      <div class="text-xs text-slate-500 uppercase tracking-wide">通过 Buffett 修正</div>
+      <div class="text-3xl font-bold text-emerald-600 mt-2 font-mono">3</div>
+      <div class="text-xs text-slate-500 mt-1">ROIC&gt;15% &amp; FCF Yield&gt;5% &amp; EV/EBITDA&lt;15</div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+      <div class="text-xs text-slate-500 uppercase tracking-wide">最便宜板块</div>
+      <div class="text-2xl font-bold text-slate-900 mt-2">科技</div>
+      <div class="text-xs text-slate-500 mt-1">按平均 PE×PB 衡量</div>
+    </div>
+  </div>
+
+  <!-- 📈 趋势上行（Intermediate Momentum，1-3 个月） -->
+  <div class="bg-gradient-to-br from-sky-50 via-white to-emerald-50 rounded-2xl shadow-sm border-2 border-sky-300 p-6 mb-8" id="trend-hero">
+    <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+      <h2 class="text-xl font-bold text-slate-900">📈 趋势上行（Intermediate Momentum, 1-3 个月）</h2>
+      <span class="text-xs text-slate-500" data-tt="进入此榜单的硬门槛（Mark Minervini 风格的 1-3 月 swing）：
+• Price > 21DMA AND Price > 63DMA（中期上涨结构）
+• 21DMA > 63DMA（'金叉'对齐）
+• 3 个月 RS（Relative Strength）相对 SPY > 0%
+• 距 52 周高点 ≤ 12%（趋势没破）
+• 近 63 日最大回撤 ≥ -20%（剔除崩盘股）
+• ROIC ≥ 10%（不追完全垃圾）
+• RSI(14) ≤ 88（避免极端超买的 blow-off top）
+
+排序权重：3m RS（capped 30）+ 1m RS + 距 52w 高的近度 + 21/63 对齐度 +
+200DMA 斜率 + ROIC 加分 − RSI > 75 之后温和扣分。
+
+⚠️ 这个维度本质是技术面 + 市场情绪，不预测公司基本面。当 SPY 进入熊市时，
+绝大多数股票会从此榜消失 — 这是设计本意，趋势走完就该收手。">价格 +相对强度 + 趋势对齐 ·  ⓘ hover 看完整规则</span>
+    </div>
+    <p class="text-sm text-slate-700 mb-4 leading-relaxed">
+      这是<strong>「现在涨得动的股票」</strong>清单 —— 跟 Compounder（"过去赚过钱"）
+      和 Combined（"估值合理"）完全正交的另一个维度。<br/>
+      ADBE / PDD / META 这类基本面好但价格在下行通道里的股票会被自动剔除；
+      MRVL / VRT / AVGO / NVDA / GOOG 这类<strong>正在跑赢大盘</strong>的票会浮上来。
+    </p>
+    <div id="trend-hero-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    <p id="trend-hero-empty" class="text-sm text-sky-700 italic hidden">⚠ 当前候选池中没有任何股票通过完整的 trend 硬门槛 — 可能 SPY 在下行（市场体制不利）或趋势暂时全部断裂。</p>
+  </div>
+
+  <!-- 🏆 真·复利机器（已验证盈利+增长） -->
+  <div class="bg-gradient-to-br from-amber-50 via-white to-emerald-50 rounded-2xl shadow-sm border-2 border-amber-300 p-6 mb-8" id="compounder-hero">
+    <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+      <h2 class="text-xl font-bold text-slate-900">🏆 真·复利机器（Track-Record-Verified）</h2>
+      <span class="text-xs text-slate-500" data-tt="进入此榜单的硬门槛：
+• 上市 ≥ 8 年（经过完整周期检验）
+• 近期年报 ≥ 90% 年份净利润为正
+• ≥ 75% 年份 FCF 为正
+• 当前 ROIC ≥ 12%、Operating Margin ≥ 12%
+• EPS CAGR ≥ 5%（实打实增长，不是震荡）
+
+排序权重：ROIC + EPS/Revenue CAGR + 利润率 + FCF + 长期纪律奖励 − 高 PE 温和扣分。
+yfinance 免费数据通常给到 4-5 年年报，因此 N 反映的是实际可拿到的窗口长度，不一定是 10 年。">三类筛选并行：综合（默认） + 成长扫描 + 复利机器（新）·  ⓘ hover 看完整规则</span>
+    </div>
+    <p class="text-sm text-slate-700 mb-4 leading-relaxed">
+      这是一份「过去赚过钱、现在还在赚钱、并且利润真的在增长」的清单。<br/>
+      与 Combined / Growth 榜不同：这里要求<strong>历史盈利记录</strong>本身合格，
+      所以会自动剔除"当期 ROIC 高但前几年大幅亏损"的潜力股（如 APP、PLTR 这类未经周期检验的 IPO 新秀）
+      和"PE 便宜但 ROIC 不到 10%"的 value trap（如 CHTR、VZ、AIG、PFE）。
+    </p>
+    <div id="compounder-hero-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    <p id="compounder-hero-empty" class="text-sm text-amber-700 italic hidden">⚠ 当前候选池中没有任何股票通过完整的复利机器硬门槛 — 可能数据集太小或质量门槛过高。</p>
+  </div>
+
+  <!-- Heatmap -->
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 overflow-x-auto">
+    <h2 class="text-lg font-semibold text-slate-900 mb-1">指标热力图</h2>
+    <p class="text-sm text-slate-500 mb-4">绿 = 通过 Graham 阈值；琥珀 = 接近；红 = 失败。N/A 为灰色。徽章：🏆 = 真·复利机器、🚀 = 仅成长扫描、★ = 综合+成长双命中、⚠ = 历史盈利不充分。</p>
+    <div id="heatmap-container"></div>
+  </div>
+
+  <!-- Sector Summary "Mr. Market 在哪里错了" -->
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+    <h2 class="text-lg font-semibold text-slate-900 mb-1">板块层级洞察</h2>
+    <p class="text-sm text-slate-500 mb-4">"市场先生现在哪里错了？" — 按板块的 crisp 总结</p>
+    <div id="sector-summary" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+  </div>
+
+</section>
+
+<!-- ============ TAB 2: GRAHAM A/B/C ============ -->
+<section id="tab-graham" class="tab-panel">
+
+  <!-- Scenario A -->
+  <details open class="bg-white rounded-2xl shadow-sm border border-slate-200 mb-4">
+    <summary class="p-6 flex items-center gap-3">
+      <span class="arrow text-slate-400">▶</span>
+      <h2 class="text-lg font-semibold text-slate-900">Scenario A · 防御型投资者</h2>
+      <span class="ml-auto text-sm text-slate-500">本金安全 + 稳健分红</span>
+    </summary>
+    <div class="px-6 pb-6">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+        <div class="bg-slate-50 rounded-lg p-3 text-center"><div class="text-xs text-slate-500">PE</div><div class="font-mono font-semibold">&lt; 15</div></div>
+        <div class="bg-slate-50 rounded-lg p-3 text-center"><div class="text-xs text-slate-500">P/B</div><div class="font-mono font-semibold">&lt; 1.5</div></div>
+        <div class="bg-slate-50 rounded-lg p-3 text-center"><div class="text-xs text-slate-500">当前比率</div><div class="font-mono font-semibold">&gt; 2.0</div></div>
+        <div class="bg-slate-50 rounded-lg p-3 text-center"><div class="text-xs text-slate-500">10年盈利</div><div class="font-mono font-semibold">连续</div></div>
+        <div class="bg-slate-50 rounded-lg p-3 text-center"><div class="text-xs text-slate-500">20年分红</div><div class="font-mono font-semibold">不间断</div></div>
+      </div>
+      <div class="overflow-x-auto"><table class="sortable w-full text-sm" id="table-graham-a"></table></div>
+    </div>
+  </details>
+
+  <!-- Scenario B -->
+  <details class="bg-white rounded-2xl shadow-sm border border-slate-200 mb-4">
+    <summary class="p-6 flex items-center gap-3">
+      <span class="arrow text-slate-400">▶</span>
+      <h2 class="text-lg font-semibold text-slate-900">Scenario B · 积极型投资者</h2>
+      <span class="ml-auto text-sm text-slate-500">廉价筹码 + 30% 安全边际</span>
+    </summary>
+    <div class="px-6 pb-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-slate-50 rounded-lg p-3 text-center"><div class="text-xs text-slate-500">PE</div><div class="font-mono font-semibold">&lt; 9</div></div>
+        <div class="bg-slate-50 rounded-lg p-3 text-center"><div class="text-xs text-slate-500">P/B</div><div class="font-mono font-semibold">&lt; 1.2</div></div>
+        <div class="bg-slate-50 rounded-lg p-3 text-center"><div class="text-xs text-slate-500">当前比率</div><div class="font-mono font-semibold">&gt; 1.5</div></div>
+        <div class="bg-slate-50 rounded-lg p-3 text-center"><div class="text-xs text-slate-500">5年盈利</div><div class="font-mono font-semibold">连续</div></div>
+      </div>
+      <div class="overflow-x-auto"><table class="sortable w-full text-sm" id="table-graham-b"></table></div>
+    </div>
+  </details>
+
+  <!-- Scenario C -->
+  <details class="bg-white rounded-2xl shadow-sm border border-slate-200">
+    <summary class="p-6 flex items-center gap-3">
+      <span class="arrow text-slate-400">▶</span>
+      <h2 class="text-lg font-semibold text-slate-900">Scenario C · 特殊情况</h2>
+      <span class="ml-auto text-sm text-slate-500">事件驱动 / Net-Net 套利</span>
+    </summary>
+    <div class="px-6 pb-6 text-sm text-slate-600">
+      <p class="mb-3">特殊情况套利的标的不来自机械化筛选，而来自事件驱动。请前往 <button class="text-indigo-600 hover:underline" onclick="document.querySelector('[data-tab=special]').click()">⚡ 特殊情况 Tab</button> 查看 7 大方法论与 IAR 计算器。</p>
+      <p class="text-xs text-slate-500">Net-Net 标准：股价 &lt; 2/3 NCAV。本次 24 只大盘股中无符合者。</p>
+    </div>
+  </details>
+
+</section>
+
+<!-- ============ TAB 3: BUFFETT ============ -->
+<section id="tab-buffett" class="tab-panel">
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <h2 class="text-lg font-semibold text-slate-900 mb-1">质价坐标系</h2>
+      <p class="text-sm text-slate-500 mb-2" data-tt="坐标系阅读：
+• 右上象限 = 优质生意 + 合理价格（Buffett 最爱）
+• 左上象限 = 优质生意但价格贵（如 MSFT FCF 2.4% / ROIC 27%）
+• 右下象限 = 价格便宜但生意一般（典型价值陷阱）
+• 左下象限 = 一般生意 + 贵（应回避）
+
+阈值线：
+  ROIC 15% 横线 = Buffett 卓越生意门槛
+  FCF Yield 5% 竖线 = 合理价格门槛
+两者同时超过 = 进入'Great Business at Fair Price'区域。
+
+⚠️ 若图上只有 2-3 个点：说明本数据集中只有这几只有 ROIC 数据。
+扩展候选池或抓取更多财务数据可填充图表。">x 轴 = FCF Yield (%) · y 轴 = ROIC (%) · 右上 = "Great Business at Fair Price" · ⓘ hover 看坐标系阅读法</p>
+      <div class="relative" style="height: 420px;"><canvas id="buffett-scatter"></canvas></div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <h2 class="text-lg font-semibold text-slate-900 mb-3">Buffett 三件套</h2>
+      <p class="text-xs text-slate-500 mb-3">ⓘ hover 每个指标看完整解读</p>
+      <div class="space-y-3 text-sm">
+        <div class="flex items-center justify-between p-3 bg-emerald-50 rounded-lg" data-tt="ROIC = 投入资本回报率 = 经营利润 / (股东权益 + 长期负债)
+衡量：每 $1 资本能创造多少经济价值。
+
+📊 解读尺度：
+  &gt; 30% = 顶级生意（QCOM 33%、AAPL 历史水平）
+  20–30% = 卓越生意（MSFT 27%）
+  15–20% = 优秀，刚入 Buffett 标准
+  10–15% = 合格但不卓越（IBM 15%）
+  &lt; 10% = 价值创造能力不足
+
+🎯 为什么 15% 是阈值：
+  资本成本 ≈ 8%；超出 7+ 个百分点才算'持续创造经济价值'。
+
+💡 此指标的价值：
+  不会被回购、杠杆或会计粉饰扭曲——'真理指标'。"><span>ROIC</span><span class="font-mono font-semibold text-emerald-700">&gt; 15%</span></div>
+        <div class="flex items-center justify-between p-3 bg-emerald-50 rounded-lg" data-tt="FCF Yield = 自由现金流 / 市值
+衡量：每 $1 投入能获得多少现金流回报率。
+
+📊 解读尺度：
+  &gt; 8% = 价值便宜（少见于优质股）
+  5–8% = 合理价格（QCOM 6.10%、IBM 6.05%）
+  3–5% = 已对增长定价
+  &lt; 3% = 极度高估或对增长非常乐观（MSFT 2.38% = 42x FCF 倍数）
+
+🎯 为什么 5% 是阈值：
+  相当于 PE 20 的盈利收益率（1/20=5%）；
+  Buffett 接受'伟大生意按合理价格卖'的上限。
+
+💡 直觉理解：
+  如果 FCF Yield = 2.38%，意味着市场假设公司未来 10 年 FCF 增长 ≥ 10%/年。"><span>FCF Yield</span><span class="font-mono font-semibold text-emerald-700">&gt; 5%</span></div>
+        <div class="flex items-center justify-between p-3 bg-emerald-50 rounded-lg" data-tt="EV/EBITDA = (市值 + 净债务) / EBITDA
+衡量：剔除资本结构差异后的'企业价值'倍数。
+
+📊 解读尺度：
+  &lt; 8 = 周期股或成熟低增长
+  8–12 = Graham 型廉价股（科技板块罕见）
+  12–15 = 合理估值（MSFT 16.89、QCOM 16.18、IBM 16.34 都贴近上限）
+  15–20 = Glamour 区域
+  &gt; 20 = 已透支未来
+
+🎯 比 PE 更准确：
+  PE 受杠杆和税率影响；EV/EBITDA 不会。
+  并购定价、跨国比较优先用 EV/EBITDA。
+
+💡 当前组里：
+  MSFT/QCOM/IBM 三件套同时通过 ROIC 和 FCF，但 EV/EBITDA 略高于 15——技术性失败。"><span>EV/EBITDA</span><span class="font-mono font-semibold text-emerald-700">&lt; 15</span></div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-slate-200 text-xs text-slate-500 leading-relaxed">
+        <strong class="text-slate-700">辅助验证：</strong>营业利润率 &gt; 20%（定价权）、ROE-ROIC 差距 &lt; 10pp（避免杠杆驱动的虚高 ROE，例：IBM ROE 36% vs ROIC 15% 差 21pp）、有可识别护城河。
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+    <h2 class="text-lg font-semibold text-slate-900 mb-1">Top ROIC 卡片</h2>
+    <p class="text-sm text-slate-500 mb-4">按 ROIC 降序，每张卡含护城河等级 + WHY</p>
+    <div id="buffett-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </div>
+
+</section>
+
+<!-- ============ TAB 4: SPECIAL SITUATIONS ============ -->
+<section id="tab-special" class="tab-panel">
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8" id="special-cards">
+    <!-- Cards rendered by JS -->
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+    <h2 class="text-lg font-semibold text-slate-900 mb-1">⚙️ Indicated Annual Return 计算器</h2>
+    <p class="text-sm text-slate-500 mb-4">Graham 套利公式：<span class="font-mono">IAR = [G·C − L·(1−C)] / (Y·P)</span></p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+      <div>
+        <label class="block text-xs text-slate-500 mb-1">G · 预期收益 ($)</label>
+        <input type="number" id="iar-g" value="3" step="0.1" class="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+      </div>
+      <div>
+        <label class="block text-xs text-slate-500 mb-1">C · 成功概率 (0-1)</label>
+        <input type="number" id="iar-c" value="0.85" step="0.01" min="0" max="1" class="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+      </div>
+      <div>
+        <label class="block text-xs text-slate-500 mb-1">L · 失败损失 ($)</label>
+        <input type="number" id="iar-l" value="5" step="0.1" class="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+      </div>
+      <div>
+        <label class="block text-xs text-slate-500 mb-1">Y · 持有年数</label>
+        <input type="number" id="iar-y" value="0.5" step="0.1" min="0.1" class="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+      </div>
+      <div>
+        <label class="block text-xs text-slate-500 mb-1">P · 当前价格 ($)</label>
+        <input type="number" id="iar-p" value="50" step="0.1" min="0.01" class="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+      </div>
+    </div>
+
+    <div id="iar-result" class="p-5 bg-slate-900 text-white rounded-xl flex items-center justify-between">
+      <div>
+        <div class="text-xs uppercase tracking-wide text-slate-400">年化预期回报</div>
+        <div id="iar-value" class="text-3xl font-mono font-bold mt-1">—</div>
+      </div>
+      <div class="text-right text-xs text-slate-400">
+        <div>入场基准：≥ 15%</div>
+        <div id="iar-verdict" class="mt-1 font-medium"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TAB 5: QUOTES ============ -->
+<section id="tab-quotes" class="tab-panel">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="quotes-container"></div>
+</section>
+
+</main>
+
+<!-- ============ TOOLTIP ============ -->
+<div id="tooltip" class="hidden"></div>
+
+<!-- ============ COMPARE PILL ============ -->
+<div id="compare-pill" class="compare-pill hidden fixed bottom-6 right-6 z-40">
+  <button id="open-compare" class="bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-lg font-medium text-sm flex items-center gap-2">
+    <span>📊 对比</span>
+    <span id="compare-count" class="bg-white text-slate-900 rounded-full px-2 py-0.5 text-xs font-mono">0</span>
+  </button>
+</div>
+
+<!-- ============ COMPARE MODAL ============ -->
+<div id="compare-modal" class="hidden fixed inset-0 z-50 modal-backdrop items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-auto shadow-2xl">
+    <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+      <h2 class="text-lg font-semibold text-slate-900">股票对比</h2>
+      <button id="close-compare" class="text-slate-500 hover:text-slate-900 text-2xl leading-none">×</button>
+    </div>
+    <div id="compare-body" class="p-6"></div>
+  </div>
+</div>
+
+<footer class="border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-400">
+  Graham × Buffett Value Screener · Snapshot 2026-06-01 · 数据有时效性
+</footer>
+
+<!-- ============ DATA + JS ============ -->
+<script>
+// ===== DATA =====
+const SNAPSHOT_DATE = "2026-06-01";
+const STOCKS = [{"ticker": "V", "name": "Visa Inc.", "sector": "Finance", "_yf_sector": "Financial Services", "earnings_10y_positive": false, "div_20y_continuous": true, "data_history_years": 4, "earnings_positive_years_n": "4/4", "earnings_pct_positive": 1.0, "eps_cagr_pct": 10.28, "eps_cagr_window_years": 4, "revenue_cagr_pct": 10.92, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 0.31, "ipo_year": 2008, "price_vs_ma21_pct": -0.78, "price_vs_ma63_pct": 2.68, "ma21_vs_ma63_pct": 3.49, "ma200_slope_pct": -1.06, "return_1m_pct": -1.94, "return_3m_pct": 0.91, "rs_1m_pct": -7.49, "rs_3m_pct": -9.9, "distance_to_52w_high_pct": -12.86, "max_drawdown_3m_pct": -7.89, "volatility_60d_pct": 24.51, "rsi_14": 49.7, "market_cap_b": 613.8, "price": 322.77, "pe_ttm": 28.16, "fwd_pe": 21.75, "pb": 16.11, "current_ratio": 1.09, "de_ratio": 0.67, "peg": 1.47, "ev_ebitda": 20.53, "fcf_yield_pct": 3.4, "roic_pct": 32.96, "roe_pct": 60.35, "op_margin_pct": 67.35, "div_yield_pct": 0.83, "valuation_bias": "收费公路型生意，世界杯是少数有真实业绩可见度的概念股——管理层已因 FIFA 相关旅游/营销上调 2026 指引。PE 28、PB 16 反映的是品质溢价而非便宜。", "mr_market_wrong": "跨境支付量是 Visa 利润率最高的部分；世界杯北美主场带来的入境旅游、刷卡消费直接落在跨境通道上，ROIC 33%、营收双位数增长是真护城河。", "mr_market_right": "估值不便宜(PE 28、FCF yield 仅 3.4%)，稳定币/账户到账(A2A)绕过卡组织是结构性远期威胁，赛事催化是一次性的。", "graham_index": 453.6576, "graham_a_pass_count": 1, "graham_b_pass_count": 1, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "MA", "name": "Mastercard Incorporated", "sector": "Finance", "_yf_sector": "Financial Services", "earnings_10y_positive": false, "div_20y_continuous": true, "data_history_years": 4, "earnings_positive_years_n": "4/4", "earnings_pct_positive": 1.0, "eps_cagr_pct": 14.66, "eps_cagr_window_years": 4, "revenue_cagr_pct": 13.82, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 0.83, "ipo_year": 2006, "price_vs_ma21_pct": -0.29, "price_vs_ma63_pct": -1.48, "ma21_vs_ma63_pct": -1.19, "ma200_slope_pct": -1.64, "return_1m_pct": -1.53, "return_3m_pct": -4.78, "rs_1m_pct": -7.08, "rs_3m_pct": -15.59, "distance_to_52w_high_pct": -16.94, "max_drawdown_3m_pct": -7.7, "volatility_60d_pct": 22.85, "rsi_14": 46.7, "market_cap_b": 437.6, "price": 495.25, "pe_ttm": 28.66, "fwd_pe": 21.77, "pb": 65.37, "current_ratio": 0.98, "de_ratio": 2.82, "peg": 1.58, "ev_ebitda": 20.97, "fcf_yield_pct": 3.69, "roic_pct": 58.16, "roe_pct": 232.08, "op_margin_pct": 60.84, "div_yield_pct": 0.7, "valuation_bias": "和 V 同质的双寡头，ROIC 58% 更夸张；世界杯跨境消费红利同享，属'情绪+真实业绩'兼具的最高确定性档。", "mr_market_wrong": "ROIC 58%、营收增速快于 V，增值服务(数据/反欺诈)占比更高，世界杯营销服务直接进收入；轻资产复利机器。", "mr_market_right": "PE 28.7、PB 65 估值更贵，对宏观消费/跨境量敏感，监管与 A2A 替代的长尾风险同样存在。", "graham_index": 1873.5042, "graham_a_pass_count": 1, "graham_b_pass_count": 1, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "NKE", "name": "NIKE, Inc.", "sector": "Consumer", "_yf_sector": "Consumer Cyclical", "earnings_10y_positive": false, "div_20y_continuous": true, "data_history_years": 4, "earnings_positive_years_n": "4/4", "earnings_pct_positive": 1.0, "eps_cagr_pct": -18.95, "eps_cagr_window_years": 4, "revenue_cagr_pct": -0.29, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 2.27, "ipo_year": 1980, "price_vs_ma21_pct": 5.43, "price_vs_ma63_pct": -2.84, "ma21_vs_ma63_pct": -7.85, "ma200_slope_pct": -6.76, "return_1m_pct": 4.47, "return_3m_pct": -24.04, "rs_1m_pct": -1.08, "rs_3m_pct": -34.85, "distance_to_52w_high_pct": -40.45, "max_drawdown_3m_pct": -29.48, "volatility_60d_pct": 41.64, "rsi_14": 58.1, "market_cap_b": 68.0, "price": 45.93, "pe_ttm": 30.22, "fwd_pe": 25.19, "pb": 4.82, "current_ratio": 2.14, "de_ratio": 0.79, "peg": 1.59, "ev_ebitda": 18.41, "fcf_yield_pct": 1.93, "roic_pct": 14.49, "roe_pct": 16.02, "op_margin_pct": 6.94, "div_yield_pct": 3.57, "valuation_bias": "品牌正处周转期，世界杯是需求催化但非估值便宜——PE 30 是在为'复苏兑现'付费。", "mr_market_wrong": "RBC 估世界杯潜在增量收入最高 ~$13 亿；球衣/球鞋赛前铺货，叠加库存出清完成、毛利修复，是戴维斯双击的题材。", "mr_market_right": "PE 30 已计入复苏预期，中国市场疲软、DTC 转型反复、与 Adidas 的赛事份额竞争都可能让'兑现'低于预期。", "graham_index": 145.6604, "graham_a_pass_count": 2, "graham_b_pass_count": 2, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "KO", "name": "The Coca-Cola Company", "sector": "Consumer", "_yf_sector": "Consumer Defensive", "earnings_10y_positive": false, "div_20y_continuous": true, "data_history_years": 4, "earnings_positive_years_n": "4/4", "earnings_pct_positive": 1.0, "eps_cagr_pct": 11.16, "eps_cagr_window_years": 4, "revenue_cagr_pct": 3.69, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 1.18, "price_vs_ma21_pct": -1.64, "price_vs_ma63_pct": 1.3, "ma21_vs_ma63_pct": 3.0, "ma200_slope_pct": 2.27, "return_1m_pct": -0.15, "return_3m_pct": -1.3, "rs_1m_pct": -5.7, "rs_3m_pct": -12.11, "distance_to_52w_high_pct": -4.0, "max_drawdown_3m_pct": -5.29, "volatility_60d_pct": 16.66, "rsi_14": 45.6, "market_cap_b": 338.3, "price": 78.64, "pe_ttm": 24.73, "fwd_pe": 22.57, "pb": 10.06, "current_ratio": 1.36, "de_ratio": 1.25, "peg": 4.05, "ev_ebitda": 22.21, "fcf_yield_pct": 0.92, "roic_pct": 18.66, "roe_pct": 43.37, "op_margin_pct": 35.05, "div_yield_pct": 2.7, "valuation_bias": "典型 Graham 防御型标的：20 年连续分红、盈利稳定，世界杯是看球即时消费的边际加分而非主驱动。", "mr_market_wrong": "ROIC 18.7%、定价权强、全球分销网络无可复制；世界杯/大赛季提升现饮渠道销量，是低波动的'睡得着'仓位。", "mr_market_right": "PE 24.7、FCF yield 仅 0.9% 偏贵，GLP-1 减重药对含糖饮料的远期需求压制是真实叙事风险，增长个位数。", "graham_index": 248.7838, "graham_a_pass_count": 1, "graham_b_pass_count": 1, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "BUD", "name": "Anheuser-Busch InBev SA/NV", "sector": "Consumer", "_yf_sector": "Consumer Defensive", "earnings_10y_positive": false, "div_20y_continuous": false, "data_history_years": 4, "earnings_positive_years_n": "4/4", "earnings_pct_positive": 1.0, "eps_cagr_pct": 4.63, "eps_cagr_window_years": 4, "revenue_cagr_pct": 0.88, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 0.77, "ipo_year": 2009, "price_vs_ma21_pct": -0.49, "price_vs_ma63_pct": 7.53, "ma21_vs_ma63_pct": 8.07, "ma200_slope_pct": 3.11, "return_1m_pct": 7.49, "return_3m_pct": 3.17, "rs_1m_pct": 1.94, "rs_3m_pct": -7.64, "distance_to_52w_high_pct": -4.69, "max_drawdown_3m_pct": -11.86, "volatility_60d_pct": 29.7, "rsi_14": 53.1, "market_cap_b": 154.9, "price": 80.02, "pe_ttm": 22.17, "fwd_pe": 16.26, "pb": 10.71, "de_ratio": 0.75, "peg": 1.88, "ev_ebitda": 11.56, "roic_pct": 7.11, "op_margin_pct": 26.68, "div_yield_pct": 1.68, "valuation_bias": "FIFA 二级赞助商(百威)，世界杯是其全球啤酒销量的直接催化；PE 22、PB 10.7，估值中性偏高。", "mr_market_wrong": "百威/科罗娜/Stella 遍布球场与球迷区，赛中即时消费爆发；新兴市场啤酒量价齐升 + 去杠杆改善自由现金流。", "mr_market_right": "ROIC 仅 7%、债务负担重，美国主力市场销量长期承压(含 Bud Light 抵制余波)，赛事提振是季节性的。", "graham_index": 237.44070000000005, "graham_a_pass_count": 0, "graham_b_pass_count": 1, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "STZ", "name": "Constellation Brands, Inc.", "sector": "Consumer", "_yf_sector": "Consumer Defensive", "earnings_10y_positive": false, "div_20y_continuous": false, "data_history_years": 4, "earnings_positive_years_n": "2/4", "earnings_pct_positive": 0.5, "revenue_cagr_pct": -1.12, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 1.05, "ipo_year": 1992, "price_vs_ma21_pct": -6.62, "price_vs_ma63_pct": -9.69, "ma21_vs_ma63_pct": -3.28, "ma200_slope_pct": -1.82, "return_1m_pct": -12.98, "return_3m_pct": -12.39, "rs_1m_pct": -18.53, "rs_3m_pct": -23.2, "distance_to_52w_high_pct": -20.92, "max_drawdown_3m_pct": -17.45, "volatility_60d_pct": 31.26, "rsi_14": 32.8, "market_cap_b": 23.5, "price": 136.25, "pe_ttm": 14.18, "fwd_pe": 10.94, "pb": 2.91, "current_ratio": 1.08, "de_ratio": 1.34, "peg": 2.52, "ev_ebitda": 10.3, "fcf_yield_pct": 8.73, "roic_pct": 10.85, "roe_pct": 22.64, "op_margin_pct": 26.68, "div_yield_pct": 3.02, "valuation_bias": "估值上最便宜的消费标的之一：PE 14、FCF yield 8.7%，世界杯利好啤酒(Corona/Modelo)主业。", "mr_market_wrong": "Modelo 已是美国销量第一啤酒品牌，世界杯+夏季旺季叠加西语裔人口红利；FCF yield 8.7% 提供安全边际。", "mr_market_right": "葡萄酒/烈酒板块拖累、关税与移民政策担忧压制墨西哥啤酒进口预期，近期股价已大幅回撤反映这些。", "graham_index": 41.2638, "graham_a_pass_count": 1, "graham_b_pass_count": 1, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "TAP", "name": "Molson Coors Beverage Company", "sector": "Consumer", "_yf_sector": "Consumer Defensive", "earnings_10y_positive": false, "div_20y_continuous": true, "data_history_years": 4, "earnings_positive_years_n": "2/4", "earnings_pct_positive": 0.5, "revenue_cagr_pct": 1.35, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 2.25, "ipo_year": 1975, "price_vs_ma21_pct": -5.08, "price_vs_ma63_pct": -8.15, "ma21_vs_ma63_pct": -3.24, "ma200_slope_pct": -2.09, "return_1m_pct": -7.59, "return_3m_pct": -17.88, "rs_1m_pct": -13.14, "rs_3m_pct": -28.69, "distance_to_52w_high_pct": -26.62, "max_drawdown_3m_pct": -16.97, "volatility_60d_pct": 26.44, "rsi_14": 34.7, "market_cap_b": 7.3, "price": 39.03, "fwd_pe": 7.78, "pb": 0.73, "current_ratio": 0.54, "de_ratio": 0.63, "peg": 3.91, "ev_ebitda": 5.58, "fcf_yield_pct": 10.57, "roic_pct": -11.89, "roe_pct": -18.08, "op_margin_pct": 12.42, "div_yield_pct": 4.92, "valuation_bias": "深度价值/困境反转型：PB 0.73(低于净资产)、FCF yield 10.6%，但 ROIC 为负(商誉减值)，是'烟蒂'而非品质股。", "mr_market_wrong": "PB<1 + 双位数 FCF yield，世界杯/赛事季提振主力啤酒销量；管理层回购+高股息，估值已计入大量悲观。", "mr_market_right": "ROIC -11.9%、销量结构性下滑、缺乏增长引擎，典型'价值陷阱'风险——便宜可能有便宜的道理。", "graham_index": null, "graham_a_pass_count": 2, "graham_b_pass_count": 2, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "DKNG", "name": "DraftKings Inc.", "sector": "Consumer", "_yf_sector": "Consumer Cyclical", "earnings_10y_positive": false, "div_20y_continuous": false, "data_history_years": 4, "earnings_positive_years_n": "1/4", "earnings_pct_positive": 0.25, "revenue_cagr_pct": 39.29, "fcf_positive_years_n": "2/4", "fcf_pct_positive": 0.5, "op_margin_stability": 25.38, "ipo_year": 2019, "price_vs_ma21_pct": 6.17, "price_vs_ma63_pct": 9.99, "ma21_vs_ma63_pct": 3.59, "ma200_slope_pct": -8.55, "return_1m_pct": 12.91, "return_3m_pct": 10.54, "rs_1m_pct": 7.36, "rs_3m_pct": -0.27, "distance_to_52w_high_pct": -45.41, "max_drawdown_3m_pct": -19.91, "volatility_60d_pct": 46.25, "rsi_14": 61.0, "market_cap_b": 13.1, "price": 26.33, "pe_ttm": 292.56, "fwd_pe": 15.38, "pb": 21.58, "current_ratio": 1.02, "de_ratio": 3.17, "peg": 0.1, "ev_ebitda": 42.81, "fcf_yield_pct": 4.62, "roic_pct": -0.51, "roe_pct": 7.94, "op_margin_pct": 0.35, "valuation_bias": "投机性成长股，Graham 框架不适用(PE 292、ROIC 近零)：用 TAM × 渗透率 × 盈利拐点的事件驱动透镜看。", "mr_market_wrong": "北美博彩合法化后首届世界杯，预计创纪录投注量；DKNG 是市场份额前二、刚跨过盈利拐点，赛事冲量直接放大 EBITDA。", "mr_market_right": "PE 292、估值全是预期，盈利尚薄，州税率上调、促销战、监管收紧都可能让'拐点'反复；纯题材波动大。", "graham_index": 6313.444799999999, "graham_a_pass_count": 0, "graham_b_pass_count": 0, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "FLUT", "name": "Flutter Entertainment plc", "sector": "Consumer", "_yf_sector": "Consumer Cyclical", "earnings_10y_positive": false, "div_20y_continuous": false, "data_history_years": 4, "earnings_positive_years_n": "1/4", "earnings_pct_positive": 0.25, "revenue_cagr_pct": 20.08, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 4.13, "ipo_year": 2002, "price_vs_ma21_pct": 6.39, "price_vs_ma63_pct": 0.05, "ma21_vs_ma63_pct": -5.96, "ma200_slope_pct": -13.65, "return_1m_pct": -3.35, "return_3m_pct": -1.67, "rs_1m_pct": -8.9, "rs_3m_pct": -12.48, "distance_to_52w_high_pct": -66.2, "max_drawdown_3m_pct": -19.37, "volatility_60d_pct": 43.67, "rsi_14": 57.5, "market_cap_b": 18.1, "price": 104.31, "fwd_pe": 11.71, "pb": 2.01, "current_ratio": 0.9, "de_ratio": 1.29, "peg": 0.19, "ev_ebitda": 14.0, "fcf_yield_pct": -4.85, "roic_pct": 1.73, "roe_pct": -4.96, "op_margin_pct": 2.32, "valuation_bias": "FanDuel 母公司，美国博彩龙头；当前 FCF 为负、无 PE，成长股而非价值股，世界杯是放量催化。", "mr_market_wrong": "FanDuel 美国市占率第一，世界杯 in-play/parlay 产品冲量；规模效应下美国业务正转盈，盘子最大受益最直接。", "mr_market_right": "FCF yield -4.85%、仍在投入期，竞争激烈促销费用高，赛事红利后留存率是关键变量，估值不便宜。", "graham_index": null, "graham_a_pass_count": 0, "graham_b_pass_count": 0, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "FOXA", "name": "Fox Corporation", "sector": "Tech", "_yf_sector": "Communication Services", "earnings_10y_positive": false, "div_20y_continuous": false, "data_history_years": 4, "earnings_positive_years_n": "4/4", "earnings_pct_positive": 1.0, "eps_cagr_pct": 23.38, "eps_cagr_window_years": 4, "revenue_cagr_pct": 5.27, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 0.75, "ipo_year": 2019, "price_vs_ma21_pct": 3.46, "price_vs_ma63_pct": 8.1, "ma21_vs_ma63_pct": 4.48, "ma200_slope_pct": 2.22, "return_1m_pct": 5.23, "return_3m_pct": 18.22, "rs_1m_pct": -0.32, "rs_3m_pct": 7.41, "distance_to_52w_high_pct": -11.79, "max_drawdown_3m_pct": -5.61, "volatility_60d_pct": 28.12, "rsi_14": 59.6, "market_cap_b": 28.1, "price": 66.81, "pe_ttm": 17.58, "fwd_pe": 11.76, "pb": 2.56, "current_ratio": 2.9, "de_ratio": 0.68, "peg": 31.43, "ev_ebitda": 9.08, "fcf_yield_pct": 5.01, "roic_pct": 13.99, "roe_pct": 15.2, "op_margin_pct": 21.36, "div_yield_pct": 0.84, "valuation_bias": "拿下全部 104 场英语转播权(40 场黄金档)，世界杯是广告收入的明确催化；PE 17.6 在媒体股里不贵。", "mr_market_wrong": "104 场独家英语转播 + 创纪录黄金档，广告 upfront 与赛事溢价直接进表；体育版权是其抗流媒体冲击的核心资产。", "mr_market_right": "ROIC 14%、广告周期对宏观敏感，长期看线性电视收视流失、版权成本上行压制利润，赛事是一次性脉冲。", "graham_index": 45.004799999999996, "graham_a_pass_count": 1, "graham_b_pass_count": 2, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "CMCSA", "name": "Comcast Corporation", "sector": "Tech", "_yf_sector": "Communication Services", "earnings_10y_positive": false, "div_20y_continuous": true, "data_history_years": 4, "earnings_positive_years_n": "4/4", "earnings_pct_positive": 1.0, "eps_cagr_pct": 55.0, "eps_cagr_window_years": 4, "revenue_cagr_pct": 0.62, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 0.96, "ipo_year": 1980, "price_vs_ma21_pct": -1.48, "price_vs_ma63_pct": -9.84, "ma21_vs_ma63_pct": -8.48, "ma200_slope_pct": -2.34, "return_1m_pct": -7.36, "return_3m_pct": -17.78, "rs_1m_pct": -12.91, "rs_3m_pct": -28.59, "distance_to_52w_high_pct": -23.2, "max_drawdown_3m_pct": -21.94, "volatility_60d_pct": 37.88, "rsi_14": 38.0, "market_cap_b": 89.5, "price": 25.05, "pe_ttm": 4.91, "fwd_pe": 6.59, "pb": 1.02, "current_ratio": 0.86, "de_ratio": 1.07, "peg": 142.98, "ev_ebitda": 4.94, "fcf_yield_pct": 4.48, "roic_pct": 11.76, "roe_pct": 20.92, "op_margin_pct": 13.15, "div_yield_pct": 5.27, "valuation_bias": "Telemundo 拿下西语独家(史上最多 700 小时)，世界杯利好广告；PE 表观 4.9 偏低(含一次性因素)，PB 1.0 估值低。", "mr_market_wrong": "西语世界杯收视基础庞大，Teleminco 广告满载；宽带+NBCU+主题乐园多引擎，低估值+高股息提供安全边际。", "mr_market_right": "宽带用户净流失、Peacock 仍亏损是核心拖累，市场担心其增长缺口，世界杯广告难以扭转结构性叙事。", "graham_index": 5.0082, "graham_a_pass_count": 3, "graham_b_pass_count": 3, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "MAR", "name": "Marriott International, Inc.", "sector": "Consumer", "_yf_sector": "Consumer Cyclical", "earnings_10y_positive": false, "div_20y_continuous": true, "data_history_years": 4, "earnings_positive_years_n": "4/4", "earnings_pct_positive": 1.0, "eps_cagr_pct": 3.32, "eps_cagr_window_years": 4, "revenue_cagr_pct": 8.02, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 0.57, "ipo_year": 1998, "price_vs_ma21_pct": 4.21, "price_vs_ma63_pct": 8.42, "ma21_vs_ma63_pct": 4.04, "ma200_slope_pct": 4.76, "return_1m_pct": 4.43, "return_3m_pct": 14.29, "rs_1m_pct": -1.12, "rs_3m_pct": 3.48, "distance_to_52w_high_pct": -2.31, "max_drawdown_3m_pct": -8.31, "volatility_60d_pct": 28.12, "rsi_14": 61.7, "market_cap_b": 99.4, "price": 376.96, "pe_ttm": 39.51, "fwd_pe": 28.84, "pb": -24.38, "current_ratio": 0.46, "peg": 2.23, "ev_ebitda": 24.57, "fcf_yield_pct": 1.81, "roic_pct": 25.89, "op_margin_pct": 59.01, "div_yield_pct": 0.77, "valuation_bias": "轻资产酒店特许龙头，世界杯北美主场带来入住率红利；PE 39.5、账面权益为负(回购所致)，看 EV/EBITDA 24.6 偏高。", "mr_market_wrong": "纯特许/管理的轻资产模型 ROIC 26%，世界杯 11 个美国主办城市直接拉动 RevPAR；常旅客网络+管线扩张是复利来源。", "mr_market_right": "PE 39.5 已计入旺盛需求，对消费/商旅周期敏感，赛事提振集中在少数城市少数周，估值缺乏安全边际。", "graham_index": null, "graham_a_pass_count": 1, "graham_b_pass_count": 1, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "HLT", "name": "Hilton Worldwide Holdings Inc.", "sector": "Consumer", "_yf_sector": "Consumer Cyclical", "earnings_10y_positive": false, "div_20y_continuous": false, "data_history_years": 4, "earnings_positive_years_n": "4/4", "earnings_pct_positive": 1.0, "eps_cagr_pct": 5.1, "eps_cagr_window_years": 4, "revenue_cagr_pct": 11.13, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 0.97, "ipo_year": 2013, "price_vs_ma21_pct": 3.77, "price_vs_ma63_pct": 5.66, "ma21_vs_ma63_pct": 1.82, "ma200_slope_pct": 2.88, "return_1m_pct": 2.7, "return_3m_pct": 9.19, "rs_1m_pct": -2.85, "rs_3m_pct": -1.62, "distance_to_52w_high_pct": -2.94, "max_drawdown_3m_pct": -9.19, "volatility_60d_pct": 28.3, "rsi_14": 58.3, "market_cap_b": 75.7, "price": 332.65, "pe_ttm": 50.79, "fwd_pe": 31.93, "pb": -12.86, "current_ratio": 0.61, "peg": 1.62, "ev_ebitda": 29.39, "fcf_yield_pct": 2.22, "roic_pct": 27.21, "op_margin_pct": 57.36, "div_yield_pct": 0.18, "valuation_bias": "与 MAR 同质的轻资产酒店龙头，ROIC 27%；世界杯主场红利同享，但 PE 50.8 是全池最贵之一。", "mr_market_wrong": "轻资产+全球品牌矩阵，世界杯主办城市 RevPAR 提升直接落特许费；管线增长与会员体系构成护城河。", "mr_market_right": "PE 50.8、EV/EBITDA 29 极致定价完美，任何旅游需求降速都会戳破估值，赛事是短脉冲非趋势。", "graham_index": null, "graham_a_pass_count": 0, "graham_b_pass_count": 1, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "H", "name": "Hyatt Hotels Corporation", "sector": "Consumer", "_yf_sector": "Consumer Cyclical", "earnings_10y_positive": false, "div_20y_continuous": false, "data_history_years": 4, "earnings_positive_years_n": "3/4", "earnings_pct_positive": 0.75, "revenue_cagr_pct": 6.42, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 0.75, "ipo_year": 2009, "price_vs_ma21_pct": 7.22, "price_vs_ma63_pct": 15.1, "ma21_vs_ma63_pct": 7.35, "ma200_slope_pct": 2.53, "return_1m_pct": 9.68, "return_3m_pct": 15.01, "rs_1m_pct": 4.13, "rs_3m_pct": 4.2, "distance_to_52w_high_pct": -0.9, "max_drawdown_3m_pct": -14.86, "volatility_60d_pct": 39.24, "rsi_14": 65.4, "market_cap_b": 17.3, "price": 183.65, "fwd_pe": 37.63, "pb": 5.36, "current_ratio": 0.6, "de_ratio": 1.27, "peg": 1.09, "ev_ebitda": 25.25, "fcf_yield_pct": 2.03, "roic_pct": 4.13, "roe_pct": -0.88, "op_margin_pct": 16.69, "div_yield_pct": 0.33, "valuation_bias": "Hyatt，偏高端+近期重资产剥离转型中；ROIC 4% 偏低、无 TTM PE，世界杯是高端客需求边际利好。", "mr_market_wrong": "高端定位受益世界杯 VIP/商旅高端客流，资产轻量化转型若兑现将抬升 ROIC 与估值重估空间。", "mr_market_right": "ROIC 仅 4%、转型未完成、盘子小波动大，相对 MAR/HLT 护城河更浅，赛事红利对整体盈利占比有限。", "graham_index": null, "graham_a_pass_count": 0, "graham_b_pass_count": 1, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": false}, {"ticker": "BBY", "name": "Best Buy Co., Inc.", "sector": "Consumer", "_yf_sector": "Consumer Cyclical", "earnings_10y_positive": false, "div_20y_continuous": true, "data_history_years": 4, "earnings_positive_years_n": "4/4", "earnings_pct_positive": 1.0, "eps_cagr_pct": -9.01, "eps_cagr_window_years": 4, "revenue_cagr_pct": -3.43, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 0.09, "ipo_year": 1985, "price_vs_ma21_pct": 21.94, "price_vs_ma63_pct": 19.92, "ma21_vs_ma63_pct": -1.66, "ma200_slope_pct": -0.95, "return_1m_pct": 23.95, "return_3m_pct": 23.59, "rs_1m_pct": 18.4, "rs_3m_pct": 12.78, "distance_to_52w_high_pct": -8.18, "max_drawdown_3m_pct": -17.06, "volatility_60d_pct": 46.46, "rsi_14": 72.9, "market_cap_b": 15.8, "price": 74.98, "pe_ttm": 13.89, "fwd_pe": 10.6, "pb": 5.12, "current_ratio": 1.12, "de_ratio": 1.34, "peg": 1.5, "ev_ebitda": 6.93, "fcf_yield_pct": 6.27, "roic_pct": 26.71, "roe_pct": 39.1, "op_margin_pct": 4.04, "div_yield_pct": 5.12, "valuation_bias": "赛前大屏电视换机受益标的，且是全池估值最低之一：PE 13.9、FCF yield 6.3%、ROIC 27%。", "mr_market_wrong": "世界杯前是大屏电视/家庭影音换机高峰，BBY 是美国线下主渠道；高 ROIC+双位数 FCF yield+高股息，估值便宜。", "mr_market_right": "结构性面对电商分流、消费电子需求疲软，世界杯换机是季节脉冲，难逆转长期同店增长乏力的叙事。", "graham_index": 71.1168, "graham_a_pass_count": 2, "graham_b_pass_count": 1, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": true}, {"ticker": "EXPE", "name": "Expedia Group, Inc.", "sector": "Consumer", "_yf_sector": "Consumer Cyclical", "earnings_10y_positive": false, "div_20y_continuous": false, "data_history_years": 4, "earnings_positive_years_n": "4/4", "earnings_pct_positive": 1.0, "eps_cagr_pct": 54.33, "eps_cagr_window_years": 4, "revenue_cagr_pct": 8.09, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 1.6, "ipo_year": 2005, "price_vs_ma21_pct": 0.44, "price_vs_ma63_pct": -2.99, "ma21_vs_ma63_pct": -3.42, "ma200_slope_pct": 3.4, "return_1m_pct": -7.86, "return_3m_pct": 7.56, "rs_1m_pct": -13.41, "rs_3m_pct": -3.25, "distance_to_52w_high_pct": -23.88, "max_drawdown_3m_pct": -21.6, "volatility_60d_pct": 41.28, "rsi_14": 49.3, "market_cap_b": 27.4, "price": 228.37, "pe_ttm": 20.19, "fwd_pe": 9.89, "pb": 47.58, "current_ratio": 0.73, "de_ratio": 2.57, "peg": 0.74, "ev_ebitda": 10.62, "fcf_yield_pct": 12.69, "roic_pct": 20.77, "roe_pct": 71.49, "op_margin_pct": 7.09, "div_yield_pct": 0.77, "valuation_bias": "OTA 旅游平台，世界杯入境/城际旅游受益；PE 20、FCF yield 12.7% 在消费股里很有吸引力。", "mr_market_wrong": "FCF yield 12.7%、ROIC 21%，世界杯北美主场带动机票+酒店预订量；B2B 与广告业务利润率提升是隐藏期权。", "mr_market_right": "对宏观旅游需求高度敏感，与 BKNG/Airbnb 竞争激烈，赛事红利集中在主办城市与赛期，留存待观察。", "graham_index": 960.6402, "graham_a_pass_count": 0, "graham_b_pass_count": 1, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": true}, {"ticker": "BKNG", "name": "Booking Holdings Inc.", "sector": "Consumer", "_yf_sector": "Consumer Cyclical", "earnings_10y_positive": false, "div_20y_continuous": false, "data_history_years": 4, "earnings_positive_years_n": "4/4", "earnings_pct_positive": 1.0, "eps_cagr_pct": 20.9, "eps_cagr_window_years": 4, "revenue_cagr_pct": 16.35, "fcf_positive_years_n": "4/4", "fcf_pct_positive": 1.0, "op_margin_stability": 2.63, "ipo_year": 1999, "price_vs_ma21_pct": 4.05, "price_vs_ma63_pct": -1.09, "ma21_vs_ma63_pct": -4.95, "ma200_slope_pct": -4.12, "return_1m_pct": 0.53, "return_3m_pct": 1.46, "rs_1m_pct": -5.02, "rs_3m_pct": -9.35, "distance_to_52w_high_pct": -26.82, "max_drawdown_3m_pct": -19.74, "volatility_60d_pct": 35.69, "rsi_14": 54.6, "market_cap_b": 131.1, "price": 169.25, "pe_ttm": 22.33, "fwd_pe": 13.76, "pb": -15.13, "current_ratio": 1.06, "peg": 0.72, "ev_ebitda": 12.94, "fcf_yield_pct": 5.39, "roic_pct": 50.79, "op_margin_pct": 25.04, "div_yield_pct": 0.95, "valuation_bias": "全球 OTA 龙头，ROIC 51%、轻资产复利机器；世界杯利好预订量，PE 22 对其质地不算贵。", "mr_market_wrong": "ROIC 51%、全球供给网络与品牌强势，世界杯跨境+城际预订直接进 GMV；连接服务与 AI 行程是新增长极。", "mr_market_right": "账面权益为负(回购)，绝对股价高、对全球旅游周期敏感，欧洲监管(DMA)与中东/亚太竞争是长尾风险。", "graham_index": null, "graham_a_pass_count": 0, "graham_b_pass_count": 1, "graham_a_pass": false, "graham_b_pass": false, "buffett_pass": true}];
+
+const SECTOR_INSIGHTS = {"Tech": {"verdict": "0/2 通过 Graham A · 0/2 通过 Buffett", "text": "板块共 2 只股票，平均 PE×PB ≈ 25。建议进入板块详情查看 WHY 分析。"}, "Consumer": {"verdict": "0/13 通过 Graham A · 3/13 通过 Buffett", "text": "板块共 13 只股票，平均 PE×PB ≈ 1145。建议进入板块详情查看 WHY 分析。"}, "Finance": {"verdict": "0/2 通过 Graham A · 0/2 通过 Buffett", "text": "板块共 2 只股票，平均 PE×PB ≈ 1164。建议进入板块详情查看 WHY 分析。"}};
+const SCREENING_META = null;
+
+const SPECIAL_CARDS = [
+  { title: "并购套利", icon: "🤝", definition: "宣布并购协议后，目标公司股价低于交易对价的折扣。", formula: "IAR = [G·C − L·(1−C)] / (Y·P)", modern: "反垄断审查（DOJ/FTC）门槛抬升；MAC 条款风险；股票交易需对冲收购方", entry: "IAR ≥ 15% 净年化" },
+  { title: "拆分（Spinoff）", icon: "✂️", definition: "母公司持有者机械抛售拆分子公司，制造非基本面低价。", formula: "Greenblatt 框架：拆分后 6-18 个月窗口", modern: "子公司 < 母公司 10% 市值；管理层认购 > 5%；非垃圾资产倾倒", entry: "强制抛售压力大且管理层利益绑定" },
+  { title: "Net-Net", icon: "💰", definition: "股价 < 2/3 净流动资产（NCAV）。", formula: "NCAV = 流动资产 − 全部负债", modern: "美股大盘股几乎不可能；微盘股 + 日韩小盘仍存在", entry: "折扣 ≥ 50%" },
+  { title: "Chapter 11 重整", icon: "⚖️", definition: "破产重整后债权人接收新股权，机构受 mandate 限制抛售。", formula: "买 senior debt → 重整方案 → 新股权", modern: "**不要碰破产前股权**（通常归零）", entry: "重整方案确认后 6-12 个月" },
+  { title: "SPAC 套利", icon: "🎯", definition: "SPAC 上市后跌破信托价 + 行使赎回权 = 锁定回报。", formula: "回报 = (信托价 − 现价) / 现价", modern: "2022-23 崩盘后市场缩水 90%+", entry: "spread > 5% 年化" },
+  { title: "要约 / 私有化", icon: "📜", definition: "自愿要约、强制收购、大股东私有化。", formula: "类似并购，但需考虑比例分摊（Proration）", modern: "关联方交易折价；二次报价博弈", entry: "看交易历史平均成功率" },
+  { title: "双重股权 / Holdco 折价", icon: "🔀", definition: "投票权差价、控股公司 NAV 折价、封闭式基金折价。", formula: "折价 = (NAV − 市值) / NAV", modern: "GOOG vs GOOGL 1-2% 正常波动", entry: "折价 > 历史均值 + 1σ" }
+];
+
+const QUOTES = [
+  { theme: "成长股警告", chapter: "第 7 章", text: "迅速成长的股票通常不能持续长久。当一个公司已经有了辉煌扩展的业绩，其规模越大，重温以往的辉煌就越困难，达到某个点以后，增长曲线将趋缓变平，许多情况下它将转而向下。" },
+  { theme: "成长股警告", chapter: "第 7 章", text: "投资者也许多股票前景的判断是正确的，但未有好的收获，这只是因为他为所期望的繁荣已倾囊付出。" },
+  { theme: "市场先生", chapter: "第 2 章", text: "因股票循环出现廉价所产生的市场，说明几乎完全相同的市场水准中有许多独特的廉价股出现。" },
+  { theme: "安全边际", chapter: "第 7 章", text: "廉价证券的定义……是一种建立在事实分析的基础上，表现出持有比出售更有价值的证券。" },
+  { theme: "安全边际", chapter: "第 7 章", text: "有勇气的明智的人在萧条的市场上不仅用经验来证明自己，而且采用合理的价值分析方法去辨识真伪。" },
+  { theme: "防御 vs 进攻", chapter: "第 5 章", text: "防御型投资者是那些主要感兴趣于投资的安全性和不愿烦恼的投资者。他应该遵循一个简单的把证券划分成两部分的投资规划，一部分是合适的债券，另一部分是多样化的主要普通股。" },
+  { theme: "防御 vs 进攻", chapter: "第 7 章", text: "进攻型投资者的活动特征：（1）低价购买，高价出售；（2）谨慎选择成长股；（3）廉价购买各类衍生证券；（4）购买'特别地位'。" },
+  { theme: "资本化率", chapter: "第 8 章", text: "证券分析也多少会让一定的其他因素进入报告，这些因素多数将影响它的资本率，它能依靠股票的'质量'，在广泛的范围内变动。" }
+];
+
+const SECTOR_ORDER = ["Tech", "Consumer", "Utilities", "Finance", "Energy"];
+const SECTOR_LABEL_ZH = { Tech: "科技", Consumer: "消费品", Utilities: "公用事业", Finance: "金融", Energy: "能源" };
+
+// ===== HELPERS =====
+function fmt(v, digits = 2) {
+  if (v === null || v === undefined || v === "" || (typeof v === "number" && isNaN(v))) return "—";
+  if (typeof v === "number") return v.toFixed(digits);
+  return v;
+}
+
+function classifyCell(metric, value) {
+  if (value === null || value === undefined) return "h-na";
+  switch (metric) {
+    case "pe": return value < 15 ? "h-pass" : (value < 25 ? "h-near" : "h-fail");
+    case "pb": return value < 1.5 ? "h-pass" : (value < 5 ? "h-near" : "h-fail");
+    case "cr": return value > 2 ? "h-pass" : (value > 1.2 ? "h-near" : "h-fail");
+    case "de": return value < 0.5 ? "h-pass" : (value < 1.5 ? "h-near" : "h-fail");
+    case "peg": return value < 1 ? "h-pass" : (value < 2 ? "h-near" : "h-fail");
+    case "graham": return value < 22.5 ? "h-pass" : (value < 100 ? "h-near" : "h-fail");
+    case "roic": return value > 20 ? "h-pass" : (value > 10 ? "h-near" : "h-fail");
+    case "fcf": return value > 5 ? "h-pass" : (value > 2 ? "h-near" : "h-fail");
+    case "ev": return value < 15 ? "h-pass" : (value < 25 ? "h-near" : "h-fail");
+    case "div": return value > 2 ? "h-pass" : (value > 0.5 ? "h-near" : "h-fail");
+    default: return "h-na";
+  }
+}
+
+function groupBySector(stocks) {
+  const groups = {};
+  SECTOR_ORDER.forEach(s => groups[s] = []);
+  stocks.forEach(st => {
+    if (!groups[st.sector]) groups[st.sector] = [];
+    groups[st.sector].push(st);
+  });
+  return groups;
+}
+
+// ===== TAB SWITCHING =====
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+  });
+});
+
+// ===== METRIC METADATA (for header tooltips) =====
+const COLUMN_META = {
+  pe:     { label: "PE",        desc: "市盈率 (TTM) = 股价 / 每股盈利。\nGraham 防御型 < 15；积极型 < 9。\n衡量市场为每 $1 盈利支付的价格。" },
+  pb:     { label: "P/B",       desc: "市净率 = 股价 / 每股账面价值。\nGraham 防御型 < 1.5；积极型 < 1.2。\n轻资产/品牌型公司天然偏高。" },
+  cr:     { label: "CR",        desc: "当前比率 = 流动资产 / 流动负债。\nGraham 防御型 > 2.0；积极型 > 1.5。\n衡量短期偿债能力。\n消费品/公用事业行业 < 1 是常态。" },
+  de:     { label: "D/E",       desc: "债权比率 = 总负债 / 股东权益。\nBuffett 偏好 < 0.5。\n负值 = 账面权益为负（HPQ 是典型）。\n银行/公用事业天然偏高。" },
+  peg:    { label: "PEG",       desc: "PEG = PE / 5 年预期增长率。\nLynch 公允阈值 < 1。\n反映为增长支付的价格。\n注意：依赖分析师预期，可能高估增长可持续性。" },
+  graham: { label: "PE×PB",     desc: "Graham Number 等价检验。\n阈值 ≤ 22.5（即 PE 15 × PB 1.5 的几何上限）。\n超过 22.5 说明同时违反了估值与质量门槛。" },
+  roic:   { label: "ROIC",      desc: "投入资本回报率 = 经营利润 / 投入资本。\nBuffett 卓越生意 > 15%。\n资本成本约 8%，超出部分为'经济价值创造'。\n不会被回购/杠杆扭曲。" },
+  fcf:    { label: "FCF%",      desc: "自由现金流收益率 = FCF / 市值。\nBuffett 合理价格 > 5%。\n低于 2.5% = 市场已透支未来 10+ 年增长。" },
+  ev:     { label: "EV/EBITDA", desc: "企业价值倍数 = (市值+净债务) / EBITDA。\nBuffett 合理价格 < 15。\n比 PE 更准——剔除资本结构差异。" },
+  div:    { label: "Div%",      desc: "股息率 (TTM) = 年股息 / 股价。\nGraham 防御型偏好 > 2%。\n注意：高股息可能是股价下跌的副产品（陷阱）。" }
+};
+
+// ===== CELL TOOLTIP GENERATOR =====
+function cellTooltip(ticker, name, metric, value) {
+  if (value === null || value === undefined) {
+    if (metric === "pe") return `${ticker} (${name})\nPE = N/A\n→ 公司处于亏损状态，Graham 所有 Scenario 直接排除`;
+    if (metric === "pb") return `${ticker} (${name})\nP/B = N/A\n→ 账面权益为负（多因举债回购导致），Graham 第 9 章警告的财务破损形态`;
+    if (metric === "div") return `${ticker} (${name})\nDiv % = 无\n→ 公司不分红，Graham 防御型直接排除（要求 20 年连续分红）`;
+    return `${ticker} (${name})\n${COLUMN_META[metric].label} = N/A\n→ 数据缺失或不适用`;
+  }
+  const cls = classifyCell(metric, value);
+  const v = typeof value === "number" ? value.toFixed(metric === "graham" ? 1 : 2) : value;
+  let head = "", reason = "";
+  switch (cls) {
+    case "h-pass": head = "✓ 通过阈值"; break;
+    case "h-near": head = "△ 接近但不达标"; break;
+    case "h-fail": head = "✗ 远超阈值"; break;
+  }
+  switch (metric) {
+    case "pe":
+      reason = cls === "h-pass" ? "估值便宜，达到 Graham 防御型门槛 (<15)" :
+               cls === "h-near" ? "中等估值，未进入 Graham 区间" :
+               "市场已对未来高增长充分定价，Graham 警告：'为期望的繁荣倾囊付出'";
+      break;
+    case "pb":
+      reason = cls === "h-pass" ? "股价低于每股账面价值 1.5 倍以下，资产折价" :
+               cls === "h-near" ? "适度溢价，介于 1.5-5 倍之间" :
+               "重溢价。注意品牌/无形资产或回购导致的账面失真";
+      break;
+    case "cr":
+      reason = cls === "h-pass" ? "流动资产 ≥ 2 倍流动负债，财务结构稳健 (Graham A)" :
+               cls === "h-near" ? "流动比率 1.2-2.0，介于积极型与防御型之间" :
+               "短期偿债能力偏紧 (注意：消费/公用行业天然偏低)";
+      break;
+    case "de":
+      reason = cls === "h-pass" ? "负债结构保守 (D/E < 0.5)" :
+               cls === "h-near" ? "中等杠杆，需结合行业看" :
+               "高杠杆，需警惕利率上升或盈利下滑放大风险";
+      break;
+    case "peg":
+      reason = cls === "h-pass" ? "PE 相对增长率被低估 (Lynch < 1)" :
+               cls === "h-near" ? "估值与增长大致匹配" :
+               "为增长支付了过高溢价，或增长率过低撑不起 PE";
+      break;
+    case "graham":
+      reason = cls === "h-pass" ? "通过 Graham Number 等价检验 (PE×PB ≤ 22.5)" :
+               cls === "h-near" ? "未通过 Graham 检验，但在合理偏离区间" :
+               "估值显著超出 Graham 上限。检查是否成长股或品牌资产驱动";
+      break;
+    case "roic":
+      reason = cls === "h-pass" ? "卓越的资本回报率，远超资本成本 8%" :
+               cls === "h-near" ? "合格的资本回报，但未达 Buffett 卓越生意标准" :
+               "ROIC 不足 10%，资本配置效率低";
+      break;
+    case "fcf":
+      reason = cls === "h-pass" ? "现金流收益健康 (>5%)，未透支未来" :
+               cls === "h-near" ? "中等现金流收益，部分增长已被定价" :
+               "FCF Yield 过低，市场已对未来高速增长充分定价";
+      break;
+    case "ev":
+      reason = cls === "h-pass" ? "EV/EBITDA < 15，未支付 glamour 溢价" :
+               cls === "h-near" ? "估值倍数中等" :
+               "进入 glamour 区域，估值脆弱性高";
+      break;
+    case "div":
+      reason = cls === "h-pass" ? "股息率 > 2%，达到防御型偏好" :
+               cls === "h-near" ? "中等股息率，介于 0.5-2%" :
+               "股息率不足，更接近成长股定位";
+      break;
+  }
+  return `${ticker} (${name})\n${COLUMN_META[metric].label} = ${v}\n${head} · ${reason}`;
+}
+
+// ===== INSIGHTS COLUMN GENERATOR (Bull/Bear double row, full text) =====
+function escapeHTML(s) {
+  if (!s) return "";
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function insightsHTML(st) {
+  const bull = st.mr_market_wrong ? String(st.mr_market_wrong).trim() : "";
+  const bear = st.mr_market_right ? String(st.mr_market_right).trim() : "";
+  if (!bull && !bear) {
+    const w = st.why || "";
+    return `<div class="why-fallback">${escapeHTML(w)}</div>`;
+  }
+  let html = "";
+  if (bull) html += `<div class="bull"><span class="bull-tag">📈 Bull</span>${escapeHTML(bull)}</div>`;
+  if (bear) html += `<div class="bear"><span class="bear-tag">📉 Bear</span>${escapeHTML(bear)}</div>`;
+  return html;
+}
+
+// Backward-compat alias
+function shortInsight(st) {
+  return insightsHTML(st);
+}
+
+// ===== HEATMAP =====
+function renderHeatmap() {
+  const cols = [
+    { k: "pe_ttm", metric: "pe" },
+    { k: "pb", metric: "pb" },
+    { k: "current_ratio", metric: "cr" },
+    { k: "de_ratio", metric: "de" },
+    { k: "peg", metric: "peg" },
+    { k: "graham_index", metric: "graham" },
+    { k: "roic_pct", metric: "roic" },
+    { k: "fcf_yield_pct", metric: "fcf" },
+    { k: "ev_ebitda", metric: "ev" },
+    { k: "div_yield_pct", metric: "div" }
+  ];
+
+  const groups = groupBySector(STOCKS);
+  const container = document.getElementById("heatmap-container");
+  let html = '<table class="text-xs"><thead><tr>';
+  html += '<th class="text-left px-2 py-2 sticky left-0 bg-white font-medium text-slate-500">Ticker</th>';
+  cols.forEach(c => {
+    const meta = COLUMN_META[c.metric];
+    html += `<th class="text-center px-2 py-2 font-medium text-slate-500" data-tt="${meta.desc.replace(/"/g,'&quot;')}">${meta.label}</th>`;
+  });
+  html += '<th class="text-left px-3 py-2 font-medium text-slate-500" data-tt="每只股票的核心 WHY 摘要 — Mr. Market 在哪里错了。\n点击 ticker 行的 + Compare 按钮深入对比。">Insights</th></tr></thead><tbody>';
+
+  SECTOR_ORDER.forEach(sec => {
+    const list = groups[sec] || [];
+    if (!list.length) return;
+    html += `<tr class="sector-row"><td colspan="${cols.length + 2}">${SECTOR_LABEL_ZH[sec]} · ${sec}</td></tr>`;
+    list.forEach(st => {
+      html += '<tr class="border-b border-slate-100 hover:bg-slate-50">';
+      const scenarios = st.screen_scenarios || [];
+      const isGrowth = scenarios.includes("growth");
+      const isCombined = scenarios.includes("combined");
+      const isCompounder = scenarios.includes("compounder");
+      const isTrend = scenarios.includes("trend");
+      let badge = "";
+      // Stack the most informative badges (compounder + trend = "正在涨的复利机器")
+      if (isCompounder) badge = ' <span class="text-[10px] px-1 py-0.5 bg-amber-100 text-amber-800 rounded font-normal border border-amber-300" title="真·复利机器（已验证 10 年盈利 + EPS CAGR ≥ 5%）">🏆</span>';
+      if (isTrend) badge += ' <span class="text-[10px] px-1 py-0.5 bg-sky-100 text-sky-800 rounded font-normal border border-sky-300" title="趋势上行（在 21/63 DMA 之上 + 跑赢 SPY 3m + 距 52w 高 ≤ 12%）">📈</span>';
+      if (!isCompounder && !isTrend) {
+        if (isGrowth && !isCombined) badge = ' <span class="text-[9px] px-1 py-0.5 bg-purple-100 text-purple-700 rounded font-normal" title="成长扫描挑出（高 ROIC × 合理 PEG）— 注意：历史盈利不一定经过周期验证">🚀</span>';
+        else if (isGrowth && isCombined) badge = ' <span class="text-[9px] px-1 py-0.5 bg-emerald-100 text-emerald-700 rounded font-normal" title="综合 + 成长双重命中">★</span>';
+      }
+      // Track-record warning (overlay): only valid when we have history data
+      const yrs = st.data_history_years;
+      const posPct = st.earnings_pct_positive;
+      let trWarn = "";
+      if (yrs !== null && yrs !== undefined && yrs >= 3 && posPct !== null && posPct !== undefined && posPct < 0.7) {
+        trWarn = ' <span class="text-[10px] px-1 py-0.5 bg-rose-100 text-rose-700 rounded font-normal border border-rose-300" title="历史盈利不充分：仅' + Math.round(posPct*100) + '% 的年份净利润为正">⚠</span>';
+      } else if (st.ipo_year && (new Date().getFullYear() - st.ipo_year) < 5) {
+        trWarn = ' <span class="text-[10px] px-1 py-0.5 bg-rose-50 text-rose-600 rounded font-normal border border-rose-200" title="上市不足 5 年（未经历完整周期）">⚠</span>';
+      }
+      badge = badge + trWarn;
+      const scenarioTip = scenarios.length ? `\n命中场景：${scenarios.join(" + ")}` : "";
+      const tickerTip = `${st.ticker} · ${st.name || ""}\n板块：${SECTOR_LABEL_ZH[st.sector] || st.sector}\n市值 $${st.market_cap_b}B · 价格 $${st.price ?? "—"}\n护城河：${st.moat || "—"}${scenarioTip}`;
+      html += `<td class="px-2 py-1 sticky left-0 bg-white font-semibold whitespace-nowrap" data-tt="${tickerTip.replace(/"/g,'&quot;')}">${st.ticker}${badge}</td>`;
+      cols.forEach(c => {
+        const v = st[c.k];
+        const cls = classifyCell(c.metric, v);
+        const txt = (v === null || v === undefined) ? "—" : (typeof v === "number" ? v.toFixed(c.metric === "graham" ? 0 : 1) : v);
+        const tip = cellTooltip(st.ticker, st.name || "", c.metric, v).replace(/"/g,'&quot;');
+        html += `<td class="p-0"><div class="heatmap-cell ${cls}" data-tt="${tip}">${txt}</div></td>`;
+      });
+      html += `<td class="insights-cell">${shortInsight(st)}</td>`;
+      html += "</tr>";
+    });
+  });
+
+  html += "</tbody></table>";
+  container.innerHTML = html;
+}
+
+// ===== TOOLTIP HANDLER =====
+(function attachTooltip() {
+  const tt = document.getElementById("tooltip");
+  document.body.addEventListener("mouseover", (e) => {
+    const el = e.target.closest("[data-tt]");
+    if (!el) return;
+    tt.textContent = el.getAttribute("data-tt");
+    tt.classList.remove("hidden");
+  });
+  document.body.addEventListener("mousemove", (e) => {
+    if (tt.classList.contains("hidden")) return;
+    let x = e.clientX + 14, y = e.clientY + 14;
+    // Keep in viewport
+    const rect = tt.getBoundingClientRect();
+    if (x + rect.width > window.innerWidth - 12) x = e.clientX - rect.width - 14;
+    if (y + rect.height > window.innerHeight - 12) y = e.clientY - rect.height - 14;
+    tt.style.left = x + "px";
+    tt.style.top = y + "px";
+  });
+  document.body.addEventListener("mouseout", (e) => {
+    const el = e.target.closest("[data-tt]");
+    if (!el) return;
+    tt.classList.add("hidden");
+  });
+})();
+
+// ===== TREND HERO =====
+// Renders the "📈 趋势上行" sky-blue card grid. Stocks shown have
+// screen_scenarios containing "trend" — they passed the price-action
+// gates in compute_trend_metrics + the trend hard-knockout (above 21/63 DMA,
+// golden alignment, RS3m > 0, within 12% of 52w high, drawdown ≥ -20%,
+// ROIC ≥ 10%, RSI ≤ 88).
+function renderTrendHero() {
+  const grid = document.getElementById("trend-hero-grid");
+  const empty = document.getElementById("trend-hero-empty");
+  if (!grid) return;
+  const picks = STOCKS
+    .filter(s => (s.screen_scenarios || []).includes("trend"))
+    .map(s => ({...s, _tscore: s.screen_score_trend ?? s.screen_score ?? 0}))
+    .sort((a, b) => b._tscore - a._tscore)
+    .slice(0, 15);
+  if (!picks.length) {
+    grid.innerHTML = "";
+    if (empty) empty.classList.remove("hidden");
+    return;
+  }
+  if (empty) empty.classList.add("hidden");
+  let html = "";
+  picks.forEach(s => {
+    const rs3 = s.rs_3m_pct;
+    const rs1 = s.rs_1m_pct;
+    const d52h = s.distance_to_52w_high_pct;
+    const ma_align = s.ma21_vs_ma63_pct;
+    const rsi = s.rsi_14;
+    const ddmax = s.max_drawdown_3m_pct;
+    const vol = s.volatility_60d_pct;
+    const roic = s.roic_pct;
+    const sectorLabel = SECTOR_LABEL_ZH[s.sector] || s.sector || "";
+    const tip = `${s.ticker} · ${s.name || ""}\n板块：${sectorLabel}\nROIC：${roic != null ? roic.toFixed(0) + "%" : "—"}\n3m RS：${rs3 != null ? rs3.toFixed(1) + "%" : "—"} (vs SPY)\n1m RS：${rs1 != null ? rs1.toFixed(1) + "%" : "—"}\n距 52w 高：${d52h != null ? d52h.toFixed(1) + "%" : "—"}\nRSI(14)：${rsi != null ? rsi.toFixed(0) : "—"}\n63d Max DD：${ddmax != null ? ddmax.toFixed(1) + "%" : "—"}\n60d Vol：${vol != null ? vol.toFixed(0) + "%" : "—"}`;
+    // Color RSI: emerald < 70, amber 70-80, rose > 80
+    const rsiClass = rsi == null ? "text-slate-700" : (rsi < 70 ? "text-emerald-700" : (rsi < 80 ? "text-amber-700" : "text-rose-700"));
+    html += `<div class="bg-white rounded-xl border border-sky-200 p-3 hover:shadow-md transition" data-tt="${tip.replace(/"/g, "&quot;")}">
+      <div class="flex items-baseline justify-between mb-1">
+        <div class="font-bold text-base text-slate-900">${s.ticker} <span class="text-[10px] font-normal text-sky-700">📈</span></div>
+        <div class="text-xs font-mono text-sky-700">${s._tscore.toFixed(0)}</div>
+      </div>
+      <div class="text-xs text-slate-500 truncate mb-2">${s.name || ""} · ${sectorLabel}</div>
+      <div class="grid grid-cols-2 gap-1 text-[11px]">
+        <div><span class="text-slate-500">3m RS</span> <span class="font-mono font-semibold ${rs3 != null && rs3 >= 10 ? "text-emerald-700" : "text-slate-700"}">${rs3 != null ? (rs3 >= 0 ? "+" : "") + rs3.toFixed(0) + "%" : "—"}</span></div>
+        <div><span class="text-slate-500">距 52w</span> <span class="font-mono font-semibold ${d52h != null && d52h >= -3 ? "text-emerald-700" : "text-slate-700"}">${d52h != null ? d52h.toFixed(0) + "%" : "—"}</span></div>
+        <div><span class="text-slate-500">21/63</span> <span class="font-mono">${ma_align != null ? "+" + ma_align.toFixed(1) + "%" : "—"}</span></div>
+        <div><span class="text-slate-500">RSI</span> <span class="font-mono font-semibold ${rsiClass}">${rsi != null ? rsi.toFixed(0) : "—"}</span></div>
+      </div>
+      <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-500">
+        ROIC <span class="font-mono">${roic != null ? roic.toFixed(0) + "%" : "—"}</span> · 60d Vol <span class="font-mono">${vol != null ? vol.toFixed(0) + "%" : "—"}</span> · MaxDD <span class="font-mono">${ddmax != null ? ddmax.toFixed(0) + "%" : "—"}</span>
+      </div>
+    </div>`;
+  });
+  grid.innerHTML = html;
+}
+
+// ===== COMPOUNDER HERO =====
+// Renders the "🏆 真·复利机器" gold-bordered card grid at the top of the
+// overview tab. Stocks shown are those whose screen_scenarios includes
+// "compounder" — the screener has already verified they have ≥90% positive
+// earnings years, ROIC ≥ 12%, EPS CAGR ≥ 5%, ≥8y public, etc.
+function renderCompounderHero() {
+  const grid = document.getElementById("compounder-hero-grid");
+  const empty = document.getElementById("compounder-hero-empty");
+  if (!grid) return;
+  const picks = STOCKS
+    .filter(s => (s.screen_scenarios || []).includes("compounder"))
+    .map(s => ({...s, _cscore: s.screen_score_compounder ?? s.screen_score ?? 0}))
+    .sort((a, b) => b._cscore - a._cscore)
+    .slice(0, 15);
+  if (!picks.length) {
+    grid.innerHTML = "";
+    if (empty) empty.classList.remove("hidden");
+    return;
+  }
+  if (empty) empty.classList.add("hidden");
+  let html = "";
+  picks.forEach(s => {
+    const yrs = s.data_history_years;
+    const posN = s.earnings_positive_years_n || "—";
+    const cagr = s.eps_cagr_pct;
+    const roic = s.roic_pct;
+    const op = s.op_margin_pct;
+    const fcf = s.fcf_yield_pct;
+    const ipo = s.ipo_year;
+    const yearsPub = ipo ? (new Date().getFullYear() - ipo) : null;
+    const moat = s.moat || "—";
+    const sectorLabel = SECTOR_LABEL_ZH[s.sector] || s.sector || "";
+    const tip = `${s.ticker} · ${s.name || ""}\n板块：${sectorLabel}\n护城河：${moat}\n上市：${ipo || "—"}（${yearsPub != null ? yearsPub + " 年" : "?"}）\n近${yrs}年盈利：${posN}\nEPS CAGR：${cagr != null ? cagr.toFixed(1) + "%" : "—"}`;
+    html += `<div class="bg-white rounded-xl border border-amber-200 p-3 hover:shadow-md transition" data-tt="${tip.replace(/"/g, "&quot;")}">
+      <div class="flex items-baseline justify-between mb-1">
+        <div class="font-bold text-base text-slate-900">${s.ticker} <span class="text-[10px] font-normal text-amber-700">🏆</span></div>
+        <div class="text-xs font-mono text-amber-700">${s._cscore.toFixed(0)}</div>
+      </div>
+      <div class="text-xs text-slate-500 truncate mb-2">${s.name || ""} · ${sectorLabel}</div>
+      <div class="grid grid-cols-2 gap-1 text-[11px]">
+        <div><span class="text-slate-500">ROIC</span> <span class="font-mono font-semibold text-emerald-700">${roic != null ? roic.toFixed(0) + "%" : "—"}</span></div>
+        <div><span class="text-slate-500">EPS CAGR</span> <span class="font-mono font-semibold ${cagr != null && cagr >= 7 ? "text-emerald-700" : "text-slate-700"}">${cagr != null ? cagr.toFixed(0) + "%" : "—"}</span></div>
+        <div><span class="text-slate-500">OpMargin</span> <span class="font-mono">${op != null ? op.toFixed(0) + "%" : "—"}</span></div>
+        <div><span class="text-slate-500">FCF Y</span> <span class="font-mono">${fcf != null ? fcf.toFixed(1) + "%" : "—"}</span></div>
+      </div>
+      <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-500">
+        近 ${yrs}年盈利 <span class="font-mono text-emerald-700">${posN}</span>${yearsPub != null ? ` · 上市 ${yearsPub} 年` : ""}
+      </div>
+    </div>`;
+  });
+  grid.innerHTML = html;
+}
+
+// ===== SECTOR SUMMARY =====
+function renderSectorSummary() {
+  const container = document.getElementById("sector-summary");
+  let html = "";
+  SECTOR_ORDER.forEach(sec => {
+    const insight = SECTOR_INSIGHTS[sec];
+    if (!insight) return;
+    html += `<div class="border border-slate-200 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-semibold text-slate-900">${SECTOR_LABEL_ZH[sec]}</h3>
+        <span class="text-xs text-slate-500">${insight.verdict || ""}</span>
+      </div>
+      <p class="text-sm text-slate-600 leading-relaxed">${insight.text}</p>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// ===== GRAHAM CRITERIA EVALUATORS =====
+// Each criterion returns { pass: bool, value: string, tooltip: string }
+function grahamCriteriaA(s) {
+  return [
+    { name: "PE<15", pass: s.pe_ttm !== null && s.pe_ttm !== undefined && s.pe_ttm > 0 && s.pe_ttm < 15,
+      value: s.pe_ttm == null ? "—" : s.pe_ttm.toFixed(2),
+      tooltip: `Graham 防御型要求 PE < 15\n当前 PE = ${s.pe_ttm == null ? "N/A (亏损)" : s.pe_ttm.toFixed(2)}` },
+    { name: "PB<1.5", pass: s.pb !== null && s.pb !== undefined && s.pb > 0 && s.pb < 1.5,
+      value: s.pb == null ? "—" : s.pb.toFixed(2),
+      tooltip: `Graham 防御型要求 PB < 1.5\n当前 PB = ${s.pb == null ? "N/A (负权益)" : s.pb.toFixed(2)}` },
+    { name: "CR>2.0", pass: s.current_ratio !== null && s.current_ratio !== undefined && s.current_ratio > 2.0,
+      value: s.current_ratio == null ? "—" : s.current_ratio.toFixed(2),
+      tooltip: `Graham 防御型要求当前比率 > 2.0\n当前 CR = ${s.current_ratio == null ? "N/A (银行豁免)" : s.current_ratio.toFixed(2)}` },
+    { name: "10年盈利", pass: !!s.earnings_10y_positive,
+      value: s.earnings_10y_positive ? "✓" : "✗",
+      tooltip: `Graham 防御型要求过去 10 年连续正盈利\n当前：${s.earnings_10y_positive ? "通过" : "失败（曾出现亏损）"}` },
+    { name: "20年分红", pass: !!s.div_20y_continuous,
+      value: s.div_20y_continuous ? "✓" : "✗",
+      tooltip: `Graham 防御型要求过去 20 年不间断分红\n当前：${s.div_20y_continuous ? "通过" : "失败（曾中断或不足 20 年）"}` }
+  ];
+}
+
+function grahamCriteriaB(s) {
+  return [
+    { name: "PE<9", pass: s.pe_ttm !== null && s.pe_ttm !== undefined && s.pe_ttm > 0 && s.pe_ttm < 9,
+      value: s.pe_ttm == null ? "—" : s.pe_ttm.toFixed(2),
+      tooltip: `Graham 积极型要求 PE < 9（更深度折价）\n当前 PE = ${s.pe_ttm == null ? "N/A (亏损)" : s.pe_ttm.toFixed(2)}` },
+    { name: "PB<1.2", pass: s.pb !== null && s.pb !== undefined && s.pb > 0 && s.pb < 1.2,
+      value: s.pb == null ? "—" : s.pb.toFixed(2),
+      tooltip: `Graham 积极型要求 PB < 1.2\n当前 PB = ${s.pb == null ? "N/A (负权益)" : s.pb.toFixed(2)}` },
+    { name: "CR>1.5", pass: s.current_ratio !== null && s.current_ratio !== undefined && s.current_ratio > 1.5,
+      value: s.current_ratio == null ? "—" : s.current_ratio.toFixed(2),
+      tooltip: `Graham 积极型要求当前比率 > 1.5（比防御型放宽）\n当前 CR = ${s.current_ratio == null ? "N/A (银行豁免)" : s.current_ratio.toFixed(2)}` },
+    { name: "5年盈利", pass: !!s.earnings_10y_positive,
+      value: s.earnings_10y_positive ? "✓" : "✗",
+      tooltip: `Graham 积极型要求过去 5 年连续正盈利（用 10 年数据作代理）\n当前：${s.earnings_10y_positive ? "通过" : "失败"}` },
+    { name: "当期分红", pass: s.div_yield_pct !== null && s.div_yield_pct !== undefined && s.div_yield_pct > 0,
+      value: s.div_yield_pct == null ? "—" : s.div_yield_pct.toFixed(2) + "%",
+      tooltip: `Graham 积极型要求当期支付分红\n当前股息率 = ${s.div_yield_pct == null ? "无（不支付分红）" : s.div_yield_pct.toFixed(2) + "%"}` }
+  ];
+}
+
+// ===== GRAHAM TABLES =====
+function renderGrahamTable(scenario, tableId) {
+  const tbl = document.getElementById(tableId);
+  const evaluator = scenario === "a" ? grahamCriteriaA : grahamCriteriaB;
+
+  // Get criteria names from a sample (or empty array if no stocks)
+  const sampleCrit = STOCKS.length > 0 ? evaluator(STOCKS[0]) : [];
+  const critNames = sampleCrit.map(c => c.name);
+
+  // Header
+  let html = '<thead><tr class="border-b-2 border-slate-200">';
+  html += '<th class="text-left px-3 py-2 font-medium text-slate-600 text-xs uppercase" data-key="ticker">Ticker</th>';
+  html += '<th class="text-left px-3 py-2 font-medium text-slate-600 text-xs uppercase" data-key="sector">板块</th>';
+  critNames.forEach(name => {
+    html += `<th class="text-center px-3 py-2 font-medium text-slate-600 text-xs uppercase">${name}</th>`;
+  });
+  html += '<th class="text-center px-3 py-2 font-medium text-slate-600 text-xs uppercase num" data-key="pass_count">通过 /5</th>';
+  html += '<th class="text-right px-3 py-2 font-medium text-slate-600 text-xs uppercase num" data-key="graham_index">PE×PB</th>';
+  html += '<th class="text-left px-3 py-2 font-medium text-slate-600 text-xs uppercase">操作</th>';
+  html += '</tr></thead><tbody>';
+
+  // Compute pass counts for both scenarios so we can filter meaningfully
+  const enriched = STOCKS.map(s => {
+    const crits = evaluator(s);
+    const otherCrits = (scenario === "a" ? grahamCriteriaB : grahamCriteriaA)(s);
+    return {
+      ...s,
+      _crits: crits,
+      _passCount: crits.filter(c => c.pass).length,
+      _otherPassCount: otherCrits.filter(c => c.pass).length,
+    };
+  });
+
+  // Differentiated filtering: A and B should show STRUCTURALLY DIFFERENT candidate sets,
+  // not the same stocks ranked differently. Use scenario-specific gateway criteria:
+  //
+  // - A (Defensive): require long-term dividend stability + reasonable PE + true large cap
+  //   → Surface stocks that retirees / income investors would consider
+  // - B (Enterprising): require deep value (low PE, low PB) + current dividend
+  //   → Surface stocks that bargain hunters would research
+  let filtered;
+  if (scenario === "a") {
+    filtered = enriched.filter(s =>
+      s.div_20y_continuous === true &&
+      s.market_cap_b != null && s.market_cap_b > 50 &&
+      s.pe_ttm != null && s.pe_ttm > 0 && s.pe_ttm < 25
+    );
+  } else {  // scenario === "b"
+    filtered = enriched.filter(s =>
+      s.pe_ttm != null && s.pe_ttm > 0 && s.pe_ttm < 15 &&
+      s.pb != null && s.pb > 0 && s.pb < 3 &&
+      s.div_yield_pct != null && s.div_yield_pct > 0
+    );
+  }
+
+  // Sort by pass count desc, then by graham_index asc (lower PE×PB = better tiebreak)
+  filtered.sort((a, b) => {
+    if (b._passCount !== a._passCount) return b._passCount - a._passCount;
+    return (a.graham_index || 9999) - (b.graham_index || 9999);
+  });
+
+  // Insert summary header above table
+  const totalEvaluated = enriched.length;
+  const fullPassCount = enriched.filter(s => s._passCount === critNames.length).length;
+  const partialCount = filtered.length;
+  const gateLabel = scenario === "a"
+    ? '准入：长期分红（≥18 年）+ 市值&gt;$50B + PE&lt;25'
+    : '准入：PE&lt;15 + PB&lt;3 + 当前分红';
+  const summaryHtml = `<div class="mb-3 px-3 py-2 bg-slate-50 rounded-lg text-xs text-slate-600 flex flex-wrap gap-x-4 gap-y-1">
+    <span><strong class="text-slate-900">${gateLabel}</strong></span>
+    <span>共 ${totalEvaluated} 只候选 → 显示 <strong class="text-slate-900">${partialCount}</strong> 只通过准入</span>
+    ${fullPassCount > 0 ? `<span><strong class="text-emerald-700">${fullPassCount}</strong> 只 5/5 全通过</span>` : ''}
+    <span class="text-slate-400">${totalEvaluated - partialCount} 只不符合本场景准入条件</span>
+  </div>`;
+  // Note: we'll prepend this to the parent panel below table render
+  if (tbl.parentElement) {
+    let summaryEl = tbl.parentElement.querySelector(".graham-summary");
+    if (!summaryEl) {
+      summaryEl = document.createElement("div");
+      summaryEl.className = "graham-summary";
+      tbl.parentElement.insertBefore(summaryEl, tbl);
+    }
+    summaryEl.innerHTML = summaryHtml;
+  }
+
+  // Use filtered list for table rendering
+  const sourceList = filtered;
+
+  sourceList.forEach((st, idx) => {
+    const allPass = st._passCount === critNames.length;
+    const rowClass = allPass ? "bg-emerald-50" : (st._passCount >= 3 ? "bg-amber-50/30" : "");
+    const hasDeep = st.valuation_bias || st.mr_market_wrong || st.mr_market_right;
+    const detailId = `${tableId}-detail-${idx}`;
+    const totalCols = critNames.length + 5; // ticker + sector + N criteria + pass + PE×PB + actions
+    html += `<tr class="border-b border-slate-100 hover:bg-slate-100 ${rowClass}">`;
+    html += `<td class="px-3 py-2 font-semibold">${st.ticker}</td>`;
+    html += `<td class="px-3 py-2 text-xs text-slate-500">${SECTOR_LABEL_ZH[st.sector] || st.sector}</td>`;
+
+    st._crits.forEach(c => {
+      const cellClass = c.pass ? "bg-emerald-100 text-emerald-700" : (c.value === "—" ? "bg-slate-100 text-slate-400" : "bg-rose-50 text-rose-600");
+      const symbol = c.pass ? "✓" : (c.value === "—" ? "—" : "✗");
+      html += `<td class="p-1"><div class="inline-flex items-center justify-center w-full px-2 py-1 rounded text-xs font-mono ${cellClass}" data-tt="${c.tooltip.replace(/"/g,'&quot;')}">${symbol} ${c.value !== "✓" && c.value !== "✗" ? c.value : ""}</div></td>`;
+    });
+
+    const countClass = allPass ? "text-emerald-700 font-bold" : st._passCount >= 3 ? "text-amber-700 font-semibold" : "text-slate-500";
+    html += `<td class="px-3 py-2 text-center num ${countClass}">${st._passCount}/5</td>`;
+    const gi = st.graham_index;
+    html += `<td class="px-3 py-2 text-right num text-slate-700">${gi == null ? "—" : gi.toFixed(0)}</td>`;
+    html += `<td class="px-3 py-2 whitespace-nowrap">`;
+    if (hasDeep) {
+      html += `<button class="row-expand text-xs px-2 py-1 border border-slate-300 rounded-lg hover:border-indigo-500 hover:text-indigo-700 mr-1" data-target="${detailId}" title="展开深度分析">📖</button>`;
+    }
+    html += `<button class="compare-btn text-xs px-2 py-1 border border-slate-300 rounded-lg hover:border-slate-900" data-ticker="${st.ticker}">+</button></td>`;
+    html += "</tr>";
+
+    // Hidden detail row
+    if (hasDeep) {
+      html += `<tr id="${detailId}" class="detail-row hidden border-b border-slate-100 bg-slate-50/60"><td colspan="${totalCols}" class="px-6 py-4">`;
+      html += `<div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs leading-relaxed">`;
+      if (st.valuation_bias) {
+        html += `<div><span class="inline-block px-2 py-0.5 bg-slate-200 rounded text-[10px] font-medium text-slate-700 mb-1.5">📊 估值偏差类型</span><p class="text-slate-700">${st.valuation_bias}</p></div>`;
+      }
+      if (st.mr_market_wrong) {
+        html += `<div><span class="inline-block px-2 py-0.5 bg-rose-100 text-rose-700 rounded text-[10px] font-medium mb-1.5">⚠ Mr. Market 可能错在哪</span><p class="text-slate-700">${st.mr_market_wrong}</p></div>`;
+      }
+      if (st.mr_market_right) {
+        html += `<div><span class="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-medium mb-1.5">✓ Mr. Market 可能对在哪</span><p class="text-slate-700">${st.mr_market_right}</p></div>`;
+      }
+      html += `</div>`;
+      if (st.why) {
+        html += `<div class="mt-3 pt-3 border-t border-slate-200 text-xs text-slate-600 leading-relaxed"><span class="inline-block px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[10px] font-medium mb-1.5">💡 综合 WHY</span><p>${st.why}</p></div>`;
+      }
+      html += `</td></tr>`;
+    }
+  });
+
+  html += "</tbody>";
+  tbl.innerHTML = html;
+}
+
+// ===== TABLE SORTING =====
+function attachSorting() {
+  document.querySelectorAll("table.sortable").forEach(tbl => {
+    tbl.querySelectorAll("th[data-key]").forEach(th => {
+      th.addEventListener("click", () => {
+        const key = th.dataset.key;
+        const tbody = tbl.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+        const isNum = th.classList.contains("num");
+        const asc = !th.classList.contains("sorted-asc");
+        tbl.querySelectorAll("th").forEach(h => h.classList.remove("sorted-asc", "sorted-desc"));
+        th.classList.add(asc ? "sorted-asc" : "sorted-desc");
+        const idx = Array.from(th.parentNode.children).indexOf(th);
+        rows.sort((a, b) => {
+          const av = a.children[idx]?.textContent.trim();
+          const bv = b.children[idx]?.textContent.trim();
+          if (isNum) {
+            const an = parseFloat(av) || -Infinity;
+            const bn = parseFloat(bv) || -Infinity;
+            return asc ? an - bn : bn - an;
+          }
+          return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+        });
+        rows.forEach(r => tbody.appendChild(r));
+      });
+    });
+  });
+}
+
+// ===== BUFFETT SCATTER + CARDS =====
+let _buffettChart = null;       // chart instance for external highlighting
+let _highlightedTicker = null;  // currently highlighted ticker
+
+function renderBuffettScatter() {
+  const ctx = document.getElementById("buffett-scatter");
+  if (!ctx) return;
+
+  // Compute axis bounds with margin
+  const points = STOCKS.filter(s => s.fcf_yield_pct != null && s.roic_pct != null);
+  const xMax = Math.max(15, ...points.map(p => p.fcf_yield_pct + 2));
+  const yMax = Math.max(50, ...points.map(p => p.roic_pct + 5));
+  const xMin = Math.min(-5, ...points.map(p => p.fcf_yield_pct - 2));
+  const yMin = Math.min(-5, ...points.map(p => p.roic_pct - 5));
+
+  // Buffett thresholds: ROIC > 15%, FCF Yield > 5%
+  const ROIC_THRESHOLD = 15;
+  const FCF_THRESHOLD = 5;
+
+  const sectorColors = {
+    Tech: "#6366f1", Consumer: "#f59e0b", Healthcare: "#ec4899",
+    Finance: "#3b82f6", Industrials: "#8b5cf6", Energy: "#ef4444",
+    Utilities: "#10b981", Materials: "#a16207"
+  };
+
+  // Quadrant background colors (light tints)
+  const quadrants = {
+    annotation_q1_great: {  // top-right: ROIC>15 AND FCF>5
+      type: 'box',
+      xMin: FCF_THRESHOLD, xMax: xMax,
+      yMin: ROIC_THRESHOLD, yMax: yMax,
+      backgroundColor: 'rgba(16, 185, 129, 0.08)',  // emerald
+      borderWidth: 0,
+      label: { display: true, content: '🦄 Great Business at Fair Price',
+               position: { x: 'center', y: 'start' }, color: '#047857',
+               font: { size: 10, weight: '600', family: 'Inter' }, padding: 6 }
+    },
+    annotation_q2_quality: {  // top-left: ROIC>15 BUT FCF<5
+      type: 'box',
+      xMin: xMin, xMax: FCF_THRESHOLD,
+      yMin: ROIC_THRESHOLD, yMax: yMax,
+      backgroundColor: 'rgba(245, 158, 11, 0.08)',  // amber
+      borderWidth: 0,
+      label: { display: true, content: '⭐ Great Business · Expensive',
+               position: { x: 'center', y: 'start' }, color: '#b45309',
+               font: { size: 10, weight: '600', family: 'Inter' }, padding: 6 }
+    },
+    annotation_q3_value: {  // bottom-right: FCF>5 BUT ROIC<15
+      type: 'box',
+      xMin: FCF_THRESHOLD, xMax: xMax,
+      yMin: yMin, yMax: ROIC_THRESHOLD,
+      backgroundColor: 'rgba(99, 102, 241, 0.06)',  // indigo
+      borderWidth: 0,
+      label: { display: true, content: '💰 Cheap but Mediocre · Value Trap?',
+               position: { x: 'center', y: 'end' }, color: '#4338ca',
+               font: { size: 10, weight: '600', family: 'Inter' }, padding: 6 }
+    },
+    annotation_q4_avoid: {  // bottom-left
+      type: 'box',
+      xMin: xMin, xMax: FCF_THRESHOLD,
+      yMin: yMin, yMax: ROIC_THRESHOLD,
+      backgroundColor: 'rgba(239, 68, 68, 0.05)',  // red
+      borderWidth: 0,
+      label: { display: true, content: '⚠ Avoid',
+               position: { x: 'center', y: 'end' }, color: '#b91c1c',
+               font: { size: 10, weight: '600', family: 'Inter' }, padding: 6 }
+    },
+    threshold_roic: {
+      type: 'line',
+      yMin: ROIC_THRESHOLD, yMax: ROIC_THRESHOLD,
+      borderColor: 'rgba(15,23,42,0.4)', borderWidth: 1.5, borderDash: [6, 4],
+      label: { display: true, content: 'ROIC 15%',
+               position: 'end', backgroundColor: 'rgba(15,23,42,0.7)', color: '#fff',
+               font: { size: 10, family: 'JetBrains Mono' }, padding: 3 }
+    },
+    threshold_fcf: {
+      type: 'line',
+      xMin: FCF_THRESHOLD, xMax: FCF_THRESHOLD,
+      borderColor: 'rgba(15,23,42,0.4)', borderWidth: 1.5, borderDash: [6, 4],
+      label: { display: true, content: 'FCF 5%',
+               position: 'end', backgroundColor: 'rgba(15,23,42,0.7)', color: '#fff',
+               font: { size: 10, family: 'JetBrains Mono' }, padding: 3 }
+    }
+  };
+
+  // Build datasets per sector
+  const datasets = SECTOR_ORDER.concat(['Healthcare', 'Industrials', 'Materials']).filter((s, i, arr) => arr.indexOf(s) === i).map(sec => ({
+    label: (SECTOR_LABEL_ZH[sec] || sec) + " · " + sec,
+    data: STOCKS.filter(s => s.sector === sec && s.fcf_yield_pct != null && s.roic_pct != null)
+      .map(s => ({ x: s.fcf_yield_pct, y: s.roic_pct, ticker: s.ticker, name: s.name })),
+    backgroundColor: sectorColors[sec] || "#94a3b8",
+    borderColor: sectorColors[sec] || "#94a3b8",
+    pointRadius: 6,
+    pointHoverRadius: 12,
+    pointBorderWidth: 1.5,
+    pointBorderColor: "#fff"
+  })).filter(ds => ds.data.length > 0);
+
+  if (_buffettChart) _buffettChart.destroy();
+
+  _buffettChart = new Chart(ctx, {
+    type: "scatter",
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "bottom", labels: { font: { family: "Inter", size: 11 }, boxWidth: 12, padding: 10 } },
+        tooltip: {
+          callbacks: {
+            label: (c) => `${c.raw.ticker}${c.raw.name ? ' · ' + c.raw.name : ''} · FCF Yield ${c.raw.x.toFixed(2)}% · ROIC ${c.raw.y.toFixed(2)}%`
+          }
+        },
+        annotation: { annotations: quadrants }
+      },
+      scales: {
+        x: { title: { display: true, text: "FCF Yield (%)", font: { weight: '600' } }, grid: { color: "#f1f5f9" }, min: xMin, max: xMax },
+        y: { title: { display: true, text: "ROIC (%)", font: { weight: '600' } }, grid: { color: "#f1f5f9" }, min: yMin, max: yMax }
+      }
+    }
+  });
+}
+
+function highlightScatterPoint(ticker) {
+  if (!_buffettChart) return;
+  // Reset all points to default size
+  _buffettChart.data.datasets.forEach(ds => {
+    ds.data.forEach(pt => {
+      pt._isHighlighted = false;
+    });
+  });
+  // Find and mark the target ticker
+  let foundDsIdx = -1, foundPtIdx = -1;
+  _buffettChart.data.datasets.forEach((ds, di) => {
+    ds.data.forEach((pt, pi) => {
+      if (pt.ticker === ticker) {
+        pt._isHighlighted = true;
+        foundDsIdx = di;
+        foundPtIdx = pi;
+      }
+    });
+  });
+  // Apply per-point styling via parsing options
+  _buffettChart.data.datasets.forEach((ds, di) => {
+    ds.pointRadius = ds.data.map(pt => pt._isHighlighted ? 14 : 6);
+    ds.pointBorderColor = ds.data.map(pt => pt._isHighlighted ? "#0f172a" : "#fff");
+    ds.pointBorderWidth = ds.data.map(pt => pt._isHighlighted ? 3 : 1.5);
+  });
+  _highlightedTicker = ticker;
+  _buffettChart.update();
+
+  // Auto-show tooltip on the highlighted point
+  if (foundDsIdx >= 0) {
+    _buffettChart.setActiveElements([{ datasetIndex: foundDsIdx, index: foundPtIdx }]);
+    _buffettChart.tooltip.setActiveElements([{ datasetIndex: foundDsIdx, index: foundPtIdx }],
+      { x: 0, y: 0 });
+    _buffettChart.update();
+  }
+
+  // Scroll chart into view smoothly
+  const canvas = document.getElementById("buffett-scatter");
+  if (canvas) canvas.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function renderBuffettCards() {
+  // Show ALL stocks with ROIC > 15% (Buffett quality threshold), sorted by ROIC desc.
+  // Falls back to top-9 by Graham A pass count if no ROIC data.
+  const ROIC_BUFFETT = 15;
+  let top;
+  const above = STOCKS.filter(s => s.roic_pct != null && s.roic_pct > ROIC_BUFFETT);
+  if (above.length >= 3) {
+    top = [...above].sort((a, b) => b.roic_pct - a.roic_pct);
+  } else {
+    top = [...STOCKS].sort((a, b) => (b.graham_a_pass_count || 0) - (a.graham_a_pass_count || 0)).slice(0, 9);
+  }
+  const container = document.getElementById("buffett-cards");
+  // Header banner: how many passed the ROIC threshold
+  const totalRated = STOCKS.filter(s => s.roic_pct != null).length;
+  const headerHTML = above.length >= 3
+    ? `<div class="col-span-full mb-4 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between">
+         <div>
+           <span class="font-semibold text-emerald-800">${top.length}</span>
+           <span class="text-emerald-700"> 只通过 ROIC > ${ROIC_BUFFETT}% 的 Buffett 卓越生意阈值</span>
+           <span class="text-emerald-600 text-xs">（占 Top ${totalRated} 中 ${(top.length/totalRated*100).toFixed(0)}%）</span>
+         </div>
+         <span class="text-xs text-emerald-600">按 ROIC 从高到低排列</span>
+       </div>`
+    : '';
+  let html = headerHTML;
+  top.forEach((st, idx) => {
+    const moatColor = st.moat === "Wide" ? "bg-emerald-100 text-emerald-700" : (st.moat === "Narrow" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600");
+    const cardId = `buffett-card-${idx}`;
+    const hasDeep = st.valuation_bias || st.mr_market_wrong || st.mr_market_right;
+    html += `<div class="border border-slate-200 rounded-xl p-4 hover:shadow-md transition flex flex-col">
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <div class="font-bold text-slate-900">${st.ticker}</div>
+          <div class="text-xs text-slate-500">${st.name || ""} · ${SECTOR_LABEL_ZH[st.sector] || st.sector}</div>
+        </div>
+        <span class="text-xs px-2 py-1 rounded-md ${moatColor}" data-tt="护城河等级\nWide = 未来 20 年仍能维持超额回报（Buffett 最爱）\nNarrow = 未来 5-10 年可维持\nNone = 商品化竞争（应回避）">${st.moat || "—"}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2 my-3 text-center">
+        <div data-tt="ROIC = ${fmt(st.roic_pct,2)}%\n${st.roic_pct == null ? '数据缺失' : (st.roic_pct > 30 ? '✓ 顶级（>30%）' : st.roic_pct > 20 ? '✓ 卓越（20-30%）' : st.roic_pct > 15 ? '✓ 优秀（15-20%）' : st.roic_pct > 10 ? '△ 合格（10-15%）' : '✗ 不足（<10%）')}"><div class="text-xs text-slate-500">ROIC</div><div class="font-mono font-semibold ${st.roic_pct > 15 ? 'text-emerald-600' : st.roic_pct > 10 ? 'text-amber-600' : 'text-slate-700'}">${fmt(st.roic_pct, 1)}%</div></div>
+        <div data-tt="FCF Yield = ${fmt(st.fcf_yield_pct,2)}%\n${st.fcf_yield_pct == null ? '数据缺失' : (st.fcf_yield_pct > 8 ? '✓ 便宜（>8%）' : st.fcf_yield_pct > 5 ? '✓ 合理（5-8%）' : st.fcf_yield_pct > 3 ? '△ 已对增长定价（3-5%）' : '✗ 已透支未来（<3%）')}"><div class="text-xs text-slate-500">FCF%</div><div class="font-mono font-semibold ${st.fcf_yield_pct > 5 ? 'text-emerald-600' : st.fcf_yield_pct > 3 ? 'text-amber-600' : 'text-slate-700'}">${fmt(st.fcf_yield_pct, 1)}%</div></div>
+        <div data-tt="EV/EBITDA = ${fmt(st.ev_ebitda,2)}\n${st.ev_ebitda == null ? '数据缺失' : (st.ev_ebitda < 12 ? '✓ Graham 廉价（<12）' : st.ev_ebitda < 15 ? '△ 接近合理（12-15）' : st.ev_ebitda < 20 ? '✗ Glamour 区域（15-20）' : '✗ 已透支未来（>20）')}"><div class="text-xs text-slate-500">EV/EB</div><div class="font-mono font-semibold ${st.ev_ebitda < 15 ? 'text-emerald-600' : st.ev_ebitda < 20 ? 'text-amber-600' : 'text-slate-700'}">${fmt(st.ev_ebitda, 1)}</div></div>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed mt-2 flex-grow">${st.why || ""}</p>
+      ${hasDeep ? `
+      <details class="mt-3 text-xs">
+        <summary class="cursor-pointer text-indigo-600 font-medium hover:text-indigo-800 select-none">📖 展开深度分析</summary>
+        <div class="mt-3 space-y-3 pt-3 border-t border-slate-100">
+          ${st.valuation_bias ? `<div><span class="inline-block px-2 py-0.5 bg-slate-100 rounded text-xs font-medium text-slate-700 mb-1">估值偏差类型</span><p class="text-slate-600 leading-relaxed">${st.valuation_bias}</p></div>` : ''}
+          ${st.mr_market_wrong ? `<div><span class="inline-block px-2 py-0.5 bg-rose-50 text-rose-700 rounded text-xs font-medium mb-1">⚠ Mr. Market 可能错在哪</span><p class="text-slate-600 leading-relaxed">${st.mr_market_wrong}</p></div>` : ''}
+          ${st.mr_market_right ? `<div><span class="inline-block px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded text-xs font-medium mb-1">✓ Mr. Market 可能对在哪</span><p class="text-slate-600 leading-relaxed">${st.mr_market_right}</p></div>` : ''}
+        </div>
+      </details>` : ''}
+      <button class="compare-btn mt-3 w-full text-xs px-2 py-1.5 border border-slate-300 rounded-lg hover:border-slate-900" data-ticker="${st.ticker}">+ Compare</button>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// ===== ACTIVE SCENARIO BANNER =====
+function renderScreeningBanner() {
+  const tag = document.getElementById("active-scenario-tag");
+  const detail = document.getElementById("active-scenario-detail");
+  if (!tag || !detail) return;
+  if (typeof SCREENING_META === "undefined" || !SCREENING_META) {
+    tag.innerHTML = '<span class="text-xs px-2 py-1 bg-slate-100 rounded text-slate-600">未应用算法筛选 · 全候选池展示</span>';
+    detail.innerHTML = '<div class="text-sm text-slate-600">本次 dashboard 展示的是<strong class="text-slate-900">完整候选池</strong>（未经 screen_universe.py 筛选）。如需运行算法筛选，请用 Skill 重新生成。</div>';
+    return;
+  }
+  const scenarioLabel = {defensive: "防御型", enterprising: "积极型", buffett: "Buffett 修正", combined: "综合（默认）", growth: "成长扫描", compounder: "真·复利机器", trend: "趋势上行（1-3m）", "combined+growth": "综合 + 成长", "combined+growth+compounder": "综合 + 成长 + 复利机器", "combined+growth+compounder+trend": "综合 + 成长 + 复利机器 + 趋势（四轨）"}[SCREENING_META.scenario] || SCREENING_META.scenario;
+  tag.innerHTML = `<span class="text-xs px-2.5 py-1 bg-indigo-100 text-indigo-800 rounded font-medium">已应用：${scenarioLabel}</span>`;
+  detail.innerHTML = `
+    <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+      <div><span class="text-slate-500">场景：</span><strong class="text-slate-900">${scenarioLabel}</strong></div>
+      <div><span class="text-slate-500">候选池规模：</span><span class="font-mono">${SCREENING_META.universe_size}</span></div>
+      <div><span class="text-slate-500">Knockout 后：</span><span class="font-mono">${SCREENING_META.after_knockout}</span></div>
+      <div><span class="text-slate-500">最终 Top N：</span><span class="font-mono font-bold text-indigo-700">${SCREENING_META.after_top_n}</span></div>
+      ${SCREENING_META.min_mcap_b ? `<div><span class="text-slate-500">市值下限：</span><span class="font-mono">$${SCREENING_META.min_mcap_b}B</span></div>` : ''}
+      ${SCREENING_META.require_dividend ? '<div><span class="text-emerald-600">✓ 需要分红</span></div>' : ''}
+      ${SCREENING_META.strict_earnings ? '<div><span class="text-emerald-600">✓ 严格 10 年盈利</span></div>' : ''}
+    </div>`;
+}
+
+// ===== SPECIAL CARDS =====
+function renderSpecialCards() {
+  const c = document.getElementById("special-cards");
+  let html = "";
+  SPECIAL_CARDS.forEach(card => {
+    html += `<div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+      <div class="text-2xl mb-2">${card.icon}</div>
+      <h3 class="font-semibold text-slate-900 mb-2">${card.title}</h3>
+      <p class="text-xs text-slate-600 leading-relaxed mb-3">${card.definition}</p>
+      <div class="space-y-2 text-xs">
+        <div><span class="text-slate-500 font-medium">公式：</span><span class="font-mono">${card.formula}</span></div>
+        <div><span class="text-slate-500 font-medium">现代调整：</span>${card.modern}</div>
+        <div><span class="text-slate-500 font-medium">入场基准：</span>${card.entry}</div>
+      </div>
+    </div>`;
+  });
+  c.innerHTML = html;
+}
+
+// ===== IAR CALCULATOR =====
+function calcIAR() {
+  const G = parseFloat(document.getElementById("iar-g").value) || 0;
+  const C = parseFloat(document.getElementById("iar-c").value) || 0;
+  const L = parseFloat(document.getElementById("iar-l").value) || 0;
+  const Y = parseFloat(document.getElementById("iar-y").value) || 0.01;
+  const P = parseFloat(document.getElementById("iar-p").value) || 0.01;
+  const iar = (G * C - L * (1 - C)) / (Y * P) * 100;
+  document.getElementById("iar-value").textContent = isFinite(iar) ? iar.toFixed(2) + "%" : "—";
+  const verdict = iar >= 15 ? "✓ 达到入场基准" : (iar > 0 ? "⚠ 不足以补偿风险" : "✗ 期望回报为负");
+  const verEl = document.getElementById("iar-verdict");
+  verEl.textContent = verdict;
+  verEl.className = "mt-1 font-medium " + (iar >= 15 ? "text-emerald-400" : (iar > 0 ? "text-amber-400" : "text-rose-400"));
+}
+["iar-g", "iar-c", "iar-l", "iar-y", "iar-p"].forEach(id => {
+  document.getElementById(id).addEventListener("input", calcIAR);
+});
+
+// ===== QUOTES =====
+function renderQuotes() {
+  const c = document.getElementById("quotes-container");
+  const themeColors = {
+    "成长股警告": "border-rose-200 bg-rose-50/30",
+    "市场先生": "border-indigo-200 bg-indigo-50/30",
+    "安全边际": "border-emerald-200 bg-emerald-50/30",
+    "防御 vs 进攻": "border-amber-200 bg-amber-50/30",
+    "资本化率": "border-slate-200 bg-slate-50/30"
+  };
+  let html = "";
+  QUOTES.forEach(q => {
+    html += `<div class="rounded-2xl border ${themeColors[q.theme] || "border-slate-200"} p-5">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold uppercase tracking-wide text-slate-700">${q.theme}</span>
+        <span class="text-xs text-slate-500">${q.chapter}</span>
+      </div>
+      <blockquote class="text-sm text-slate-700 leading-relaxed italic">"${q.text}"</blockquote>
+    </div>`;
+  });
+  c.innerHTML = html;
+}
+
+// ===== COMPARE MODE =====
+const compareSet = new Set();
+
+function updateComparePill() {
+  const pill = document.getElementById("compare-pill");
+  const count = document.getElementById("compare-count");
+  count.textContent = compareSet.size;
+  if (compareSet.size > 0) pill.classList.remove("hidden");
+  else pill.classList.add("hidden");
+}
+
+function attachCompareButtons() {
+  document.body.addEventListener("click", (e) => {
+    const btn = e.target.closest(".compare-btn");
+    if (!btn) return;
+    e.preventDefault();
+    const ticker = btn.dataset.ticker;
+    if (compareSet.has(ticker)) {
+      compareSet.delete(ticker);
+      document.querySelectorAll(`.compare-btn[data-ticker="${ticker}"]`).forEach(b => b.classList.remove("selected"));
+    } else {
+      compareSet.add(ticker);
+      document.querySelectorAll(`.compare-btn[data-ticker="${ticker}"]`).forEach(b => b.classList.add("selected"));
+    }
+    updateComparePill();
+  });
+}
+
+// ===== ROW EXPAND HANDLER (Graham A/B detail rows) =====
+function attachRowExpand() {
+  document.body.addEventListener("click", (e) => {
+    const btn = e.target.closest(".row-expand");
+    if (!btn) return;
+    e.preventDefault();
+    const targetId = btn.dataset.target;
+    const row = document.getElementById(targetId);
+    if (!row) return;
+    row.classList.toggle("hidden");
+    btn.textContent = row.classList.contains("hidden") ? "📖" : "📕";
+  });
+}
+
+function renderCompareModal() {
+  if (compareSet.size === 0) return;
+  const list = Array.from(compareSet).map(t => STOCKS.find(s => s.ticker === t)).filter(Boolean);
+  const groups = [
+    { title: "估值", keys: ["price", "market_cap_b", "pe_ttm", "fwd_pe", "pb", "peg", "graham_index", "ev_ebitda"] },
+    { title: "财务健康", keys: ["current_ratio", "de_ratio"] },
+    { title: "盈利质量", keys: ["roic_pct", "roe_pct", "op_margin_pct", "fcf_yield_pct"] },
+    { title: "分红", keys: ["div_yield_pct"] }
+  ];
+  const labels = { price: "价格 ($)", market_cap_b: "市值 (B)", pe_ttm: "PE TTM", fwd_pe: "Forward PE", pb: "P/B", peg: "PEG", graham_index: "PE×PB", ev_ebitda: "EV/EBITDA", current_ratio: "当前比率", de_ratio: "D/E", roic_pct: "ROIC %", roe_pct: "ROE %", op_margin_pct: "营业利润率 %", fcf_yield_pct: "FCF Yield %", div_yield_pct: "股息率 %" };
+  // higher is better for these:
+  const higherBetter = ["roic_pct", "roe_pct", "op_margin_pct", "fcf_yield_pct", "div_yield_pct", "current_ratio"];
+  // lower is better for these (when comparing):
+  const lowerBetter = ["pe_ttm", "fwd_pe", "pb", "peg", "graham_index", "ev_ebitda", "de_ratio"];
+
+  let html = `<div class="grid gap-3 mb-4" style="grid-template-columns: 200px repeat(${list.length}, 1fr);">`;
+  html += `<div></div>`;
+  list.forEach(s => {
+    html += `<div class="text-center">
+      <div class="font-bold text-lg text-slate-900">${s.ticker}</div>
+      <div class="text-xs text-slate-500">${s.name || ""}</div>
+      <div class="text-xs text-slate-400 mt-1">${SECTOR_LABEL_ZH[s.sector] || s.sector}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  groups.forEach(g => {
+    html += `<div class="mb-5"><h3 class="text-xs uppercase font-semibold text-slate-500 mb-2 tracking-wide">${g.title}</h3>`;
+    g.keys.forEach(k => {
+      const vals = list.map(s => s[k]);
+      const numVals = vals.filter(v => typeof v === "number");
+      let bestIdx = -1;
+      if (numVals.length > 1) {
+        if (higherBetter.includes(k)) {
+          const max = Math.max(...numVals);
+          bestIdx = vals.findIndex(v => v === max);
+        } else if (lowerBetter.includes(k)) {
+          const min = Math.min(...numVals);
+          bestIdx = vals.findIndex(v => v === min);
+        }
+      }
+      html += `<div class="grid gap-3 py-2 border-b border-slate-100" style="grid-template-columns: 200px repeat(${list.length}, 1fr);">`;
+      html += `<div class="text-sm text-slate-600">${labels[k] || k}</div>`;
+      vals.forEach((v, i) => {
+        const txt = (v === null || v === undefined) ? "—" : (typeof v === "number" ? v.toFixed(2) : v);
+        const cls = i === bestIdx ? "text-emerald-600 font-semibold" : "text-slate-800";
+        html += `<div class="text-center font-mono text-sm ${cls}">${txt}</div>`;
+      });
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+
+  // WHY paragraphs
+  html += `<div class="mt-6 grid gap-4" style="grid-template-columns: repeat(${list.length}, 1fr);">`;
+  list.forEach(s => {
+    html += `<div class="bg-slate-50 rounded-xl p-4">
+      <div class="font-semibold text-slate-900 mb-2">${s.ticker}</div>
+      <p class="text-xs text-slate-600 leading-relaxed">${s.why || "—"}</p>
+    </div>`;
+  });
+  html += `</div>`;
+
+  document.getElementById("compare-body").innerHTML = html;
+}
+
+document.getElementById("open-compare").addEventListener("click", () => {
+  if (compareSet.size === 0) return;
+  renderCompareModal();
+  const m = document.getElementById("compare-modal");
+  m.classList.remove("hidden");
+  m.classList.add("flex");
+});
+document.getElementById("close-compare").addEventListener("click", () => {
+  const m = document.getElementById("compare-modal");
+  m.classList.add("hidden");
+  m.classList.remove("flex");
+});
+document.getElementById("compare-modal").addEventListener("click", (e) => {
+  if (e.target.id === "compare-modal") {
+    const m = document.getElementById("compare-modal");
+    m.classList.add("hidden");
+    m.classList.remove("flex");
+  }
+});
+
+// ===== INIT =====
+renderScreeningBanner();
+renderTrendHero();
+renderCompounderHero();
+renderHeatmap();
+renderSectorSummary();
+renderGrahamTable("a", "table-graham-a");
+renderGrahamTable("b", "table-graham-b");
+renderBuffettScatter();
+renderBuffettCards();
+renderSpecialCards();
+renderQuotes();
+attachSorting();
+attachCompareButtons();
+attachRowExpand();
+calcIAR();
+
+</script>
+</body>
+</html>

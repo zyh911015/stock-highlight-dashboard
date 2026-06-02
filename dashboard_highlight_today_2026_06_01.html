@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Highlighted High-Quality Stocks · Today's Price Read · 2026-06-01</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f8fafc; }
+  .font-mono, td.num, .num { font-family: 'JetBrains Mono', monospace; }
+  table.sortable th { cursor: pointer; user-select: none; }
+  table.sortable th:hover { background: #f1f5f9; }
+  table.sortable th.sorted-asc::after { content: ' ▲'; color: #0f172a; }
+  table.sortable th.sorted-desc::after { content: ' ▼'; color: #0f172a; }
+</style>
+</head>
+<body class="text-slate-800">
+
+<header class="border-b border-slate-200 bg-white">
+  <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">📊 高亮股今日价格分析 · 2026-06-01</h1>
+      <p class="text-sm text-slate-500 mt-1">数据源 dashboard_custom_worldcup.html + yfinance 今日价 · 共 17 只 highlight 股票</p>
+    </div>
+    <div class="flex items-center gap-3 text-sm">
+      <div class="px-3 py-1.5 bg-slate-100 rounded-lg font-mono text-slate-700">最新 bar: 2026-06-01</div>
+      <div class="px-3 py-1.5 bg-slate-100 rounded-lg font-mono text-slate-700">生成于 2026-06-01 22:54</div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 py-8">
+
+<!-- KPI 大盘总览 -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+    <div class="text-xs text-slate-500 uppercase tracking-wide">SPY 今日</div>
+    <div class="text-2xl font-bold mt-2 font-mono text-emerald-700">+0.27%</div>
+    <div class="text-xs text-slate-500 mt-1">收 758.54</div>
+  </div>
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+    <div class="text-xs text-slate-500 uppercase tracking-wide">SPY 3 月</div>
+    <div class="text-2xl font-bold mt-2 font-mono text-emerald-700">+10.5%</div>
+    <div class="text-xs text-slate-500 mt-1">基准</div>
+  </div>
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+    <div class="text-xs text-slate-500 uppercase tracking-wide">今日上涨数</div>
+    <div class="text-2xl font-bold text-emerald-600 mt-2 font-mono">11</div>
+    <div class="text-xs text-slate-500 mt-1">/ 17 只</div>
+  </div>
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+    <div class="text-xs text-slate-500 uppercase tracking-wide">今日下跌数</div>
+    <div class="text-2xl font-bold text-rose-600 mt-2 font-mono">6</div>
+    <div class="text-xs text-slate-500 mt-1">/ 17 只</div>
+  </div>
+</div>
+
+<!-- 📊 Indices & ETFs (用户跟踪的基金/指数) -->
+
+<section class="mb-8">
+  <div class="mb-4">
+    <h2 class="text-xl font-bold text-slate-900">📊 Indices & ETFs（每日跟踪的基金 / 指数）</h2>
+    <p class="text-sm text-slate-500 mt-1">大盘 / 成长 / 半导体 / 杠杆 / 避险 五大类基准。同一套 RSI/U-D/MA 框架，便于快速判断板块结构。</p>
+  </div>
+  
+  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50/70 p-5 mb-4">
+    <h3 class="text-base font-bold text-slate-900 mb-3">🌐 大盘指数 <span class="text-xs font-normal text-slate-500">· 2 只</span></h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-white/50 border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-600">
+          <tr>
+            <th class="px-3 py-2 text-left">Ticker</th>
+            <th class="px-3 py-2 text-right">价</th>
+            <th class="px-3 py-2 text-right">今日</th>
+            <th class="px-2 py-2 text-right">1m</th>
+            <th class="px-2 py-2 text-right">3m</th>
+            <th class="px-2 py-2 text-right">vsMA21</th>
+            <th class="px-2 py-2 text-right">vsMA63</th>
+            <th class="px-2 py-2 text-right">vsMA200</th>
+            <th class="px-2 py-2 text-right">RSI</th>
+            <th class="px-2 py-2 text-right">U/D 50d</th>
+            <th class="px-2 py-2 text-right">距 52w</th>
+            <th class="px-2 py-2 text-right">3m RS</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">SPY<div class="text-[10px] text-slate-500 font-normal">S&P 500 (ETF)</div></td>
+          <td class="px-3 py-2 text-right font-mono">758.54</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+0.27%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+5.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+10.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+2.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+8.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+11.3%</td>
+          <td class="px-2 py-2 text-right font-mono text-amber-700 font-semibold">75</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700 font-bold">1.83</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">+0.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">+0.0%</td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">QQQ<div class="text-[10px] text-slate-500 font-normal">Nasdaq-100 (ETF)</div></td>
+          <td class="px-3 py-2 text-right font-mono">742.74</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+0.60%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+11.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+22.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+4.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+15.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+20.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-amber-700 font-semibold">78</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700 font-bold">2.03</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">+0.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+11.6%</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="rounded-2xl border-2 border-sky-300 bg-sky-50/60 p-5 mb-4">
+    <h3 class="text-base font-bold text-slate-900 mb-3">📈 成长 ETF <span class="text-xs font-normal text-slate-500">· 3 只</span></h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-white/50 border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-600">
+          <tr>
+            <th class="px-3 py-2 text-left">Ticker</th>
+            <th class="px-3 py-2 text-right">价</th>
+            <th class="px-3 py-2 text-right">今日</th>
+            <th class="px-2 py-2 text-right">1m</th>
+            <th class="px-2 py-2 text-right">3m</th>
+            <th class="px-2 py-2 text-right">vsMA21</th>
+            <th class="px-2 py-2 text-right">vsMA63</th>
+            <th class="px-2 py-2 text-right">vsMA200</th>
+            <th class="px-2 py-2 text-right">RSI</th>
+            <th class="px-2 py-2 text-right">U/D 50d</th>
+            <th class="px-2 py-2 text-right">距 52w</th>
+            <th class="px-2 py-2 text-right">3m RS</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">IWY<div class="text-[10px] text-slate-500 font-normal">Russell Top 200 Growth</div></td>
+          <td class="px-3 py-2 text-right font-mono">302.16</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+0.75%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+8.3%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+14.8%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+3.8%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+11.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+11.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-amber-700 font-semibold">78</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700 font-bold">1.77</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">+0.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+4.2%</td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">IWP<div class="text-[10px] text-slate-500 font-normal">Russell Mid-Cap Growth</div></td>
+          <td class="px-3 py-2 text-right font-mono">143.78</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+0.62%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+5.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+5.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+3.9%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+7.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+4.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-amber-700 font-semibold">71</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.09</td>
+          <td class="px-2 py-2 text-right font-mono bg-emerald-50 text-emerald-700 font-semibold rounded">-1.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-5.4%</td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">VUG<div class="text-[10px] text-slate-500 font-normal">Vanguard Growth</div></td>
+          <td class="px-3 py-2 text-right font-mono">90.29</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+0.77%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+8.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+17.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+3.7%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+12.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+12.8%</td>
+          <td class="px-2 py-2 text-right font-mono text-amber-700 font-semibold">77</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700 font-bold">2.18</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">+0.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+6.7%</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="rounded-2xl border-2 border-amber-300 bg-amber-50/60 p-5 mb-4">
+    <h3 class="text-base font-bold text-slate-900 mb-3">🧠 半导体 ETF <span class="text-xs font-normal text-slate-500">· 3 只</span></h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-white/50 border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-600">
+          <tr>
+            <th class="px-3 py-2 text-left">Ticker</th>
+            <th class="px-3 py-2 text-right">价</th>
+            <th class="px-3 py-2 text-right">今日</th>
+            <th class="px-2 py-2 text-right">1m</th>
+            <th class="px-2 py-2 text-right">3m</th>
+            <th class="px-2 py-2 text-right">vsMA21</th>
+            <th class="px-2 py-2 text-right">vsMA63</th>
+            <th class="px-2 py-2 text-right">vsMA200</th>
+            <th class="px-2 py-2 text-right">RSI</th>
+            <th class="px-2 py-2 text-right">U/D 50d</th>
+            <th class="px-2 py-2 text-right">距 52w</th>
+            <th class="px-2 py-2 text-right">3m RS</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">SMH<div class="text-[10px] text-slate-500 font-normal">VanEck Semi</div></td>
+          <td class="px-3 py-2 text-right font-mono">607.81</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+1.48%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+19.9%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+49.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+7.8%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+29.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+55.7%</td>
+          <td class="px-2 py-2 text-right font-mono text-amber-700 font-semibold">73</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700 font-bold">1.95</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">+0.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+39.1%</td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">SOXX<div class="text-[10px] text-slate-500 font-normal">iShares Semi 30</div></td>
+          <td class="px-3 py-2 text-right font-mono">571.93</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+0.50%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+23.9%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+62.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+9.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+36.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+69.3%</td>
+          <td class="px-2 py-2 text-right font-mono text-amber-700 font-semibold">73</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700 font-bold">2.18</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">+0.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+51.9%</td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">SOXQ<div class="text-[10px] text-slate-500 font-normal">Invesco PHLX Semi</div></td>
+          <td class="px-3 py-2 text-right font-mono">102.03</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+0.99%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+23.4%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+59.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+9.4%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+34.7%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+65.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-amber-700 font-semibold">73</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700 font-bold">2.30</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">+0.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+48.7%</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="rounded-2xl border-2 border-rose-300 bg-rose-50/60 p-5 mb-4">
+    <h3 class="text-base font-bold text-slate-900 mb-3">⚡ 杠杆 ETF <span class="text-xs font-normal text-slate-500">· 2 只</span></h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-white/50 border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-600">
+          <tr>
+            <th class="px-3 py-2 text-left">Ticker</th>
+            <th class="px-3 py-2 text-right">价</th>
+            <th class="px-3 py-2 text-right">今日</th>
+            <th class="px-2 py-2 text-right">1m</th>
+            <th class="px-2 py-2 text-right">3m</th>
+            <th class="px-2 py-2 text-right">vsMA21</th>
+            <th class="px-2 py-2 text-right">vsMA63</th>
+            <th class="px-2 py-2 text-right">vsMA200</th>
+            <th class="px-2 py-2 text-right">RSI</th>
+            <th class="px-2 py-2 text-right">U/D 50d</th>
+            <th class="px-2 py-2 text-right">距 52w</th>
+            <th class="px-2 py-2 text-right">3m RS</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">TQQQ<div class="text-[10px] text-slate-500 font-normal">ProShares 3x QQQ</div></td>
+          <td class="px-3 py-2 text-right font-mono">86.04</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+1.75%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+35.4%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+73.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+13.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+46.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+59.3%</td>
+          <td class="px-2 py-2 text-right font-mono text-amber-700 font-semibold">78</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700 font-bold">2.00</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">+0.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+62.6%</td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">SOXL<div class="text-[10px] text-slate-500 font-normal">Direxion 3x Semi</div></td>
+          <td class="px-3 py-2 text-right font-mono">227.03</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+1.20%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+78.8%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+261.7%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+26.8%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+112.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+254.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-amber-700 font-semibold">72</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700 font-bold">2.68</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">+0.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+251.2%</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="rounded-2xl border-2 border-emerald-300 bg-emerald-50/60 p-5 mb-4">
+    <h3 class="text-base font-bold text-slate-900 mb-3">🛡️ 避险 / 利率 <span class="text-xs font-normal text-slate-500">· 3 只</span></h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-white/50 border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-600">
+          <tr>
+            <th class="px-3 py-2 text-left">Ticker</th>
+            <th class="px-3 py-2 text-right">价</th>
+            <th class="px-3 py-2 text-right">今日</th>
+            <th class="px-2 py-2 text-right">1m</th>
+            <th class="px-2 py-2 text-right">3m</th>
+            <th class="px-2 py-2 text-right">vsMA21</th>
+            <th class="px-2 py-2 text-right">vsMA63</th>
+            <th class="px-2 py-2 text-right">vsMA200</th>
+            <th class="px-2 py-2 text-right">RSI</th>
+            <th class="px-2 py-2 text-right">U/D 50d</th>
+            <th class="px-2 py-2 text-right">距 52w</th>
+            <th class="px-2 py-2 text-right">3m RS</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">TLT<div class="text-[10px] text-slate-500 font-normal">20+y Treasury</div></td>
+          <td class="px-3 py-2 text-right font-mono">85.47</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.34%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-0.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-4.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+0.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-0.9%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-2.9%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">52</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">0.84</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-7.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-15.1%</td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">GLD<div class="text-[10px] text-slate-500 font-normal">Gold</div></td>
+          <td class="px-3 py-2 text-right font-mono">411.26</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-1.40%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-2.9%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-16.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-2.3%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-5.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+2.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">41</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">0.93</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-17.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-26.6%</td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">^VIX<div class="text-[10px] text-slate-500 font-normal">VIX 指数</div></td>
+          <td class="px-3 py-2 text-right font-mono">16.05</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+4.77%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-5.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-31.9%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-6.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-22.9%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-12.7%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">41</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-500">—</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-48.3%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-400">—</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- 📍 支撑位监控 -->
+
+<section class="mb-8">
+  <div class="mb-4">
+    <h2 class="text-xl font-bold text-slate-900">📍 支撑位监控（今日测试关键 MA / 52w 低）</h2>
+    <p class="text-sm text-slate-500 mt-1">自动检测股票是否在 MA21/63/200 或 52w 低附近。分四档：🔄 反弹（看涨）、🎯 测试中、⚠️ 已破中期、☠️ 已破长期。</p>
+  </div>
+  <div class="space-y-4">
+        <div class="rounded-2xl border-2 border-emerald-300 bg-emerald-50/60 p-5">
+          <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+            <h3 class="text-base font-bold text-slate-900">🔄 支撑位反弹（强烈看涨）</h3>
+            <span class="text-xs text-slate-500">2 只 · 盘中触及支撑后收回 — 经典买点</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">DKNG</span>
+              <span class="text-[11px] text-slate-500">$26.33</span>
+              <span class="text-xs font-mono text-emerald-700">+7.51%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">DraftKings Inc.</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">🔄 MA21 盘中反弹</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $24.80 (+6.2%)</div>
+            <div>MA63 $23.94 (+10.0%)</div>
+            <div>MA200 $31.23 (-15.7%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">FOXA</span>
+              <span class="text-[11px] text-slate-500">$66.81</span>
+              <span class="text-xs font-mono text-emerald-700">+4.52%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Fox Corporation</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">🔄 MA21 盘中反弹</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $64.58 (+3.5%)</div>
+            <div>MA63 $61.81 (+8.1%)</div>
+            <div>MA200 $63.60 (+5.1%)</div>
+          </div>
+        </div>
+        </div>
+        </div>
+        
+        <div class="rounded-2xl border-2 border-amber-300 bg-amber-50/60 p-5">
+          <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+            <h3 class="text-base font-bold text-slate-900">🎯 正在测试支撑位（潜在买点）</h3>
+            <span class="text-xs text-slate-500">8 只 · 价格贴近 MA21/63/200 — 是支撑还是破位待定</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">FLUT</span>
+              <span class="text-[11px] text-slate-500">$104.31</span>
+              <span class="text-xs font-mono text-emerald-700">+7.56%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Flutter Entertainment plc</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">🎯 踩 MA63</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $98.05 (+6.4%)</div>
+            <div>MA63 $104.26 (+0.0%)</div>
+            <div>MA200 $185.27 (-43.7%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">EXPE</span>
+              <span class="text-[11px] text-slate-500">$228.37</span>
+              <span class="text-xs font-mono text-emerald-700">+1.14%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Expedia Group, Inc.</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">🎯 踩 MA21</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $227.78 (+0.3%)</div>
+            <div>MA63 $235.91 (-3.2%)</div>
+            <div>MA200 $239.40 (-4.6%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">BKNG</span>
+              <span class="text-[11px] text-slate-500">$169.25</span>
+              <span class="text-xs font-mono text-emerald-700">+1.09%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Booking Holdings Inc.</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">🎯 踩 MA63</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $162.66 (+4.1%)</div>
+            <div>MA63 $171.14 (-1.1%)</div>
+            <div>MA200 $194.42 (-12.9%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">CMCSA</span>
+              <span class="text-[11px] text-slate-500">$25.05</span>
+              <span class="text-xs font-mono text-emerald-700">+0.72%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Comcast Corporation</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">🎯 踩 MA21</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $25.43 (-1.5%)</div>
+            <div>MA63 $27.90 (-10.2%)</div>
+            <div>MA200 $28.42 (-11.9%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">MA</span>
+              <span class="text-[11px] text-slate-500">$495.25</span>
+              <span class="text-xs font-mono text-emerald-700">+0.26%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Mastercard Incorporated</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">🎯 踩 MA21</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $496.70 (-0.3%)</div>
+            <div>MA63 $503.03 (-1.5%)</div>
+            <div>MA200 $541.46 (-8.5%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">BUD</span>
+              <span class="text-[11px] text-slate-500">$80.02</span>
+              <span class="text-xs font-mono text-emerald-700">+0.04%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Anheuser-Busch InBev SA/NV</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">🎯 踩 MA21</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $80.69 (-0.8%)</div>
+            <div>MA63 $75.21 (+6.4%)</div>
+            <div>MA200 $68.07 (+17.6%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">KO</span>
+              <span class="text-[11px] text-slate-500">$78.64</span>
+              <span class="text-xs font-mono text-rose-700">-0.47%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">The Coca-Cola Company</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">🎯 踩 MA21</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $79.95 (-1.6%)</div>
+            <div>MA63 $77.69 (+1.2%)</div>
+            <div>MA200 $73.00 (+7.7%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">V</span>
+              <span class="text-[11px] text-slate-500">$322.77</span>
+              <span class="text-xs font-mono text-rose-700">-1.10%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Visa Inc.</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">🎯 踩 MA21</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $325.53 (-0.8%)</div>
+            <div>MA63 $314.84 (+2.5%)</div>
+            <div>MA200 $330.68 (-2.4%)</div>
+          </div>
+        </div>
+        </div>
+        </div>
+        
+        <div class="rounded-2xl border-2 border-rose-300 bg-rose-50/60 p-5">
+          <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+            <h3 class="text-base font-bold text-slate-900">☠️ 跌破长期支撑 / 接近 52w 低（危险）</h3>
+            <span class="text-xs text-slate-500">9 只 · MA200 破或接近 52w 低 — 不建议抄底</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">FLUT</span>
+              <span class="text-[11px] text-slate-500">$104.31</span>
+              <span class="text-xs font-mono text-emerald-700">+7.56%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Flutter Entertainment plc</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">☠️ 跌破 MA200（长期破位）</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $98.05 (+6.4%)</div>
+            <div>MA63 $104.26 (+0.0%)</div>
+            <div>MA200 $185.27 (-43.7%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">DKNG</span>
+              <span class="text-[11px] text-slate-500">$26.33</span>
+              <span class="text-xs font-mono text-emerald-700">+7.51%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">DraftKings Inc.</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">☠️ 跌破 MA200（长期破位）</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $24.80 (+6.2%)</div>
+            <div>MA63 $23.94 (+10.0%)</div>
+            <div>MA200 $31.23 (-15.7%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">EXPE</span>
+              <span class="text-[11px] text-slate-500">$228.37</span>
+              <span class="text-xs font-mono text-emerald-700">+1.14%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Expedia Group, Inc.</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">☠️ 跌破 MA200（长期破位）</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $227.78 (+0.3%)</div>
+            <div>MA63 $235.91 (-3.2%)</div>
+            <div>MA200 $239.40 (-4.6%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">BKNG</span>
+              <span class="text-[11px] text-slate-500">$169.25</span>
+              <span class="text-xs font-mono text-emerald-700">+1.09%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Booking Holdings Inc.</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">☠️ 跌破 MA200（长期破位）</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $162.66 (+4.1%)</div>
+            <div>MA63 $171.14 (-1.1%)</div>
+            <div>MA200 $194.42 (-12.9%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">CMCSA</span>
+              <span class="text-[11px] text-slate-500">$25.05</span>
+              <span class="text-xs font-mono text-emerald-700">+0.72%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Comcast Corporation</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">☠️ 跌破 MA200（长期破位）</span> <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">🆘 接近 52w 低</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $25.43 (-1.5%)</div>
+            <div>MA63 $27.90 (-10.2%)</div>
+            <div>MA200 $28.42 (-11.9%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">MA</span>
+              <span class="text-[11px] text-slate-500">$495.25</span>
+              <span class="text-xs font-mono text-emerald-700">+0.26%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Mastercard Incorporated</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">☠️ 跌破 MA200（长期破位）</span> <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">🆘 接近 52w 低</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $496.70 (-0.3%)</div>
+            <div>MA63 $503.03 (-1.5%)</div>
+            <div>MA200 $541.46 (-8.5%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">NKE</span>
+              <span class="text-[11px] text-slate-500">$45.93</span>
+              <span class="text-xs font-mono text-rose-700">-0.65%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">NIKE, Inc.</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">☠️ 跌破 MA200（长期破位）</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $43.94 (+4.5%)</div>
+            <div>MA63 $47.69 (-3.7%)</div>
+            <div>MA200 $60.90 (-24.6%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">TAP</span>
+              <span class="text-[11px] text-slate-500">$39.03</span>
+              <span class="text-xs font-mono text-rose-700">-1.26%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Molson Coors Beverage Company</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">☠️ 跌破 MA200（长期破位）</span> <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">🆘 接近 52w 低</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $41.57 (-6.1%)</div>
+            <div>MA63 $43.01 (-9.3%)</div>
+            <div>MA200 $46.26 (-15.6%)</div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">STZ</span>
+              <span class="text-[11px] text-slate-500">$136.25</span>
+              <span class="text-xs font-mono text-rose-700">-1.85%</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Constellation Brands, Inc.</div>
+          <div class="mb-2 flex flex-wrap gap-1"><span class="text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-slate-200">☠️ 跌破 MA200（长期破位）</span></div>
+          <div class="text-[10px] text-slate-600 grid grid-cols-3 gap-1">
+            <div>MA21 $145.91 (-6.6%)</div>
+            <div>MA63 $151.51 (-10.1%)</div>
+            <div>MA200 $147.36 (-7.5%)</div>
+          </div>
+        </div>
+        </div>
+        </div>
+        </div>
+</section>
+
+
+<!-- 主表 -->
+<section class="bg-white rounded-2xl shadow-sm border border-slate-200 mb-8">
+  <div class="p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+    <div>
+      <h2 class="text-base font-semibold text-slate-900">📋 全 17 只 — 今日读数（按今日 % 排序）</h2>
+      <p class="text-xs text-slate-500 mt-1">点击列头可重新排序。颜色：绿 涨 / 红 跌；RSI/MFI ≥80 红粗、70-80 黄、≤30 蓝；U/D 量 ≥1.25 绿（机构吸筹）、≤0.75 红（派发）；Vol× ≥2 黄（放量）；距 52w 高 ≤ 3% 绿底高亮。</p>
+    </div>
+    <div class="flex gap-2 text-xs">
+      <span class="px-2 py-1 rounded border bg-amber-50 text-amber-800 border-amber-300">🏆 Compounder</span>
+      <span class="px-2 py-1 rounded border bg-sky-50 text-sky-800 border-sky-300">📈 Trend</span>
+      <span class="px-2 py-1 rounded border bg-indigo-50 text-indigo-800 border-indigo-300">💎 Buffett</span>
+      <span class="px-2 py-1 rounded border bg-fuchsia-50 text-fuchsia-800 border-fuchsia-300">📌 Manual</span>
+    </div>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="sortable w-full text-sm">
+      <thead class="bg-slate-50 border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-600">
+        <tr>
+          <th class="px-3 py-2 text-left">Ticker</th>
+          <th class="px-2 py-2 text-left">Tag</th>
+          <th class="px-3 py-2 text-right">今日价</th>
+          <th class="px-3 py-2 text-right">今日 %</th>
+          <th class="px-3 py-2 text-right">vs 5/7 %</th>
+          <th class="px-2 py-2 text-right">vs MA21</th>
+          <th class="px-2 py-2 text-right">vs MA63</th>
+          <th class="px-2 py-2 text-right">vs MA200</th>
+          <th class="px-2 py-2 text-right" title="RSI(14) — 14 日相对强弱，0-100">RSI</th>
+          <th class="px-2 py-2 text-right" title="Money Flow Index(14) — 资金流动版 RSI，含成交量加权">MFI</th>
+          <th class="px-2 py-2 text-right" title="O'Neil 50 日 Up/Down 成交量比；>1.25 机构吸筹，<0.75 派发">U/D 量</th>
+          <th class="px-2 py-2 text-right" title="今日成交量 / 20 日均量，看放量缩量">Vol×</th>
+          <th class="px-2 py-2 text-right">距 52w</th>
+          <th class="px-2 py-2 text-right">3m RS</th>
+          <th class="px-3 py-2 text-left">状态</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">FLUT<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Flutter Entertainment plc</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">104.31</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+7.56%</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+6.4%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+0.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-43.7%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">58</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">61</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">0.79</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.40×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-66.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-12.2%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">🟢 站上 MA21 · ☠️ 跌破 MA200（长期破位） · 🎯 踩 MA63</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">DKNG<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">DraftKings Inc.</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">26.33</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+7.51%</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+6.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+10.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-15.7%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">61</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">64</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.15</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.19×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-45.4%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+0.0%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">🟢 站上 MA21 · ☠️ 跌破 MA200（长期破位） · 🔄 MA21 盘中反弹</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">FOXA<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Fox Corporation</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">66.81</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+4.52%</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+3.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+8.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+5.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">60</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">40</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700 font-semibold">1.25</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.04×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-12.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+7.1%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">🟢 站上 MA21 · 📥 机构吸筹 · 🔄 MA21 盘中反弹</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">HLT<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Hilton Worldwide Holdings Inc.</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">332.65</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+1.52%</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+3.7%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+5.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+13.9%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">58</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">61</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.06</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.24×</td>
+          <td class="px-2 py-2 text-right font-mono bg-emerald-50 text-emerald-700 font-semibold rounded">-3.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-1.4%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">📈 趋势完整 · 🚀 接近新高</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">H<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Hyatt Hotels Corporation</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">183.65</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+1.26%</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+7.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+15.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+18.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">65</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">69</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700 font-semibold">1.46</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.00×</td>
+          <td class="px-2 py-2 text-right font-mono bg-emerald-50 text-emerald-700 font-semibold rounded">-1.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+4.4%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">📈 趋势完整 · 🚀 接近新高 · 📥 机构吸筹</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">EXPE<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Expedia Group, Inc.</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-indigo-100 text-indigo-800 border-indigo-300" title="buffett">💎</span> <span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">228.37</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+1.14%</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+0.3%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-3.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-4.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">49</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">51</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.09</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">0.83×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-24.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-3.4%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">🟢 站上 MA21 · ☠️ 跌破 MA200（长期破位） · 🎯 踩 MA21</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">BKNG<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Booking Holdings Inc.</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-indigo-100 text-indigo-800 border-indigo-300" title="buffett">💎</span> <span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">169.25</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+1.09%</td>
+          <td class="px-3 py-2 text-right font-mono text-slate-700">+0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+4.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-1.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-12.9%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">55</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">66</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.14</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">0.87×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-27.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-9.3%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">🟢 站上 MA21 · ☠️ 跌破 MA200（长期破位） · 🎯 踩 MA63</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">CMCSA<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Comcast Corporation</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">25.05</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+0.72%</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-1.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-10.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-11.9%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">38</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">33</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">0.87</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">0.76×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-26.4%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-29.2%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">⚠️ 跌破中期 · ☠️ 跌破 MA200（长期破位） · 🎯 踩 MA21 · 🆘 接近 52w 低</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">MAR<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Marriott International, Inc.</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">376.96</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+0.36%</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+4.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+8.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+21.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">61</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">61</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.24</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">0.99×</td>
+          <td class="px-2 py-2 text-right font-mono bg-emerald-50 text-emerald-700 font-semibold rounded">-2.3%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+3.6%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">📈 趋势完整 · 🚀 接近新高</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">MA<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Mastercard Incorporated</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">495.25</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+0.26%</td>
+          <td class="px-3 py-2 text-right font-mono text-slate-700">+0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-0.3%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-1.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-8.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">47</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">58</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.09</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.27×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-17.3%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-15.5%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">⚠️ 跌破中期 · ☠️ 跌破 MA200（长期破位） · 🎯 踩 MA21 · 🆘 接近 52w 低</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">BUD<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Anheuser-Busch InBev SA/NV</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">80.02</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+0.04%</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-0.8%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+6.4%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+17.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">52</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">61</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700 font-bold">1.74</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">0.70×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-4.7%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-8.8%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">◎ 中性 · 📥 机构吸筹 · 🎯 踩 MA21</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">KO<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">The Coca-Cola Company</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">78.64</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.47%</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-1.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+1.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+7.7%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">46</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">51</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.07</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">0.87×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-4.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-12.5%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">◎ 中性 · 🎯 踩 MA21</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">NKE<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">NIKE, Inc.</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">45.93</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.65%</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+4.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-3.7%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-24.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">56</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">58</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700 font-semibold">0.66</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.23×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-42.0%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-35.2%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">🟢 站上 MA21 · 📤 机构派发 · ☠️ 跌破 MA200（长期破位）</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">V<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Visa Inc.</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">322.77</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-1.10%</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-0.8%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+2.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-2.4%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">49</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">62</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.13</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.29×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-13.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-9.8%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">◎ 中性 · 🎯 踩 MA21</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">TAP<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Molson Coors Beverage Company</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">39.03</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-1.26%</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-6.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-9.3%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-15.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">33</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">34</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">0.96</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.14×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-28.2%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-30.2%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">⚠️ 跌破中期 · ☠️ 跌破 MA200（长期破位） · 🆘 接近 52w 低</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">STZ<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Constellation Brands, Inc.</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">136.25</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-1.85%</td>
+          <td class="px-3 py-2 text-right font-mono text-slate-700">+0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-6.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-10.1%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-7.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">33</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">42</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700 font-semibold">0.68</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.04×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-23.6%</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-23.5%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">⚠️ 跌破中期 · 📤 机构派发 · ☠️ 跌破 MA200（长期破位）</td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-3 py-2 font-bold text-slate-900">BBY<div class="text-[10px] text-slate-500 font-normal truncate max-w-[160px]">Best Buy Co., Inc.</div></td>
+          <td class="px-2 py-2 whitespace-nowrap"><span class="text-[10px] px-1.5 py-0.5 rounded border bg-indigo-100 text-indigo-800 border-indigo-300" title="buffett">💎</span> <span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></td>
+          <td class="px-3 py-2 text-right font-mono">74.98</td>
+          <td class="px-3 py-2 text-right font-mono text-rose-700">-3.81%</td>
+          <td class="px-3 py-2 text-right font-mono text-emerald-700">+0.00%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+21.9%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+19.5%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+7.4%</td>
+          <td class="px-2 py-2 text-right font-mono text-amber-700 font-semibold">73</td>
+          <td class="px-2 py-2 text-right font-mono text-amber-700 font-semibold">79</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700 font-semibold">1.44</td>
+          <td class="px-2 py-2 text-right font-mono text-slate-700">1.42×</td>
+          <td class="px-2 py-2 text-right font-mono text-rose-700">-10.7%</td>
+          <td class="px-2 py-2 text-right font-mono text-emerald-700">+11.2%</td>
+          <td class="px-3 py-2 text-xs text-slate-700 whitespace-nowrap">🟢 站上 MA21 · 🔥 超买 · 📥 机构吸筹</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 单股评估（按 tier 分组） -->
+<section class="mb-8">
+  <div class="mb-4">
+    <h2 class="text-xl font-bold text-slate-900">📋 单股评估（基于趋势 + RSI + MFI + U/D + RS 综合打分）</h2>
+    <p class="text-sm text-slate-500 mt-1">每只股票按"趋势 / 透支度 / 资金面 / 机构动向 / 相对强弱"五个维度计分，综合分级 A→D。下面解读为机器生成的技术读数总结，<strong>不构成投资建议</strong>。</p>
+  </div>
+  <div class="space-y-4">
+        <div class="rounded-2xl border-2 border-emerald-300 bg-emerald-50/60 p-5">
+          <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+            <h3 class="text-base font-bold text-slate-900">🟢 强势 (A)</h3>
+            <span class="text-xs text-slate-500">2 只</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">H</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold">🟢 强势</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-emerald-700">+1.26%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Hyatt Hotels Corporation · Consumer</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">183.65</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">65</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">69</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-emerald-700 font-semibold">1.46</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 183.65 完整站上 MA21/63/200 多头排列，距 52w 高 -1.0%。 RSI 65、MFI 69 中性，尚未透支。 50 日 U/D 量 1.46，机构持续买入（今日 Vol 1.00×）。 3m RS +4% vs SPY，多维度对齐看多，是趋势 + 机构双确认的强势组合。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">MAR</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold">🟢 强势</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-emerald-700">+0.36%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Marriott International, Inc. · Consumer</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">376.96</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">61</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">61</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-slate-700">1.24</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 376.96 完整站上 MA21/63/200 多头排列，距 52w 高 -2.3%。 RSI 61、MFI 61 中性，尚未透支。 50 日 U/D 量 1.24，机构资金面中性（今日 Vol 0.99×）。 3m RS +4% vs SPY，多维度对齐看多，是趋势 + 机构双确认的强势组合。</p>
+        </div>
+        </div>
+        </div>
+        
+
+        <div class="rounded-2xl border-2 border-amber-300 bg-amber-50/60 p-5">
+          <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+            <h3 class="text-base font-bold text-slate-900">🟡 健康偏强 (B)</h3>
+            <span class="text-xs text-slate-500">4 只</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">HLT</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-semibold">🟡 健康偏强</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-emerald-700">+1.52%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Hilton Worldwide Holdings Inc. · Consumer</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">332.65</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">58</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">61</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-slate-700">1.06</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 332.65 完整站上 MA21/63/200 多头排列，距 52w 高 -3.0%。 RSI 58、MFI 61 中性，尚未透支。 50 日 U/D 量 1.06，机构资金面中性（今日 Vol 1.24×）。 3m RS -1% vs SPY，整体偏强但有透支或单点警告，回踩 MA21 是更佳进场点。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">BBY</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-semibold">🟡 健康偏强</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-indigo-100 text-indigo-800 border-indigo-300" title="buffett">💎</span> <span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-rose-700">-3.81%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Best Buy Co., Inc. · Consumer</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">74.98</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-amber-700 font-semibold">73</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-amber-700 font-semibold">79</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-emerald-700 font-semibold">1.44</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 74.98 站上 MA21 但 63/200 未对齐，距 52w 高 -10.7%。 RSI 73 偏热、MFI 79，仍有上涨空间但需消化。 50 日 U/D 量 1.44，机构持续买入（今日 Vol 1.42×）。 3m RS +11% vs SPY，整体偏强但有透支或单点警告，回踩 MA21 是更佳进场点。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">FOXA</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-semibold">🟡 健康偏强</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-emerald-700">+4.52%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Fox Corporation · Tech</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">66.81</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">60</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">40</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-emerald-700 font-semibold">1.25</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 66.81 站上 MA21 但 63/200 未对齐，距 52w 高 -12.2%。 RSI 60、MFI 40 中性，尚未透支。 50 日 U/D 量 1.25，机构持续买入（今日 Vol 1.04×）。 3m RS +7% vs SPY，整体偏强但有透支或单点警告，回踩 MA21 是更佳进场点。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">BUD</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-semibold">🟡 健康偏强</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-emerald-700">+0.04%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Anheuser-Busch InBev SA/NV · Consumer</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">80.02</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">52</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">61</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-emerald-700 font-bold">1.74</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 80.02，距 52w 高 -4.7%，结构中性。 RSI 52、MFI 61 中性，尚未透支。 50 日 U/D 量 1.74 显示机构强力吸筹（今日 Vol 0.70×）。 3m RS -9% vs SPY，整体偏强但有透支或单点警告，回踩 MA21 是更佳进场点。</p>
+        </div>
+        </div>
+        </div>
+        
+
+        <div class="rounded-2xl border-2 border-slate-300 bg-slate-50/60 p-5">
+          <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+            <h3 class="text-base font-bold text-slate-900">⚪ 中性 / 混合 (C)</h3>
+            <span class="text-xs text-slate-500">8 只</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">DKNG</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-semibold">⚪ 中性 / 混合</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-emerald-700">+7.51%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">DraftKings Inc. · Consumer</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">26.33</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">61</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">64</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-slate-700">1.15</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 26.33 站上 MA21 但 63/200 未对齐，距 52w 高 -45.4%。 RSI 61、MFI 64 中性，尚未透支。 50 日 U/D 量 1.15，机构资金面中性（今日 Vol 1.19×）。 3m RS +0% vs SPY，信号矛盾，建议观望或等待更明确方向。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">EXPE</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-semibold">⚪ 中性 / 混合</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-indigo-100 text-indigo-800 border-indigo-300" title="buffett">💎</span> <span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-emerald-700">+1.14%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Expedia Group, Inc. · Consumer</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">228.37</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">49</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">51</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-slate-700">1.09</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 228.37 站上 MA21 但 63/200 未对齐，距 52w 高 -24.2%。 RSI 49、MFI 51 中性，尚未透支。 50 日 U/D 量 1.09，机构资金面中性（今日 Vol 0.83×）。 3m RS -3% vs SPY，信号矛盾，建议观望或等待更明确方向。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">BKNG</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-semibold">⚪ 中性 / 混合</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-indigo-100 text-indigo-800 border-indigo-300" title="buffett">💎</span> <span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-emerald-700">+1.09%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Booking Holdings Inc. · Consumer</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">169.25</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">55</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">66</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-slate-700">1.14</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 169.25 站上 MA21 但 63/200 未对齐，距 52w 高 -27.2%。 RSI 55、MFI 66 中性，尚未透支。 50 日 U/D 量 1.14，机构资金面中性（今日 Vol 0.87×）。 3m RS -9% vs SPY，信号矛盾，建议观望或等待更明确方向。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">KO</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-semibold">⚪ 中性 / 混合</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-rose-700">-0.47%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">The Coca-Cola Company · Consumer</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">78.64</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">46</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">51</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-slate-700">1.07</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 78.64，距 52w 高 -4.0%，结构中性。 RSI 46、MFI 51 中性，尚未透支。 50 日 U/D 量 1.07，机构资金面中性（今日 Vol 0.87×）。 3m RS -12% vs SPY，信号矛盾，建议观望或等待更明确方向。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">V</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-semibold">⚪ 中性 / 混合</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-rose-700">-1.10%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Visa Inc. · Finance</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">322.77</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">49</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">62</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-slate-700">1.13</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 322.77，距 52w 高 -13.5%，结构中性。 RSI 49、MFI 62 中性，尚未透支。 50 日 U/D 量 1.13，机构资金面中性（今日 Vol 1.29×）。 3m RS -10% vs SPY，信号矛盾，建议观望或等待更明确方向。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">FLUT</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-semibold">⚪ 中性 / 混合</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-emerald-700">+7.56%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Flutter Entertainment plc · Consumer</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">104.31</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">58</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">61</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-slate-700">0.79</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 104.31 站上 MA21 但 63/200 未对齐，距 52w 高 -66.2%。 RSI 58、MFI 61 中性，尚未透支。 50 日 U/D 量 0.79，机构资金面中性（今日 Vol 1.40×）。 3m RS -12% vs SPY，信号矛盾，建议观望或等待更明确方向。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">NKE</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-semibold">⚪ 中性 / 混合</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-rose-700">-0.65%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">NIKE, Inc. · Consumer</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">45.93</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">56</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">58</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-rose-700 font-semibold">0.66</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 45.93 站上 MA21 但 63/200 未对齐，距 52w 高 -42.0%。 RSI 56、MFI 58 中性，尚未透支。 50 日 U/D 量 0.66，机构在持续兑现（今日 Vol 1.23×）。 3m RS -35% vs SPY，信号矛盾，建议观望或等待更明确方向。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">MA</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-semibold">⚪ 中性 / 混合</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-emerald-700">+0.26%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Mastercard Incorporated · Finance</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">495.25</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">47</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">58</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-slate-700">1.09</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 495.25 已跌破 MA21 + MA63，距 52w 高 -17.3%，中期结构受损。 RSI 47、MFI 58 中性，尚未透支。 50 日 U/D 量 1.09，机构资金面中性（今日 Vol 1.27×）。 3m RS -15% vs SPY，信号矛盾，建议观望或等待更明确方向。</p>
+        </div>
+        </div>
+        </div>
+        
+
+        <div class="rounded-2xl border-2 border-rose-300 bg-rose-50/60 p-5">
+          <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+            <h3 class="text-base font-bold text-slate-900">🔴 弱势 / 派发 (D)</h3>
+            <span class="text-xs text-slate-500">3 只</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">CMCSA</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-semibold">🔴 弱势 / 派发</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-emerald-700">+0.72%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Comcast Corporation · Tech</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">25.05</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">38</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">33</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-slate-700">0.87</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 25.05 已跌破 MA21 + MA63，距 52w 高 -26.4%，中期结构受损。 RSI 38、MFI 33 中性，尚未透支。 50 日 U/D 量 0.87，机构资金面中性（今日 Vol 0.76×）。 3m RS -29% vs SPY，多维度看空，不建议抄底，等机构停止派发再说。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">TAP</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-semibold">🔴 弱势 / 派发</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-rose-700">-1.26%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Molson Coors Beverage Company · Consumer</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">39.03</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">33</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">34</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-slate-700">0.96</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 39.03 已跌破 MA21 + MA63，距 52w 高 -28.2%，中期结构受损。 RSI 33、MFI 34 中性，尚未透支。 50 日 U/D 量 0.96，机构资金面中性（今日 Vol 1.14×）。 3m RS -30% vs SPY，多维度看空，不建议抄底，等机构停止派发再说。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-base text-slate-900">STZ</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-semibold">🔴 弱势 / 派发</span>
+              <span><span class="text-[10px] px-1.5 py-0.5 rounded border bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300" title="manual">📌</span></span>
+            </div>
+            <div class="font-mono text-sm text-rose-700">-1.85%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Constellation Brands, Inc. · Consumer</div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] mb-2 pb-2 border-b border-slate-100">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">136.25</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">33</span></div>
+            <div><span class="text-slate-500">MFI</span> <span class="font-mono text-slate-700">42</span></div>
+            <div><span class="text-slate-500">U/D</span> <span class="font-mono text-rose-700 font-semibold">0.68</span></div>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">价 136.25 已跌破 MA21 + MA63，距 52w 高 -23.6%，中期结构受损。 RSI 33、MFI 42 中性，尚未透支。 50 日 U/D 量 0.68，机构在持续兑现（今日 Vol 1.04×）。 3m RS -23% vs SPY，多维度看空，不建议抄底，等机构停止派发再说。</p>
+        </div>
+        </div>
+        </div>
+        </div>
+</section>
+
+<!-- 三组分类 -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+  <div class="bg-gradient-to-br from-amber-50 via-white to-amber-50 rounded-2xl shadow-sm border-2 border-amber-300 p-5">
+    <h3 class="text-base font-bold text-slate-900 mb-1">🏆 Compounder</h3>
+    <p class="text-[11px] text-slate-500 mb-3">已验证 ROIC≥12%、EPS CAGR≥5%</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+  </div>
+  <div class="bg-gradient-to-br from-sky-50 via-white to-sky-50 rounded-2xl shadow-sm border-2 border-sky-300 p-5">
+    <h3 class="text-base font-bold text-slate-900 mb-1">📈 Trend</h3>
+    <p class="text-[11px] text-slate-500 mb-3">1-3 月动量 + 趋势对齐</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+  </div>
+  <div class="bg-gradient-to-br from-indigo-50 via-white to-indigo-50 rounded-2xl shadow-sm border-2 border-indigo-300 p-5">
+    <h3 class="text-base font-bold text-slate-900 mb-1">💎 Buffett</h3>
+    <p class="text-[11px] text-slate-500 mb-3">ROIC&gt;15% · FCF Y&gt;5% · EV/EBITDA&lt;15</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">EXPE</div>
+            <div class="font-mono text-sm text-emerald-700">+1.14%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Expedia Group, Inc.</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">228.37</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-24.2%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">49</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-3%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">🟢 站上 MA21 · ☠️ 跌破 MA200（长期破位） · 🎯 踩 MA21</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">BKNG</div>
+            <div class="font-mono text-sm text-emerald-700">+1.09%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Booking Holdings Inc.</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">169.25</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-27.2%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">55</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-9%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">🟢 站上 MA21 · ☠️ 跌破 MA200（长期破位） · 🎯 踩 MA63</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">BBY</div>
+            <div class="font-mono text-sm text-rose-700">-3.81%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Best Buy Co., Inc.</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">74.98</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-10.7%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-amber-700 font-semibold">73</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-emerald-700">+11%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">🟢 站上 MA21 · 🔥 超买 · 📥 机构吸筹</div>
+        </div>
+        </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-fuchsia-50 via-white to-fuchsia-50 rounded-2xl shadow-sm border-2 border-fuchsia-300 p-5 lg:col-span-3">
+    <h3 class="text-base font-bold text-slate-900 mb-1">📌 Manual（用户指定）</h3>
+    <p class="text-[11px] text-slate-500 mb-3">这些 ticker 是手动加入分析池的，不一定通过 Compounder/Trend/Buffett 筛选</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">FLUT</div>
+            <div class="font-mono text-sm text-emerald-700">+7.56%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Flutter Entertainment plc</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">104.31</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-66.2%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">58</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-12%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">🟢 站上 MA21 · ☠️ 跌破 MA200（长期破位） · 🎯 踩 MA63</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">DKNG</div>
+            <div class="font-mono text-sm text-emerald-700">+7.51%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">DraftKings Inc.</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">26.33</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-45.4%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">61</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-emerald-700">+0%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">🟢 站上 MA21 · ☠️ 跌破 MA200（长期破位） · 🔄 MA21 盘中反弹</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">FOXA</div>
+            <div class="font-mono text-sm text-emerald-700">+4.52%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Fox Corporation</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">66.81</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-12.2%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">60</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-emerald-700">+7%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">🟢 站上 MA21 · 📥 机构吸筹 · 🔄 MA21 盘中反弹</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">HLT</div>
+            <div class="font-mono text-sm text-emerald-700">+1.52%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Hilton Worldwide Holdings Inc.</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">332.65</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-3.0%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">58</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-1%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">📈 趋势完整 · 🚀 接近新高</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">H</div>
+            <div class="font-mono text-sm text-emerald-700">+1.26%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Hyatt Hotels Corporation</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">183.65</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-1.0%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">65</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-emerald-700">+4%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">📈 趋势完整 · 🚀 接近新高 · 📥 机构吸筹</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">EXPE</div>
+            <div class="font-mono text-sm text-emerald-700">+1.14%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Expedia Group, Inc.</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">228.37</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-24.2%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">49</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-3%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">🟢 站上 MA21 · ☠️ 跌破 MA200（长期破位） · 🎯 踩 MA21</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">BKNG</div>
+            <div class="font-mono text-sm text-emerald-700">+1.09%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Booking Holdings Inc.</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">169.25</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-27.2%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">55</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-9%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">🟢 站上 MA21 · ☠️ 跌破 MA200（长期破位） · 🎯 踩 MA63</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">CMCSA</div>
+            <div class="font-mono text-sm text-emerald-700">+0.72%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Comcast Corporation</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">25.05</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-26.4%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">38</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-29%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">⚠️ 跌破中期 · ☠️ 跌破 MA200（长期破位） · 🎯 踩 MA21 · 🆘 接近 52w 低</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">MAR</div>
+            <div class="font-mono text-sm text-emerald-700">+0.36%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Marriott International, Inc.</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">376.96</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-2.3%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">61</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-emerald-700">+4%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">📈 趋势完整 · 🚀 接近新高</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">MA</div>
+            <div class="font-mono text-sm text-emerald-700">+0.26%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Mastercard Incorporated</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">495.25</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-17.3%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">47</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-15%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">⚠️ 跌破中期 · ☠️ 跌破 MA200（长期破位） · 🎯 踩 MA21 · 🆘 接近 52w 低</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">BUD</div>
+            <div class="font-mono text-sm text-emerald-700">+0.04%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Anheuser-Busch InBev SA/NV</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">80.02</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-4.7%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">52</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-9%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">◎ 中性 · 📥 机构吸筹 · 🎯 踩 MA21</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">KO</div>
+            <div class="font-mono text-sm text-rose-700">-0.47%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">The Coca-Cola Company</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">78.64</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-4.0%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">46</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-12%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">◎ 中性 · 🎯 踩 MA21</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">NKE</div>
+            <div class="font-mono text-sm text-rose-700">-0.65%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">NIKE, Inc.</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">45.93</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-42.0%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">56</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-35%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">🟢 站上 MA21 · 📤 机构派发 · ☠️ 跌破 MA200（长期破位）</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">V</div>
+            <div class="font-mono text-sm text-rose-700">-1.10%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Visa Inc.</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">322.77</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-13.5%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">49</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-10%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">◎ 中性 · 🎯 踩 MA21</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">TAP</div>
+            <div class="font-mono text-sm text-rose-700">-1.26%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Molson Coors Beverage Company</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">39.03</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-28.2%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">33</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-30%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">⚠️ 跌破中期 · ☠️ 跌破 MA200（长期破位） · 🆘 接近 52w 低</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">STZ</div>
+            <div class="font-mono text-sm text-rose-700">-1.85%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Constellation Brands, Inc.</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">136.25</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-23.6%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-slate-700">33</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-rose-700">-23%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">⚠️ 跌破中期 · 📤 机构派发 · ☠️ 跌破 MA200（长期破位）</div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-sm transition">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-bold text-slate-900">BBY</div>
+            <div class="font-mono text-sm text-rose-700">-3.81%</div>
+          </div>
+          <div class="text-[11px] text-slate-500 truncate mb-2">Best Buy Co., Inc.</div>
+          <div class="grid grid-cols-2 gap-1 text-[11px]">
+            <div><span class="text-slate-500">Px</span> <span class="font-mono">74.98</span></div>
+            <div><span class="text-slate-500">52w 高</span> <span class="font-mono text-rose-700">-10.7%</span></div>
+            <div><span class="text-slate-500">RSI</span> <span class="font-mono text-amber-700 font-semibold">73</span></div>
+            <div><span class="text-slate-500">3m RS</span> <span class="font-mono text-emerald-700">+11%</span></div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-600">🟢 站上 MA21 · 🔥 超买 · 📥 机构吸筹</div>
+        </div>
+        </div>
+  </div>
+        
+</section>
+
+
+
+<footer class="text-center text-xs text-slate-400 py-6">
+  ⚠️ 仅作技术读数与价格快照，非投资建议。数据可能延迟，请以券商行情为准。
+</footer>
+
+</main>
+
+<script>
+// simple sortable
+document.querySelectorAll("table.sortable").forEach(table => {
+  const ths = table.querySelectorAll("thead th");
+  ths.forEach((th, idx) => {
+    th.addEventListener("click", () => {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      const asc = !th.classList.contains("sorted-asc");
+      ths.forEach(o => o.classList.remove("sorted-asc","sorted-desc"));
+      th.classList.add(asc ? "sorted-asc" : "sorted-desc");
+      rows.sort((a,b) => {
+        const ta = a.children[idx].innerText.replace(/[%+,]/g,"").trim();
+        const tb = b.children[idx].innerText.replace(/[%+,]/g,"").trim();
+        const na = parseFloat(ta), nb = parseFloat(tb);
+        if(!isNaN(na) && !isNaN(nb)) return asc ? na-nb : nb-na;
+        return asc ? ta.localeCompare(tb) : tb.localeCompare(ta);
+      });
+      rows.forEach(r => tbody.appendChild(r));
+    });
+  });
+});
+</script>
+
+</body>
+</html>
