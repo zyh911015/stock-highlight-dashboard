@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VST · 260608 — Money Flow 财报流向 (sankey)</title>
+<script src="echarts.min.js"></script>
+<style>
+  :root{
+    --green:#2e9e5b; --green2:#46c07a; --red:#e05c54; --orange:#e8923a;
+    --blue:#3b82c4; --blue2:#6aa7d8; --purple:#8a63c4; --gray:#9aa3ad;
+    --ink:#1f2733; --muted:#5b6573; --line:#e6e9ee; --bg:#f6f8fb; --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:28px 20px 60px;}
+  header.top{display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:14px; margin-bottom:6px;}
+  h1{font-size:26px; margin:0; letter-spacing:-.4px;}
+  h1 .tick{color:var(--red); font-weight:800;}
+  .sub{color:var(--muted); font-size:13.5px; margin-top:4px;}
+  .asof{color:var(--muted); font-size:12px; text-align:right;}
+
+  .kpis{display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin:20px 0 8px;}
+  .kpi{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px;}
+  .kpi .l{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px;}
+  .kpi .v{font-size:20px; font-weight:700; margin-top:3px;}
+  .kpi .d{font-size:11.5px; margin-top:2px;}
+  .up{color:var(--green);} .down{color:var(--red);}
+
+  .tabs{display:flex; gap:6px; margin:24px 0 0; flex-wrap:wrap;}
+  .tab{
+    border:1px solid var(--line); background:var(--card); color:var(--muted);
+    padding:10px 16px; border-radius:10px 10px 0 0; cursor:pointer; font-size:14px; font-weight:600;
+    border-bottom:none;
+  }
+  .tab.active{color:var(--ink); background:var(--card); box-shadow:0 -2px 0 var(--red) inset;}
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:0 12px 12px 12px; padding:18px 20px 24px;}
+  .panel h2{font-size:18px; margin:2px 0 2px;}
+  .panel .hint{color:var(--muted); font-size:13px; margin:0 0 6px;}
+  .chart{width:100%;}
+  #incomeChart{height:580px;} #balanceChart{height:600px;} #integratedChart{height:560px;}
+  #evChart{height:300px;} #compChart{height:170px;} #multiplesChart{height:380px;} #peerChart{height:320px;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
+  .takeaways{margin-top:8px; background:#fbfcfe; border:1px solid var(--line); border-radius:10px; padding:12px 16px;}
+  .takeaways b{color:var(--ink);}
+  .takeaways ul{margin:6px 0 0; padding-left:18px;}
+  .takeaways li{margin:4px 0; font-size:13.5px; color:#333;}
+  .note{border-radius:10px; padding:11px 15px; font-size:13px; margin-top:14px; line-height:1.55;}
+  .note.amber{background:#fff8ec; border:1px solid #f3e2c2; color:#7a5b1e;}
+  .note.blue{background:#eef5fc; border:1px solid #cfe0f1; color:#2b5a82;}
+  .note.green{background:#eef8f1; border:1px solid #cfe9d8; color:#27663f;}
+  .hide{display:none;}
+  footer{color:var(--muted); font-size:11.5px; margin-top:22px; text-align:center;}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin:2px 0 10px;}
+  .legend span{display:inline-flex; align-items:center; gap:5px;}
+  .dot{width:10px; height:10px; border-radius:3px; display:inline-block;}
+  .ctxgrid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:10px;}
+  .ctxcard{border:1px solid var(--line); border-radius:10px; padding:12px 14px; background:#fbfcfe;}
+  .ctxcard .big{font-size:22px; font-weight:800;}
+  .ctxcard .lab{font-size:12px; color:var(--muted); margin-bottom:2px;}
+  .ctxcard p{font-size:12.5px; color:#444; margin:6px 0 0; line-height:1.5;}
+  .pill{display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:6px;}
+  .pill.low{background:#e7f6ec; color:#1f7a45;} .pill.high{background:#fdecea; color:#b23b30;}
+  .twocol{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .bcard{border:1px solid var(--line); border-radius:10px; padding:14px 16px; background:#fbfcfe;}
+  .bcard .bh{font-weight:700; font-size:14px; margin-bottom:6px;}
+  .bcard ul{margin:6px 0 0; padding-left:18px;}
+  .bcard li{font-size:13px; margin:5px 0; color:#333; line-height:1.5;}
+  .bcard.bull{background:#f0f9f3; border-color:#cfe9d8;}
+  .bcard.bear{background:#fdf3f1; border-color:#f3d6d0;}
+  .note.red{background:#fdecea; border:1px solid #f5c6c0; color:#a13225;}
+  .pan{border-radius:10px; padding:12px 14px;}
+  .pan.bull{background:#f0f9f3; border:1px solid #cfe9d8;}
+  .pan.bear{background:#fdf3f1; border:1px solid #f3d6d0;}
+  .pan .ph{font-weight:700; margin-bottom:6px; font-size:13.5px;}
+  .pan ul{margin:0; padding-left:0; list-style:none;}
+  .pan li{font-size:12.5px; margin:6px 0; color:#333; display:flex; justify-content:space-between; gap:8px; align-items:center;}
+  .pan .w{flex:none; font-weight:700; font-size:11px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:0 8px; line-height:18px;}
+  .tilt{margin-top:14px;}
+  .tilt-track{position:relative; height:9px; border-radius:6px; background:linear-gradient(90deg,#46c07a,#e6e9ee 50%,#e05c54);}
+  .tilt-mark{position:absolute; top:-4px; width:4px; height:17px; background:#1f2733; border-radius:2px; transform:translateX(-50%);}
+  .tilt-labels{display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); margin-top:5px;}
+  .scen{width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px;}
+  .scen th,.scen td{border:1px solid var(--line); padding:7px 9px; text-align:left; vertical-align:top;}
+  .scen th{background:#f3f6fa; font-size:11.5px;}
+  .scen .up{color:var(--green); font-weight:700; white-space:nowrap;}
+  .scen .dn{color:var(--red); font-weight:700; white-space:nowrap;}
+  .scen .pb{font-weight:700;}
+  .qtag{font-size:13px;font-weight:700;padding:7px 11px;border-radius:8px 8px 0 0;}
+  .qtag.act{background:#eef8f1;color:#27663f;border:1px solid #cfe9d8;border-bottom:none;}
+  .qtag.fc{background:#fff8ec;color:#8a5a1e;border:1px dashed #e6c98a;border-bottom:none;}
+  #q1Chart,#q2Chart{height:400px;} #baselineChart{height:260px;} #flowChart{height:260px;} #competeChart{height:280px;} #revenueChart{height:340px;} #fairChart{height:300px;} #storyChart{height:470px;} #cloudChart{height:300px;} #explosiveChart{height:380px;} #derateChart{height:440px;}
+  .mtag{font-size:10px;font-weight:700;padding:0 5px;border-radius:8px;margin-left:4px;}
+  .mtag.c{background:#eef1f5;color:#475569;} .mtag.g{background:#efe7fb;color:#7c3aed;}
+  .ladder{display:flex; align-items:center; flex-wrap:wrap; margin:12px 0 6px;}
+  .lstep{border:2px solid; border-radius:10px; padding:9px 16px; text-align:center; background:#fff;}
+  .lstep .ll{font-size:11px; color:var(--muted);}
+  .lstep .lv{font-size:19px; font-weight:800; line-height:1.2;}
+  .larrow{padding:0 12px; font-size:11px; color:var(--muted); text-align:center; line-height:1.3;}
+  .larrow b{display:block; font-size:15px; color:var(--ink);}
+  @media(max-width:880px){ .kpis{grid-template-columns:repeat(3,1fr);} .grid2,.ctxgrid,.twocol{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>Vistra Corp <span class="tick">VST</span> — Money Flow Map</h1>
+      <div class="sub">一家"给 AI 数据中心供电"的发电厂:钱怎么流、为什么 GAAP 利润看不得、$502 亿市值靠什么撑 &nbsp;|&nbsp; hover 每个块看通俗解释</div>
+    </div>
+    <div class="asof">
+      Analysis: <b>2026-06-08</b> · VST · strategy: sankey<br>
+      Income = <b>FY2025 全年实际</b> (截至 2025-12-31，季度 GAAP 被套保会计搅乱，用全年更干净)<br>
+      Balance Sheet = <b>2026-03-31</b> (Q1 FY2026)<br>
+      Market data as of <b>Jun 5, 2026</b> · figures in US$ millions
+    </div>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi"><div class="l">Stock Price</div><div class="v">$148.76</div><div class="d down">▼ −32% vs 高点 $220</div></div>
+    <div class="kpi"><div class="l">Market Cap</div><div class="v">$50.2B</div><div class="d">337M shares</div></div>
+    <div class="kpi"><div class="l">EV/EBITDA · 远期PE</div><div class="v">10.6× · 13.6×</div><div class="d up">不贵 vs 同行</div></div>
+    <div class="kpi"><div class="l">调整后EBITDA(2026指引)</div><div class="v">$6.8–7.6B</div><div class="d up">▲ +24% vs 2025</div></div>
+    <div class="kpi"><div class="l">GAAP 净利(FY25)</div><div class="v">$0.94B</div><div class="d down">⚠ 套保会计失真,别看</div></div>
+    <div class="kpi"><div class="l">总债 · 杠杆</div><div class="v">~$21B</div><div class="d down">⚠ 高杠杆,空头主攻点</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="fin">① 财务:钱怎么流</div>
+    <div class="tab" data-tab="val">② 估值:市值由什么撑</div>
+    <div class="tab" data-tab="diag">③ 诊断:错杀还是陷阱</div>
+    <div class="tab" data-tab="play">④ 8/6 推演 + 结论</div>
+  </div>
+
+  <!-- ① INCOME -->
+  <div class="panel" id="panel-income">
+    <h2>Where every dollar of revenue goes 收入这条河怎么分流（FY2025 全年）</h2>
+    <p class="hint">⚠ <b>为什么用全年、不用最近12个月(TTM):</b> VST 是发电厂,要靠衍生品给电价套保,而这些合约的"市价记账"会让单季 GAAP 利润暴涨暴跌(Q1'25 亏 $2.68亿、Q1'26 赚 $10.29亿,生意没那么大变化)。把几个季度拼成 TTM 反而失真,所以这里用<b>干净的全年实际数</b>。收入 → 燃料/外购电 → 运维 → 折旧 → 营业利润 → 利息 → 税 → 净利。粗细=金额。<b>停鼠标看每块大白话解释。</b></p>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--green)"></i>Revenue / Profit 收入·利润</span>
+      <span><i class="dot" style="background:var(--orange)"></i>Costs &amp; expenses 成本费用</span>
+      <span><i class="dot" style="background:var(--red)"></i>Tax 税</span>
+    </div>
+    <div id="incomeChart" class="chart"></div>
+    <div class="note red">
+      ⚠ <b>这张图最要命的一件事:GAAP 净利润 $9.44亿 是"假小"——别用它估值。</b> 真正衡量 VST 赚钱能力的是<b>调整后 EBITDA(扣掉利息/税/折旧、并剔除套保浮盈浮亏后的经营现金利润)≈ $58亿</b>(FY2025),是 GAAP 净利的 <b>6 倍多</b>。差在哪?① <b>折旧 $19.9亿</b>(几百亿电厂的账面记账,不是真花的现金);② <b>利息 ~$12亿</b>(背着 $210亿债);③ <b>套保合约的市价波动</b>把账面利润压扁了。<b>所以看 VST:忘掉市盈率,看 EBITDA、自由现金流和指引。</b>
+    </div>
+    <div class="takeaways">
+      <b>读图要点</b>
+      <ul>
+        <li><b>燃料/外购电吃掉一半收入(51%)。</b> 烧天然气/煤发电 + 为履约买电,这块随商品价格上下浮动,是利润最大的变量。</li>
+        <li><b>折旧 $19.9亿是第二大"开销"。</b> 不是真花出去的现金,是"几百亿电厂在变旧"的账面记账——重资产生意的宿命,也是 GAAP 利润被压低的主因。</li>
+        <li><b>利息 ~$12亿压着利润。</b> VST 高杠杆($210亿债),利息支出大,这是空头最爱攻击的点,也是 GAAP 净利和 EBITDA 差那么多的原因之一。</li>
+      </ul>
+    </div>
+    <div class="note amber">🔗 <b>正确的"利润标尺":</b> 别盯 GAAP 净利 $9.44亿(P/E 会算出 53× 的吓人数字,纯属失真)。VST 自己和华尔街都看 <b>调整后 EBITDA</b>(2025 ~$58亿、2026 指引 $68–76亿)和<b>自由现金流</b>(2026 指引 $39–47亿)。按这两把尺,VST 是台<b>稳定吐现金的机器</b>,不是利润微薄的公司。</div>
+
+    <h2 style="margin-top:22px;">钱从哪台机器发出来:发电机组按燃料拆开</h2>
+    <p class="hint">VST 不是软件公司,没有"客户订阅"可拆;它的"生产线"是发电机组。把 ~40GW 总装机按燃料类型拆开,每块标 <b>GW · 占比</b>。<b>这正是 AI 故事的核心——核电和燃气是数据中心要的"全天候基荷电"。</b>(口径:近似公开数据,不含待收购的 Cogentrix 5.5GW 燃气。)</p>
+    <div id="revenueChart" class="chart"></div>
+    <div class="note">
+      <b>读图:</b>VST 手握一支 <b>~40GW 的多元发电队</b>:天然气 ~24GW(可随叫随发,最配数据中心的"基荷")、<b>核电 6.4GW</b>(AWS + Meta 20 年长约就靠它——零碳、全天候)、煤电 ~6GW(在退役、占比下降)、太阳能+储能 ~4GW(在扩张)。<br>
+      <b>为什么这支队伍值钱:</b>AI 数据中心要的是<b>"24 小时不断电的稳定大电"</b>,风电太阳能时有时无供不了,而 VST 的核电+燃气正好是这种"基荷"。这就是 VST 从一只普通电力股变成"AI 电力概念股"的根本原因。
+    </div>
+  </div>
+
+  <!-- ② BALANCE -->
+  <div class="panel hide" id="panel-balance">
+    <h2>What it owns vs. who funded it 资产 = 负债 + 权益</h2>
+    <p class="hint">左边=公司拥有的全部资产汇成总资产;右边=这些资产谁出的钱(欠的=负债,股东的=权益)。两边永远相等。<b>hover 看每项解释。</b></p>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--blue)"></i>Assets 资产</span>
+      <span><i class="dot" style="background:var(--orange)"></i>Liabilities 负债</span>
+      <span><i class="dot" style="background:var(--purple)"></i>Equity 股东权益</span>
+    </div>
+    <div id="balanceChart" class="chart"></div>
+    <div class="note red">
+      ⚠ <b>三个要点:</b>① <b>最大资产是发电厂(净固定资产)$199亿,占总资产 48%</b>——这是核电+燃气+煤+光储的实物机组,是 VST 的"印钞机"。和软件公司(资产全是商誉/无形)完全相反,VST 是真·重资产。② <b>杠杆很高:总负债 $357亿、占总资产 86%,账面权益只剩 $56亿(14%)。</b> 背着 ~$210亿债,这是空头最大的担忧——利率高/电价跌时,沉重的债务会放大风险。③ "其他流动/非流动资产"里藏着一大块<b>衍生品(套保合约)和核电退役信托基金</b>,金额随电价波动,也是 GAAP 利润忽上忽下的来源。
+    </div>
+    <div class="takeaways">
+      <b>读图要点</b>
+      <ul>
+        <li><b>发电厂 $199亿 + 衍生品/应收/存货 $83亿是两大资产。</b> 真金白银堆机组,不是商誉。</li>
+        <li><b>账面权益仅 $56亿,杠杆高。</b> 这不代表生意差——电力是"现金流稳、可加杠杆"的生意,但债多确实是它估值被压的一个原因。</li>
+        <li><b>现金只有 $6.7亿,远小于债。</b> 和 Adobe 那种"净现金"公司相反,VST 是"净负债"公司,靠稳定现金流和循环贷周转。</li>
+      </ul>
+    </div>
+
+    <h2 style="margin-top:22px;">💸 关键反差:VST 自己就是"卖铲子的人"(卖电这把铲)</h2>
+    <p class="hint">看 Adobe 那种软件公司,资本开支只占收入 ~1%,是"租客";而 AI 产业链里真正吃钱建产能、又真正受益的,是<b>算力/云/芯片/电力</b>这几层。<b>VST 站在"电力"这层——AI 数据中心要用的电,它来发。</b>下图把<b>燃料成本%(蓝)和资本开支%(橙)</b>放一起看 4 年趋势。</p>
+    <div id="cloudChart" class="chart"></div>
+    <div class="note green">
+      <b>结论:VST 是 AI 浪潮里"卖电的铲子商",而且在加大投入扩产能。</b> 资本开支占收入从 2022 的 9.5% <b>爬到 2025 的 15.5%</b>——它在花钱给核电做增容、建新燃气、上太阳能+储能,为的就是接住数据中心爆发的电力需求。燃料成本占收入在 42–55% 之间随天然气价波动(这是它的主要利润变量,也是商品风险所在)。<br>
+      <b>和 Adobe 正好反过来:</b>Adobe 是"租云的轻资产应用层",VST 是"自己建产能的重资产基础设施层"。轻有轻的好(不吃钱),重有重的好(护城河厚——电厂不是想建就能建,审批+选址+几年工期是天然壁垒)。
+    </div>
+    <div class="note amber">
+      <b>AI 把电力变成稀缺品 = VST 的顺风:</b> 超大规模云厂商 2026 年 AI 资本开支合计 <b>~$6300–7250亿(+77% 同比)</b>,这些数据中心最缺的不是芯片,是<b>"24 小时不断的稳定电"</b>。美国电网十几年没怎么扩容,AI 一来电力供不应求 → <b>电价和"容量费"(为保证随时有电付的钱)双双上涨</b>,直接利好手握现成核电+燃气的 VST。它已签下 <b>AWS 1.2GW + Meta 2.6GW</b> 共约 3.8GW 的 20 年长约,把"未来卖电收入"提前锁定了。
+    </div>
+    <div class="note" style="font-size:11.5px;color:#5b6573;">
+      <b>📚 本节数据来源(每条可追溯):</b><br>
+      · 燃料成本%/资本开支% 趋势(FY2022–25):<b>VST 10-K(SEC 年报)+ 现金流量表</b>,经 stockanalysis.com / yfinance 提取(2022 燃料%为近似)。<br>
+      · 发电机组 GW 构成(核电 6.4GW、燃气~24GW、煤~6GW、光储~4GW):公开公司资料/行业报告(近似)。<br>
+      · AWS 1.2GW(Comanche Peak,2026/2 宣布)+ Meta &gt;2.6GW(PJM 核电站,含 433MW 增容)20 年长约:公司公告 + 行业报道。<br>
+      · 超大规模云厂商 2026 AI 资本开支 ~$6300–7250亿:各公司财报 + <a href="https://www.tomshardware.com/tech-industry/big-tech/big-techs-ai-spending-plans-reach-725-billion" target="_blank">Tom's Hardware</a>。<br>
+      · 2026 调整后 EBITDA 指引 $6.8–7.6B、FCF $3.9–4.7B:<a href="https://www.theglobeandmail.com/investing/markets/stocks/VST/pressreleases/2244652/vistra-vst-q1-2026-earnings-call-transcript/" target="_blank">VST Q1 2026 财报电话会</a>(2026-05-07 重申)。
+    </div>
+  </div>
+
+  <!-- ③ BIG PICTURE -->
+  <div class="panel hide" id="panel-bigpic">
+    <h2>From balance sheet to market value 一张图把资产、负债、现金、市值全打通</h2>
+    <p class="hint">整合图:左边是公司的资产 → 汇成总资产 → 分成负债和<b>账面净资产(Book Equity)</b>;账面净资产继续往右,加上一条巨大的<b>市场溢价</b>,合成<b>市值</b>。<b>一眼看到 book value 从哪来(总资产−总负债),以及它在市值里只占多小一块。</b></p>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--blue)"></i>Assets 资产</span>
+      <span><i class="dot" style="background:var(--orange)"></i>Liabilities 负债</span>
+      <span><i class="dot" style="background:var(--purple)"></i>Book Equity 账面净资产</span>
+      <span><i class="dot" style="background:var(--green2)"></i>Premium 市场溢价</span>
+      <span><i class="dot" style="background:#1f7a45"></i>Market Cap 市值</span>
+    </div>
+    <div id="integratedChart" class="chart"></div>
+    <div class="note green">👀 <b>看那条最粗的绿色"溢价"河,但别被它吓到:</b> 市值 $50.2B 里,账面净资产只占 $5.6B(约 11%),其余 <b>$44.6B(约 89%)是"溢价"</b>。<b>关键:VST 的溢价占比这么高,主因是它杠杆高、账面权益被债压薄,不是市值虚高。</b> 这和 NBIS 那种"纯故事"完全不同——VST 有 ~$58亿真实 EBITDA 和现成电厂托底,按 <b>EV/EBITDA 才 ~10.6×</b>,在合理区间。<b>看溢价占比意义不大,看 EV/EBITDA 才对。</b></div>
+
+    <div class="note blue">
+      <b>🔗 市值靠什么撑(VST 版,别用市盈率):</b> 成熟公司是"净利润 × 市盈率",但 VST 的 GAAP 净利被套保会计压扁($9.44亿),用它算出 P/E 53× 纯属误导。正确的换算用 <b>EBITDA</b>:<br>
+      · 企业价值 EV <b>$70.5B</b>(市值+债−现金) ÷ <b>EBITDA $6.79B</b> = <b>EV/EBITDA ≈10.4×</b>(市场为每 1 块现金利润付约 10 倍)。<br>
+      · 换个看法:用<b>远期净利</b>(分析师预测、剔除套保噪音)$10.96/股 × <b>远期 P/E 13.6×</b> = 今天 $148.76。<br>
+      <b>8/6 财报真正能改变市值的,是 2026 EBITDA 指引会不会上调、以及新签多少数据中心长约</b>——这决定"该给几倍",也就是"④ 推演"页的落点。
+    </div>
+
+    <h2 style="font-size:16px;margin:18px 0 0;">整合大图:收入 → 资产/负债/现金 → 市值(一张表打通)</h2>
+    <p class="hint">你要的是<b>一个整合表</b>,不是分开的两张。这张图里<b>两条河同时汇向市值</b>:<b>① 利润河</b>:收入 → 净利润 →(加"预期放大器")→ 故事溢价;<b>② 家底河</b>:现金 + 其他资产 → 总资产 → 分成负债和账面净资产。流进 = 流出,完全合规。每块标 $金额·占市值%。<b>每块停鼠标看名词解释。</b></p>
+    <div class="note" style="font-size:12px;">
+      <b>名词速查(怕你不熟):</b> <b>净利润</b>=GAAP 账面利润(VST 这块被套保会计压扁,失真);<b>账面净资产</b>=总资产−总负债,清算后剩给股东的"看得见的家底"(VST 仅 $56亿,杠杆高);<b>故事溢价</b>=市值里超出家底的部分,市场为"未来现金流"付的钱;<b>预期放大器</b>=故事溢价里"账面利润之外、靠预期多付"的那块;<b>市值</b>=股价×总股本。
+    </div>
+    <div id="storyChart" class="chart"></div>
+    <div class="note green">
+      <b>怎么读这张整合图:</b><br>
+      · <b>利润河(上)</b>:年收入 $17.7B 扣成本剩 GAAP 净利 $0.94B;净利 + "预期放大器"$43.6B = 故事溢价 $44.6B → 市值。(⚠ 这里 GAAP 净利被套保会计压得很小,所以"放大器"显得巨大;若换成真实 EBITDA $5.8B,放大器会小很多——见下方提醒。)<br>
+      · <b>家底河(下)</b>:现金 $0.7B + 其他资产 $40.6B = 总资产 $41.3B → 负债 $35.7B + 账面净资产 $5.6B;账面净资产 → 市值。<br>
+      · <b>两河在"市值"$50.2B 汇合</b>:账面净资产 $5.6B(11%)是"看得见的家底",其余 $44.6B(89%)是"未来现金流 + AI 电力长约"的折现。<b>三张表(利润、资产、市值)用一张图连起来了。</b>
+    </div>
+
+    <div class="note amber">
+      <b>⚠ 别被"放大器 $43.6B"误导:那是 GAAP 失真放大的假象。</b> 如果把利润河的"年净利润"换成更真实的 <b>调整后 EBITDA $5.8B</b>(再粗算成股东可分配口径),溢价里"靠纯预期"的部分会小一大截。VST 的溢价<b>有真实现金流和实体电厂托底</b>,不是 NBIS 那种"利润为零、全靠想象"。一句话:<b>VST 的市值有地基(EBITDA+电厂),只是 GAAP 净利这个数字把地基藏起来了。</b>
+    </div>
+
+    <div class="note green">
+      <b>🧬 第一性原理:为什么"收支"早就和"资产、市值"连在一起</b><br>
+      ① <b>资产负债表 = 历年现金流的累积</b>:VST 每年赚的现金,一部分还债/分红/回购,一部分再投资建电厂 → 变成 $199亿的发电机组资产。<br>
+      ② <b>市值 = 现有资产的价值 + 未来现金流的折现(溢价)。</b> 对 VST,未来现金流的关键变量是:电价、容量费、以及那些 20 年数据中心长约能锁定多少稳定收入。<br>
+      链条:<b>卖电收入 − 成本 = 现金利润(EBITDA)→ 一部分变电厂资产(家底)、一部分作为"未来还会持续赚"被市场折现成溢价 → 两者合成市值。</b> 因为电力现金流相对稳、又有 20 年长约打底,VST 的溢价比纯成长股<b>更"硬"</b>——这是看多的一个底层理由。
+    </div>
+
+    <div class="grid2" style="margin-top:18px;">
+      <div>
+        <h2 style="font-size:15px;margin-bottom:0;">整个生意值多少钱(企业价值 EV)</h2>
+        <p class="hint" style="margin:2px 0 0;">从"股东那部分"(市值)出发,<b>加上要替它还的债、减去账上现金</b> = "连债主一起算、整个生意的总价"。每根柱子都标了金额。</p>
+        <div id="evChart" class="chart"></div>
+      </div>
+      <div>
+        <h2 style="font-size:15px;margin-bottom:0;">$50.2B 市值由什么组成</h2>
+        <p class="hint" style="margin:2px 0 0;">市值 = 账面净资产 + 市场溢价。下面那条横条让比例一目了然。</p>
+        <div id="compChart" class="chart"></div>
+        <div class="ctxcard" style="margin-top:6px;">
+          <div class="lab">book value 为什么这么薄?</div>
+          <p style="margin-top:3px;"><b>来自资产负债表:</b> 账面净资产 = 总资产 $41.3B − 总负债 $35.7B = <b>$5.6B</b>。它只占市值 11%——<b>因为 VST 杠杆高,$210亿债把账面权益压薄了</b>。这不代表市值虚高:换 EV/EBITDA(把债算进来的尺子)看,只有 ~10.6×,合理。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="note blue">
+      <b>什么是 Enterprise Value(企业价值,EV)?对 VST 尤其重要</b><br>
+      市值只算"股东那部分";<b>EV 算的是"整个生意"值多少钱——把债主也算进来。</b> 公式:<b>EV = 市值 + 债 − 现金</b>。<br>
+      · <b>为什么 +债:</b>整体收购一家公司,除了买下股票,还得替它还债,所以债要加上。<br>
+      · <b>为什么 −现金:</b>账上的现金收购后就归买家了,等于变相打折,所以减掉。<br>
+      VST:$50.2B 市值 + $21.0B 债 − $0.7B 现金 = <b>EV ≈ $70.5B</b>。它债远大于现金(高杠杆),所以 EV 比市值大不少。<br>
+      <b>意义(关键):</b>对 VST 这种高杠杆公司,<b>只看市值会严重误判</b>——两家市值一样的公司,债多的那家"整个生意"其实更贵。所以 VST 的贵不贵,要用 <b>EV/EBITDA(≈10.6×)</b>,而不是市值或市盈率。这也是为什么本页反复强调这把尺子。
+    </div>
+  </div>
+
+  <!-- ④ VALUATION MULTIPLES -->
+  <div class="panel hide" id="panel-mult">
+    <h2>这只股票该值多少钱?(公允价值 · EV/EBITDA 法)</h2>
+    <p class="hint">VST 的 GAAP 利润失真、市盈率没法用,所以用对发电厂最合适的<b>EV/EBITDA 法</b>:公允价 = <b>2026 EBITDA 指引中值 $7.2B × 一个"该给的倍数"</b>,再减净债 $20.3B、除以股本(~3.37亿股)。倍数从"同行给多少倍 + VST 的 AI 电力成长 − 杠杆/商品风险扣分"推出来(熊 9× / 中 11× / 牛 13×)。<b>红线 = 今天 $149(只有 9.8×)。</b></p>
+    <div id="fairChart" class="chart"></div>
+    <div class="note green">
+      <b>公允价:$132(熊)/ $175(中)/ $217(牛)。今天 $149 卡在熊市档(9×)和中性档之间。</b><br>
+      <b>怎么读:</b>今天 ~9.8× 已经把"杠杆 + 电价波动"的担忧定价进去了,不算贵;往上到中性档(11×,$175)= +18%,牛市档(13×,$217)= +46%。<b>分析师均价目标 $225</b>(17 位分析师)≈ 13.4× EBITDA,落在我的牛市档附近——说明华尔街整体相当看多。<br>
+      <b>决胜尺:2026 EBITDA 指引会不会上调 + 数据中心长约能签多少。</b> 指引上修 → "该给几倍"跟着上抬;若电价转弱或 Cogentrix 整合不顺 → 倍数压回熊市档。
+    </div>
+
+    <h2 style="margin-top:22px;">EV/EBITDA 倍数 de-rating(对比失真的市盈率)</h2>
+    <p class="hint">同一家公司、EBITDA 还在涨,但市场愿意付的"倍数"却从高位回落。下图<b>左轴=EV/EBITDA(该用的尺,绿线)</b>、<b>右轴=GAAP 市盈率(红虚线,纯属过山车)</b>,8 个季度。</p>
+    <div id="multiplesChart" class="chart"></div>
+    <div class="note amber" style="margin-top:6px;">
+      📉 <b>两个核心故事:</b>① <b>看绿线(EV/EBITDA)的 de-rating:</b>2025 年中 AI 电力最热时被抬到 <b>16.8×</b>,现在回落到 <b>10.2×</b>——倍数砍了快四成,但 EBITDA 还在涨(2026 指引 +24%),典型"杀估值但利润还在"。② <b>看红线(市盈率)的过山车:</b>从 18× 蹿到 74× 再回 25×,上下乱跳——<b>这就是为什么 VST 绝对不能用市盈率</b>(分母 GAAP 净利被套保会计搅乱)。<b>记住:绿线才是 VST 的尺,红线是陷阱。</b>
+    </div>
+    <h2 style="margin-top:24px;">📉 "杀估值"之后会怎样?历史演化 + VST 归类</h2>
+    <p class="hint">同样是杀估值,结局天差地别。<b>决定命运的不是跌了多少,而是利润(对 VST 是 EBITDA)还在不在长。</b>下图是历史经典案例的"最大跌幅 vs 回本用时":<b style="color:#2e9e5b">绿=利润还在长→已回本</b>、<b style="color:#e05c54">红=利润塌了→至今没回本</b>、<b style="color:#e8923a">橙=同行 CEG(待定)</b>、<b>黑钉=VST 现在的位置</b>。绿点都挤在左边(1.5–3 年回来),红点全甩到右边(多年回不来)。</p>
+    <div id="derateChart" class="chart"></div>
+    <div class="note" style="font-size:11.5px;color:#5b6573;">注:绿/红点为历史科技/消费股案例(yfinance 复权收盘价)。<b>VST 黑钉:从 2025 年高点 $220 起算,~8 个月、−32%,EBITDA 仍 +24% 增长</b>——落在绿色"健康恢复区"内,且耗时短、跌幅浅,比图中多数绿点的处境还好。CEG(橙)是同为核电 AI 的同行,自 5 月财报跌得比 VST 更狠(−21%)。绿色阴影=经验上的"健康恢复区(顶点后约 6–33 个月)"。</div>
+
+    <div class="note green">
+      <b>🎯 核心规律(要记的那句):</b> <b>倍数掉了、但利润还在涨 → 大概率恢复,通常见底要 6–15 个月、回到旧高要 1.5–3 年</b>(Meta 15 个月、Apple/Salesforce ~15 个月)。反过来 <b>倍数掉、利润也塌 → 多数回不到旧高</b>(PayPal、Zoom、Kraft)。<b>关键:90% 的恢复是"利润长上来"完成的,不是倍数自己弹回去——所以盯 EBITDA,别盯倍数。VST 的 EBITDA 2026 指引 +24%,这是它最有力的一张牌。</b>
+    </div>
+
+    <h2 style="margin-top:20px;font-size:16px;">把杀估值分三类:VST 是哪一类?</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px;">
+      <div class="ctxcard" style="border-color:#cfe9d8;background:#f3faf5;">
+        <div class="lab">A · 错杀型 <span class="pill low">VST 在此</span></div>
+        <div class="big" style="font-size:17px;color:#27663f;">~70–80% 会回</div>
+        <p><b>特征:</b>利润/EBITDA 仍两位数长,跌因恐慌/板块轮出。<br><b>结局:</b>1–2.5 年回旧高。<br><b>例:</b>Meta、Salesforce、Apple。</p>
+      </div>
+      <div class="ctxcard" style="border-color:#f3e2c2;background:#fffaf0;">
+        <div class="lab">B · 降速型 <span class="pill" style="background:#fff1d6;color:#8a5a1e;">VST 的中性情形</span></div>
+        <div class="big" style="font-size:17px;color:#8a5a1e;">几年"死钱"</div>
+        <p><b>特征:</b>还赚钱,但电价/容量费见顶、增速降档。<br><b>结局:</b>3–5 年,回旧高约 30–50%。<br><b>例:</b>商品周期见顶的公用事业。</p>
+      </div>
+      <div class="ctxcard" style="border-color:#f3d6d0;background:#fdf4f2;">
+        <div class="lab">C · 价值陷阱 <span class="pill high">VST 的尾部风险</span></div>
+        <div class="big" style="font-size:17px;color:#a13225;">60–80% 回不去</div>
+        <p><b>特征:</b>电价暴跌 / 高利率压垮高杠杆 / AI 电力需求证伪。<br><b>结局:</b>多数回不到旧高。<br><b>例:</b>2008 高杠杆 IPP。</p>
+      </div>
+    </div>
+    <div class="note amber">
+      <b>🧭 VST 归类:清楚的 A 类(错杀型),但比软件股的"错杀"更干净。</b> ① EBITDA 2026 指引 +24% 在涨,把它和 C 类(利润塌)区分开;② 跌因是"AI 电力整组被资金轮出 + 对高杠杆的担忧",不是基本面变坏;③ 黑钉落在健康恢复区,耗时才 8 个月、跌幅 −32%,比 Adobe 那种"拖 4.5 年还没回"的处境好得多。<b>唯一让它不能算"完美错杀"的是杠杆——债多让它在高利率/电价下跌时下行更脆(这就是 C 类尾部风险的来源)。</b>
+    </div>
+
+    <h2 style="margin-top:20px;font-size:16px;">该盯哪场财报、盯什么内容(快速判断走哪条路)</h2>
+    <div class="note blue">
+      <b>🔴 决胜场:8 月 6 日(盘后)Q2 财报。</b>按重要性盯这几条,基本就能把 VST 归进 A / B / C:<br>
+      · <b>① 2026 调整后 EBITDA 指引(最关键)</b> —— 重申或上调 $6.8–7.6B = 偏 A(倍数有望回);下调 = 滑向 B/C。<br>
+      · <b>② 新签数据中心/核电长约</b> —— 又签下一笔大单(像 AWS/Meta 那种)= AI 电力故事坐实,强 A 信号;长期没有新单 = 故事降温。<br>
+      · <b>③ Cogentrix($47亿燃气收购)进展 + 杠杆</b> —— 收购顺利落地、净债/EBITDA 不失控 = 化解空头主攻点;整合出问题 = C 类风险上升。<br>
+      · <b>④ 资本返还(回购 + 分红)执行</b> —— VST 一直大手笔回购缩股,是下行的"地板",也是把现金还给股东的硬证据。<br>
+      <b>一句话:8/6 盯"EBITDA 指引 + 新长约 + 杠杆"这三件事,就能把 VST 从"待定"快速归到 A / B / C。</b>
+    </div>
+
+    <p class="hint" style="margin-top:12px;">⚠ 下面卡片里的"高/低"都是<b>相对两个基准</b>:<b>① 大盘/同行</b> 和 <b>② 这只股票自己的历史区间</b>。对 VST,主尺是 EV/EBITDA(把高杠杆算进来),不是市盈率。</p>
+    <div class="ctxgrid">
+      <div class="ctxcard">
+        <div class="lab">EV/EBITDA = 企业价值 ÷ 现金利润(主尺)</div>
+        <div class="big">10.6× <span class="pill low">合理 vs 同行</span> <span class="pill low">低 vs 自身高点</span></div>
+        <p><b>什么水平:</b>同行 CEG ~14×、受监管公用事业 ~11–13×;VST 自己 2025 年中曾到 16.8×,现在 10.6× → 在合理偏低区。<br><b>直觉:</b>把债算进来后,"整个生意"价钱 ≈ 10 倍年现金利润,不贵。</p>
+      </div>
+      <div class="ctxcard">
+        <div class="lab">远期市盈率 = 股价 ÷ 明年预测利润</div>
+        <div class="big">13.6× <span class="pill low">低 vs 同行/大盘</span></div>
+        <p><b>什么水平:</b>比同行 CEG(18.7×)、甚至比"无聊"的受监管公用事业(SO 18.8×、DUK 17.3×)都低,也低于大盘 ~22×。<br><b>直觉:</b>用剔除套保噪音的"正常化"利润看,VST 反而是同类里偏便宜的。</p>
+      </div>
+      <div class="ctxcard">
+        <div class="lab">为什么不用 trailing 市盈率?</div>
+        <div class="big">会骗人</div>
+        <p>VST 账面"市盈率 25×"看着像个数,但<b>分母 GAAP 净利被套保合约的市价波动搅乱</b>(8 个季度里从 18× 蹿到 74×)。用它估值会被严重误导,所以本页一律用 EV/EBITDA 和远期 PE。</p>
+      </div>
+      <div class="ctxcard">
+        <div class="lab">最小时间单元是一个季度吗?</div>
+        <div class="big">不是</div>
+        <p><b>分子(股价)每秒都在变</b> → 倍数<b>每天都在动</b>;<b>分母(EBITDA、净资产)每季度财报才更新一次</b>。数据按季度给快照,日内其实随股价一直漂。</p>
+      </div>
+    </div>
+  </div>
+
+
+    <h2 style="margin-top:24px;">🚀 反弹之外:它有没有"爆发式起飞"的可能?</h2>
+    <p class="hint"><b>"反弹"和"起飞"是两台完全不同的发动机。</b>反弹=市场太悲观、估值修复回公道价(上限通常 +50%~2 倍);起飞=生意本身变大好几倍(5×、10×+),靠"利润暴涨 × 倍数扩张"双击。下图是历史上真正"起飞"过的股票(对数轴),每个点 hover 看它的"点火事件"。</p>
+    <div id="explosiveChart" class="chart"></div>
+    <div class="note" style="font-size:11.5px;color:#5b6573;">数据:yfinance 复权收盘价,从"起飞前基准日"到峰值。倍数差距极大(4× 到 1000×+),故用对数轴。</div>
+
+    <div class="note green">
+      <b>🧬 起飞股的 5 个共同基因(经验框架,非铁律):</b><br>
+      ① <b>市场巨大且在变大,自己还小(相对)</b>——有长跑道,巨头难再翻 10 倍;② <b>踩在一条新大浪上</b>(智能手机/云/电动车/AI算力/减肥药)——是浪在抬它;③ <b>双引擎:利润暴涨 + 倍数同时扩张</b>(戴维斯双击)——这是"爆发"而非"线性"的根因;④ <b>一个利润拐点</b>:亏转盈或增速跳升;⑤ <b>一个"点火事件"</b>把"也许"变成"板上钉钉"。
+    </div>
+    <div class="note blue">
+      <b>🔥 什么事件会"点火"(按出现频率):</b> <b>A. 财报/指引炸裂坐实拐点</b>(最常见可复制,如 Nvidia 那一夜);<b>B. 爆款新产品/新品类</b>(iPhone、减肥药、能量饮料);<b>C. 需求采用到临界点</b>(AI 资本开支→Nvidia);<b>D. 亏转盈 + 被迫买入</b>(纳入标普500,如 Tesla/Palantir);<b>E. 困境反转</b>(通常 2–8× 而非 100×)。
+    </div>
+
+    <h2 style="margin-top:20px;font-size:16px;">把这把尺子量到 VST 身上</h2>
+    <div style="overflow-x:auto;">
+    <table class="scen">
+      <tr><th style="width:34%">基因</th><th style="width:10%">VST</th><th>说明</th></tr>
+      <tr><td>① 市场大、自己还小</td><td style="text-align:center;font-weight:700;color:#8a5a1e">△</td><td>AI 电力 TAM 巨大,但 VST 已是 $50B 大票、<b>2023→2025 已经涨过 ~10×</b>,"小公司"的高弹性已用掉大半</td></tr><tr><td>② 踩在新大浪上</td><td style="text-align:center;font-weight:700;color:#27663f">✅</td><td>AI 数据中心电力需求就是当下最猛的浪,VST 正站在浪头(核电+燃气基荷)</td></tr><tr><td>③ 利润暴涨×倍数扩张</td><td style="text-align:center;font-weight:700;color:#8a5a1e">△</td><td>EBITDA +24% 在涨,但倍数已从 16.8× de-rate 到 10×——"双击"里最猛那段(2024–25)已经发生</td></tr><tr><td>④ 利润拐点</td><td style="text-align:center;font-weight:700">❌</td><td>早就盈利、稳定吐现金,没有"亏转盈"那种爆发力</td></tr><tr><td>⑤ 点火事件</td><td style="text-align:center;font-weight:700;color:#27663f">✅</td><td>AWS/Meta 20 年长约 + AI 电力叙事已点火——但<b>主要点火发生在过去两年</b>,不是"待发生"</td></tr>
+    </table>
+    </div>
+    <div class="note amber"><b>VST 起飞基因 ≈ 2.5/5,但要分清时态:它已经"起飞过一轮"(2023→2025 涨 ~10×),现在是"反弹 + 复利"阶段,不是地面待发的新火箭。</b> 现实的牛市路径=① 从被错杀的低位修复倍数(+18%~46% 到公允区),叠加 ② EBITDA 每年复利 + 新长约。<b>想要再来一个干净的 10×,从 $50B 体量出发概率不高;但"修复 + 长期复利"的赔率是实打实的。</b></div>
+
+    <div class="note red">
+      <b>⚠ 必须说的大实话(幸存者偏差 + VST 的特殊风险):</b>上图全是"活下来的赢家"。同样的"小盘+大故事+大 TAM"基因,也精确描述了 99% 归零的票。而 VST 的特殊风险在另一头:<b>它是高杠杆($210亿债)的重资产,不像芯片/软件那样"轻"。</b> AI 电力需求要是被证伪(数据中心能效提升、或建得没那么多),或利率长期高位,沉重的债务会把"错杀"变成"陷阱"。<b>所以:VST 是"高确定性的反弹+复利",不是"高弹性的火箭";仓位和买入价比追涨更重要。本页为学习用,非投资建议。</b>
+    </div>
+
+  <!-- ⑤ DIAGNOSIS -->
+  <div class="panel hide" id="panel-diag">
+    <h2>Out of favor, or overlooked? 真不被看好,还是被错杀?</h2>
+    <p class="hint">先回答"是不是全行业的事"。把 VST 的<b>远期市盈率</b>跟同行摆一起:<span style="color:#e05c54">红=VST</span>、<span style="color:#6aa7d8">蓝=独立发电同行(IPP)</span>、<span style="color:#9aa3ad">灰=受监管公用事业</span>。橙色虚线是标普500 ~22×。</p>
+    <div id="peerChart" class="chart"></div>
+    <div class="note blue" style="margin-top:6px;">
+      <b>结论:VST 是这群里最便宜的"成长档"——比同行 CEG 便宜,甚至比"无聊"的受监管公用事业还便宜。</b> 关键反差:<b>VST 远期 P/E 13.6×,比同为核电 AI 故事的 CEG(18.7×)便宜一大截,也低于慢吞吞的受监管电力 DUK(17.3×)、SO(18.8×)。</b> 一个手握 AI 电力成长 + 已签 3.8GW 数据中心长约的公司,定价却比没什么成长的受监管电力还低。市场额外打折的理由:① 高杠杆;② GAAP 利润看着吓人(其实失真);③ 电价/天然气的商品波动。<b>这三条是真风险,但被打的折看起来过头了——这正是"错杀"的味道。</b>
+    </div>
+
+    <h2 style="margin-top:22px;">客户在往谁那儿涌?(超大客户抢谁的电)</h2>
+    <p class="hint">第一性原理:AI 数据中心要锁定长期、稳定、零碳的"基荷电",而能提供的核电/大型燃气供给有限——所以看"<b>谁签下了最多超大客户的长约</b>",就知道这场抢电大战谁占先。下图是各家已公开签约的数据中心/核电供电长约(GW,公开公告·近似)。</p>
+    <div id="competeChart" class="chart"></div>
+    <div class="note amber">
+      <b>读数:VST 暂时领跑。</b> 它已签 <b>AWS 1.2GW(Comanche Peak 核电)+ Meta &gt;2.6GW(PJM 核电站,含 433MW 增容)</b> 共约 <b>3.8GW</b> 的 20 年长约;同行 Talen(亚马逊 Susquehanna)、Constellation(微软 Crane 重启 + Meta Clinton)各约 ~1.9GW。<br>
+      <b>这意味着什么:</b>20 年长约 = 把未来 20 年这部分电的收入<b>提前锁定、不再随电价波动</b>——既保收入又抬估值确定性。VST 不只在"抢电大战"里领先,还有 ~40GW 现成机队 + Cogentrix 再添 5.5GW 燃气的弹药继续签。<br>
+      <b>8/6 关键问:</b>会不会再宣布一笔新的超大长约?有 = AI 电力故事继续坐实(强多头);长期没有 = 故事降温。
+    </div>
+
+    <h2 style="margin-top:22px;">Why VST specifically? 为什么偏偏看好/看空 VST</h2>
+    <div class="twocol">
+      <div class="bcard bear">
+        <div class="bh">🐻 空头:高杠杆 + 商品周期顶</div>
+        <ul>
+          <li><b>债太重:</b>~$210亿债、账面权益只剩 $56亿。利率长期高位 / 电价下跌时,沉重的债务会放大下行。</li>
+          <li><b>电价是周期品:</b>现在 AI 把电价和容量费推到历史高位,一旦数据中心建设放缓或新供给上来,价格会回落,EBITDA 跟着缩。</li>
+          <li><b>Cogentrix $47亿收购</b>在 PJM 容量价历史最高时买入,整合 + 加杠杆有风险。</li>
+          <li><b>GAAP 利润难看、套保现金占用</b>:电价涨时还要为保证金垫大量现金。</li>
+        </ul>
+      </div>
+      <div class="bcard bull">
+        <div class="bh">🐂 多头:被错杀的 AI 电力现金机器</div>
+        <ul>
+          <li><b>估值便宜:</b>EV/EBITDA 10.6×、远期 P/E 13.6×,比同行 CEG、甚至比受监管电力还低。</li>
+          <li><b>EBITDA 在涨:</b>2026 指引 $6.8–7.6B(+24%),还没算 Cogentrix。</li>
+          <li><b>长约锁定未来:</b>AWS 1.2GW + Meta 2.6GW 共 3.8GW 的 20 年合同,把收入提前钉死。</li>
+          <li><b>狂吐现金 + 大手笔回购缩股</b>,股本一直在变少,给股价托底。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note amber" style="margin-top:14px;">
+      <b>综合判断:</b> 这不是泡沫,而是一场<b>真有杠杆风险、但估值可能被过度打折</b>的拉锯。倾向:VST <b>是一家稳定吐现金、踩在 AI 电力浪头、还在增长的好公司,却因为"债多 + GAAP 难看 + 商品波动"被按偏低的倍数定价</b>。下行有 ~10× EBITDA 的低估值 + 持续回购垫着;上行取决于:<b>AI 电力需求(电价/容量费/新长约)能不能扛住。</b> <b>赔率偏不对称(下行被低估值缓冲、上行有 +18%~46% 到公允区),但前提是别遇到电价大跌 + 利率失控这种双杀。</b>
+    </div>
+
+    <h2 style="margin-top:22px;">VST 在做什么对冲风险?有效吗?</h2>
+    <div class="note green">
+      <b>✅ 在主动锁定收入 + 强化资产负债表:</b> ① <b>把波动的现货收入换成 20 年固定长约</b>(AWS/Meta),等于给未来上保险;② 用 <b>Cogentrix 5.5GW 燃气</b>补"电网可靠性缺口"——AI 数据中心要 24 小时供电,可调度的燃气正好补风光的间歇;③ 给核电做<b>增容(uprate)</b>,客户出钱、它扩产;④ 持续<b>回购缩股 + 稳步加分红</b>,把现金还给股东。
+    </div>
+    <div class="note red">
+      <b>⚠ 但"有效"取决于一件没法控的事——电价周期:</b> 这些动作能把一部分收入锁住、降低波动,但 VST 大头利润仍随电价/天然气价浮动。<b>对冲的"动作"很到位,"结果"要看 AI 电力需求这波能持续多久、以及 8/6 的 EBITDA 指引扛不扛得住。</b>
+    </div>
+
+    <h2 style="margin-top:22px;">它在扩张还是收缩?(招聘 / 另类数据)</h2>
+    <div class="note green">
+      <b>✅ 全力扩张,毫无"垂死"迹象:</b> VST 在<b>招核电运维、电厂工程、电力交易、数据中心商务拓展</b>等岗位,围绕 Comanche Peak、PJM 核电站增容和新燃气/光储项目铺人。<b>一个要衰退的公司不会签 $几百亿长约、花 $47亿买燃气资产、还到处招扩产的人。</b>风险不在"会不会萎缩",而在"杠杆 + 商品周期"——这是重资产成长股的烦恼,不是衰退股的烦恼。
+    </div>
+
+    <h2 style="margin-top:22px;">下一个引爆点 / 要盯的信号 &amp; 日历</h2>
+    <div class="twocol">
+      <div class="bcard">
+        <div class="bh">📅 日历上的催化剂</div>
+        <ul>
+          <li><b>🔴 8月6日(盘后)Q2 财报</b> —— 夏季是德州用电高峰、VST 的旺季。重点看 2026 EBITDA 指引是否重申/上调。</li>
+          <li><b>新数据中心/核电长约公告</b>(随时可能,AWS/Meta 之后还有谁)。</li>
+          <li><b>Cogentrix 收购下半年交割</b> + 持续回购缩股(下行地板)。</li>
+        </ul>
+      </div>
+      <div class="bcard">
+        <div class="bh">🔎 验证多头论点的"铁证"</div>
+        <ul>
+          <li><b>2026 调整后 EBITDA 指引重申/上调</b> —— 最关键。上调 = 再估值最强信号。</li>
+          <li><b>又签一笔超大长约</b>(证明 AI 电力需求是真、且 VST 在赢)。</li>
+          <li><b>净债/EBITDA 稳住 + Cogentrix 顺利整合</b>(化解空头主攻点)。</li>
+          <li>反之:EBITDA 指引下调 / 电价转弱 / 杠杆失控 → 错杀变陷阱。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note blue" style="margin-top:14px;">
+      <b>思路过程(怎么从证据推到结论):</b> ① 先分清<b>行业β 还是个股α</b>——对比同行,VST 比 CEG 甚至比受监管电力还便宜 → 存在"被额外打折"的个股因素;② 锁定<b>打折原因</b>——高杠杆 + GAAP 失真 + 商品波动,这是真风险,不是纯情绪;③ 判断<b>是否被过度定价</b>——看基本面有没有真崩(没有:EBITDA +24%、3.8GW 长约锁定、狂吐现金)→ 被打的折看起来过头;④ 找<b>能证伪/证实的硬数据</b>——EBITDA 指引 + 新长约 + 杠杆,验证点在 8/6。结论不是"一定涨",而是"<b>赔率不对称,且有明确、可跟踪的验证点</b>"。
+    </div>
+  </div>
+
+  <!-- ⑥ AUG 6 PLAYBOOK -->
+  <div class="panel hide" id="panel-play">
+    <h2>8/6 推演:不等数据,先算概率 Aug 6 Playbook</h2>
+    <p class="hint">下次财报约 <b>8月6日盘后</b>(Q2 FY2026)。<b>门槛 = VST 自己的官方指引</b>(Q1 电话会 5/7 重申):<b>2026 调整后 EBITDA $6.8–7.6B、调整后自由现金流 $3.9–4.7B</b>(均不含 Cogentrix)。Q2 一致预期:收入 ~$5.77B、EPS ~$2.11(区间 $1.24–2.51)。VST 财报日通常<b>波动 ±5–8%</b>,比成长股温和(具体以盘前隐含为准)。</p>
+
+    <div class="note green">
+      <b>🎯 决胜尺(看 EBITDA/现金流和长约,不看单季 GAAP 利润):</b><br>
+      · <b>2026 调整后 EBITDA 指引:$6.8–7.6B(中值 $7.2B,+24% vs 2025)</b>。重申或上调 = 偏多;下调 = 危险。这是第一把尺。<br>
+      · <b>调整后自由现金流(FCFbG):$3.9–4.7B</b>。决定能拿多少钱去回购缩股 + 还债。<br>
+      · <b>新数据中心/核电长约:</b>有没有再签一笔超大单(像 AWS/Meta)。<br>
+      · <b>Cogentrix 交割进度 + 净债/EBITDA:</b>杠杆失不失控,是空头主攻点。<br>
+      · <b>⚠ 别盯单季 GAAP EPS:</b>它被套保会计搅乱(Q1'25 −$0.93、Q1'26 +$2.87),不代表经营好坏。
+      <div style="font-size:11px;color:#5b6573;margin-top:6px;">📚 来源:<a href="https://www.theglobeandmail.com/investing/markets/stocks/VST/pressreleases/2244652/vistra-vst-q1-2026-earnings-call-transcript/" target="_blank">VST Q1 2026 财报电话会(2026-05-07)</a>。Q2 一致预期来自 yfinance/分析师汇总(收入均值 $5.77B、EPS 均值 $2.11)。</div>
+    </div>
+
+    <div class="note blue">
+      <b>口径:</b>本页是"预期/推演";Sankey 只画<b>已发生</b>的真实数,预期不叠加(会误导)。参照:Q1 实际收入 $5.64B(+43% YoY,旺季+电价高);Q2 一致预期 ~$5.77B。<b>报告当天比的是"实际 vs 一致预期 + EBITDA 指引",不是单季 GAAP 利润。</b>
+    </div>
+
+    <div class="note green">
+      <b>✅ 预期来源已核实:</b> 年度 EBITDA / FCF 门槛是 <b>VST 自己在 Q1 财报电话会(5/7)重申的官方指引</b>,不是小道消息。Q2 没有官方单季利润指引;一致预期收入 ~$5.77B、EPS ~$2.11,来自分析师汇总(17 位)。注意:VST 单季 GAAP 利润会被套保的市价记账搅乱,<b>看全年 EBITDA/FCF 指引比看单季 EPS 靠谱</b>。
+    </div>
+
+    <h2 style="margin-top:18px;">上次财报以来:已 price-in 还是被嫌弃?(撇除大盘)</h2>
+    <p class="hint">方法:以"上次财报(5/7)收盘"为基线,看 VST 相对<b>最近的同行 CEG</b>和<b>大盘 SPY</b>跑赢还是跑输。跑输大盘=恐惧已在价里(低门槛);相对同行抗跌=个股相对强势。</p>
+    <div id="baselineChart" class="chart"></div>
+    <div class="note amber">
+      <b>读数:</b>上次财报(5/7)到现在,<b>VST −3.4%、同行 CEG −18.0%、大盘 SPY +0.5%</b>。两层信号:① <b>整个 AI 电力板块被资金轮出</b>(CEG 暴跌、VST 也跌、而大盘在涨)——板块层面的恐惧/获利了结已大量 price-in,门槛被压低;② <b>但 VST 在这群里相对最强</b>(只跌 3.4%,远好于 CEG 的 −18%),说明它没被最狠地抛弃。<br>
+      <b>结论:板块层面"坏消息已 price-in、下行有缓冲";个股层面 VST 是相对强势的那个</b>。这把"赔率偏多头、但别指望板块马上回暖"量化了。<br>
+      <b>⚠ 提醒:</b>这读的是"门槛/赔率",不是"会不会 beat";离 8/6 还有近两个月,价格本身还会大幅漂移。
+    </div>
+
+    <h2 style="margin-top:18px;">资金动向:在吸筹还是派发?(量能趋势)</h2>
+    <p class="hint">成交量能被伪装,所以只看<b>趋势</b>和<b>结构</b>:上涨日的量 vs 下跌日的量(吸筹 vs 派发)。⚠ 这些是技术代理,<b>不等于真·机构席位</b>(那要看滞后的 13F)。</p>
+    <div id="flowChart" class="chart"></div>
+    <div class="note green">
+      <b>读数(上次财报 5/7 至今,21 个交易日):</b><br>
+      · <b>量在放大:</b>日均量 5.61M,比财报前 6 个月(4.82M)<b>高 ~16%</b> → 关注度上升。<br>
+      · <b>把股数换成钱和市值看:</b>日均成交额约 <b>$0.83B/天 ≈ 市值($50.2B)的 1.7%/天</b>;21 个交易日累计成交 ≈ <b>1.18 亿股 ≈ 全部股本(3.37 亿股)的 35%</b>。一个月里三分之一的股票换了手。<br>
+      · <b>偏吸筹:</b>上涨日均量 6.16M > 下跌日均量 5.14M(比 <b>1.20</b>)→ 买盘在上涨日更积极,温和吸筹。<br>
+      · <b>别夸大:</b>信号<b>温和不强</b>(比值 1.20),期间股价宽幅震荡(一度跌到 $135 又弹回 $165)。<br>
+      <b>合起来:放量 + 上涨日量更大 = 在低位被温和承接</b>,与"相对同行抗跌"的基线相互印证——<b>没被抛弃,在震荡中换手</b>,但还没放量突破。
+    </div>
+
+    <h2 style="margin-top:18px;">实际 vs 预测,分开看(两张独立 Sankey)</h2>
+    <p class="hint">"推研值和实际值别搞混":左=最近一季 <b>实际</b>(Q1 FY26,绿),右=下一季 <b>预测</b>(Q2 一致预期建模,橙/标 est.)。<b>故意分两张、不叠一起,免得把"已发生"和"还没发生"混为一谈。</b>报告日就是拿右图去对实际。</p>
+    <div class="grid2">
+      <div><div class="qtag act">✅ 实际 · Q1 FY2026(已发生)</div><div id="q1Chart" class="chart"></div></div>
+      <div><div class="qtag fc">🔮 预测 · Q2 FY2026(模型,非官方)</div><div id="q2Chart" class="chart"></div></div>
+    </div>
+    <div class="note amber">预测口径:收入用一致预期 <b>$5.77B</b>;GAAP 净利对齐一致预期 EPS <b>$2.11</b> × ~337M 股 ≈ <b>$711M</b>(按 ~16% 税率倒推,不假设有套保浮盈)。⚠ 真实单季 GAAP 利润会被套保的市价记账搅动,<b>右图是"形状参考",真正的硬标尺是全年 EBITDA 指引和现金流。</b></div>
+    <div class="note blue">
+      <b>预测从哪来:</b> 收入/EPS 是<b>分析师一致预期</b>(17 位,收入均值 $5.77B、EPS 均值 $2.11、区间 $1.24–2.51);年度 EBITDA/FCF 门槛是 <b>VST 官方指引</b>。<b>分析师的"picture"(目标价 range):</b> 最熊 <b>$99</b> ~ 最牛 <b>$320</b>,<b>均值 ~$225、中位 $227</b>——平均比今天 $149 <b>高约 +51%</b>。换句话说:<b>分析师整体相当看多(均价 +51%),分歧在"杠杆 + 电价周期该扣多少分"。</b>(你接受 range——这就是 range,不必硬塞进 Sankey。)
+    </div>
+
+    <h2 style="margin-top:18px;">Beat / Meet / Miss 怎么影响股价(框架,不是公式)</h2>
+    <div class="note">
+      <b>没有精确公式,但有成熟框架:</b><br>
+      股价反应 ≈ <b>EBITDA/指引 vs 预期</b> + <b>新长约惊喜</b> + <b>电价/容量费方向</b> − <b>已被 price-in 的部分</b>,再 × <b>仓位/隐含波动</b>。<br>
+      四个要点:① 股价反应的是<b>"超预期"而非绝对数字</b>;② 对 VST,<b>全年 EBITDA/FCF 指引比单季 EPS 重要得多</b>(单季 GAAP 被套保搅乱);③ <b>新签数据中心长约</b>是最强的单一催化(直接坐实 AI 电力故事);④ 报后期权隐含波动骤降(IV crush)。<br>
+      一句话直觉:<b>"板块已被轮出打压 + VST 相对抗跌",只要 EBITDA 指引扛住,赔率偏上。</b>
+    </div>
+
+    <h2 style="margin-top:18px;">情景概率矩阵(我的推算,非定论)</h2>
+    <div id="scenChart" class="chart"></div>
+    <div style="overflow-x:auto;">
+      <table class="scen">
+        <tr><th>情景</th><th>概率</th><th>长什么样</th><th>预期股价反应</th><th>价位区间</th></tr>
+        <tr><td>🚀 上调 EBITDA 指引 + 新数据中心单</td><td class="pb">25%</td><td>2026 EBITDA 上修、再签一笔超大长约</td><td class="up">+6% ~ +12%</td><td>$158–167</td></tr>
+        <tr><td>✅ 重申指引 + 夏季强劲</td><td class="pb">35%</td><td>德州旺季 EBITDA 达标、指引重申</td><td class="up">−1% ~ +6%</td><td>$147–158</td></tr>
+        <tr><td>😐 基本符合 / 混合</td><td class="pb">18%</td><td>大致达标、电价信号不清</td><td>−3% ~ +2%</td><td>$144–152</td></tr>
+        <tr><td>⚠️ 电价转弱 / Cogentrix 拖累</td><td class="pb">17%</td><td>电价回落、净债走高或整合不顺</td><td class="dn">−5% ~ −9%</td><td>$135–141</td></tr>
+        <tr><td>💥 大幅不及 + 砍指引</td><td class="pb">5%</td><td>EBITDA 指引下调、杠杆担忧坐实</td><td class="dn">−11% ~ −16%</td><td>$125–132</td></tr>
+      </table>
+    </div>
+    <div class="note amber">
+      <b>加权之后:</b> 期望涨跌<b>略偏正,尾巴不算太肥</b>(VST 比成长股温和,约 ±5–8%)。真正的胜负手只有一个:<b>2026 EBITDA 指引扛不扛得住 + 有没有新长约。</b> 由于板块已被轮出、VST 又相对抗跌,<b>下行的"惊吓空间"被压缩,赔率偏向上。</b>
+    </div>
+
+    <h2 style="margin-top:18px;">多空天平 Bull vs Bear(Claude × Gemini 双模型红蓝队)</h2>
+    <p class="hint">双模型:Claude 与 <b>Gemini 3.1 Pro</b> 各自独立跑 3 轮红蓝辩论。砝码后标 <span class="mtag c">C</span>=Claude 提、<span class="mtag g">G</span>=Gemini 提、两者都标=两家都提。</p>
+    <div class="twocol">
+      <div class="bcard"><div class="bh">🤖 Claude 的结论</div><div style="font-size:12.5px;color:#444"><b>谨慎偏多</b>。估值便宜 + EBITDA +24% + 长约托底,赔率偏上;但 ~90% 产能仍是现货敞口、$210亿杠杆,在电价拐点会反噬——所以偏多不重仓。</div></div>
+      <div class="bcard"><div class="bh">✨ Gemini 3.1 Pro 的结论</div><div style="font-size:12.5px;color:#444">倾向<b>多头</b>:"在 AI 结构性红利与传统周期魔咒的极限拉扯中,极强的现金流和较低的估值安全垫让多头赢面更大。"</div></div>
+    </div>
+    <div class="twocol" style="margin-top:14px;">
+      <div class="pan bull">
+        <div class="ph">🐂 多头砝码</div>
+        <ul>
+          <li><span>估值便宜(EV/EBITDA 10.6×)+ EBITDA +24% <span class="mtag c">C</span><span class="mtag g">G</span></span><span class="w">3</span></li>
+          <li><span>3.8GW 20年长约→把周期变"类债"资产 <span class="mtag c">C</span><span class="mtag g">G</span></span><span class="w">3</span></li>
+          <li><span>$40亿+ 自由现金流持续回购缩股托底 <span class="mtag c">C</span><span class="mtag g">G</span></span><span class="w">2</span></li>
+          <li><span>建电厂周期超长→供需缺口结构性 <span class="mtag g">G</span></span><span class="w">2</span></li>
+          <li><span>比同行/受监管电力都便宜(被错杀) <span class="mtag c">C</span></span><span class="w">2</span></li>
+        </ul>
+      </div>
+      <div class="pan bear">
+        <div class="ph">🐻 空头砝码</div>
+        <ul>
+          <li><span>~90% 产能仍暴露现货电价周期 <span class="mtag c">C</span><span class="mtag g">G</span></span><span class="w">3</span></li>
+          <li><span>电价是大宗商品,终将均值回归 <span class="mtag c">C</span><span class="mtag g">G</span></span><span class="w">3</span></li>
+          <li><span>$210亿高杠杆,拐点易杠杆反噬 <span class="mtag c">C</span><span class="mtag g">G</span></span><span class="w">2</span></li>
+          <li><span>容量价/股价双高位收购+回购=资本错配 <span class="mtag g">G</span></span><span class="w">2</span></li>
+          <li><span>套保占用现金/保证金风险 <span class="mtag c">C</span></span><span class="w">1</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="tilt">
+      <div class="tilt-track">
+        <div class="tilt-mark" style="left:38%;background:#7c3aed" title="Gemini"></div>
+        <div class="tilt-mark" style="left:46%;background:#1f2733" title="Claude"></div>
+      </div>
+      <div class="tilt-labels"><span>🐂 多头</span><span>✨Gemini 偏多 · 🤖Claude 谨慎偏多(两家同向偏多)</span><span>🐻 空头</span></div>
+    </div>
+    <div class="note green" style="margin-top:12px;">
+      <b>两个模型都同意(共识):</b> ① AI 确实推高了近中期电力需求预期;② 公司当前正处于极强的自由现金流产出阶段;③ 估值确有安全垫;④ <b>胜负手是同一个——电力的高价究竟是"长周期建设带来的结构性短缺"(多头),还是会"遵循大宗商品规律被供给平抑"(空头)。</b>
+    </div>
+    <div class="note amber" style="margin-top:8px;">
+      <b>关键分歧(最值钱):</b> 两家都偏多,差在力度。<b>Gemini 的多头理由</b>是"重置成本 + 长约类债化"——新建核电要 10 年、燃气 5–7 年,所以现成机队稀缺、长约把周期收入锁死。<b>我(Claude)的保留</b>:3.8GW 长约只占总装机不到 10%,剩下约 36GW 仍随电价波动,叠加 $210亿杠杆,电价拐点的下行不容低估。<b>这是模型推演、不是定论;真正的裁判是电价周期会不会被新供给平抑——8/6 的 EBITDA 指引是第一个观察点。</b>
+    </div>
+
+    <h2 style="margin-top:18px;">红蓝对抗全文 The debate(Gemini 3.1 Pro · 逐轮)</h2>
+    <p class="hint">Gemini 真实跑出来的 3 轮辩论(开场 → 反驳 → 收口),按原文整理、论点未删改。🔵=多头 / 🔴=空头。</p>
+
+    <div style="font-weight:700;font-size:14px;margin:14px 0 6px;color:#1f2733">第 1 轮 · 开场陈词 Opening</div>
+    <div class="twocol">
+      <div class="bcard bull">
+        <div class="bh">🔵 多头:估值与业绩背离</div>
+        <ul>
+          <li><b>估值偏低,而经营利润在增长。</b>GAAP 市盈率被套保会计搅乱,看真实经营:2026 EBITDA 中值指引 $72亿、同比 +24%;远期 P/E 13.6×,低于传统公用事业(DUK/SO 17–18 倍)和纯核电同行 CEG(18 倍以上)。增长更快却定价更低,存在估值错配。</li>
+          <li><b>AI 电力从"叙事"落到"合约"。</b>已签 AWS + Meta 共 3.8GW 的 20 年期购电长约。数据中心需要 24 小时基荷电,核电+燃气契合,这部分收入被长期锁定,降低了周期波动。</li>
+          <li><b>自由现金流支撑回购缩股。</b>2026 自由现金流指引约 $43亿,管理层持续回购注销 + 派息;叠加 8 月德州夏季用电高峰这一季节性顺风,提供向上弹性与下行缓冲。</li>
+        </ul>
+      </div>
+      <div class="bcard bear">
+        <div class="bh">🔴 空头:"终局式 AI 价值陷阱"</div>
+        <ul>
+          <li><b>生死攸关的"席位毁灭"。</b>14.7× 不是折价,是反映结构性终局风险的陷阱。OpenAI/Midjourney/Canva 正把内容创作商品化;整个板块杀估值的本质是——AI 智能体减少了所需的人类"席位",而 Adobe 的按人头订阅模式正面承压。</li>
+          <li><b>核心增长引擎在熄火。</b>Q1 的 trailing 收入掩盖了前瞻性衰减:净新增 Digital Media ARR 正在减速;Firefly 没转成定价权;Adobe Stock(图库)正被免费/廉价的合成图掏空。</li>
+          <li><b>领导真空 + 转型风险。</b>偏偏在最需要完美执行时换 CEO;为抢 AI 人才砸高薪、同时掏空数字体验团队,透着内部慌乱、还打乱了现金牛业务。期权定价 ±9.5% 反映的是"FY26 指引可能塌"的真实恐惧。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="font-weight:700;font-size:14px;margin:16px 0 6px;color:#1f2733">第 2 轮 · 互相反驳 Rebuttal</div>
+    <div class="twocol">
+      <div class="bcard bull">
+        <div class="bh">🔵 多头反驳</div>
+        <ul>
+          <li><b>"席位毁灭"忽视了企业现实。</b>财富 500 强因版权、IP、品牌安全风险,<b>不能</b>直接用 Midjourney 的原始产出;Firefly 提供<b>法律赔付(indemnification)</b>,且原生嵌在真正"收尾"工作发生的套件里。AI 不是替掉席位,而是让一个席位效率 ×10。</li>
+          <li><b>变现在留存与升级,不只在加购。</b>空头盯着净新增 ARR 减速,却选择性忽视 Q1 <b>上调</b>了指引。Firefly 是留存机制;AI-first ARR &gt;3× 证明企业在往更贵的 AI 套餐升级。丢掉一小块 Adobe Stock 收入,相对守住 $6.4B/季的核心订阅护城河,只是零头。</li>
+        </ul>
+      </div>
+      <div class="bcard bear">
+        <div class="bh">🔴 空头反驳</div>
+        <ul>
+          <li><b>14.7× 是价值陷阱,不是折价。</b>市场是前瞻的;价值陷阱在"E"塌之前、trailing 数据上永远显得便宜(想想十年前的传统硬件)。拿 MSFT(24.8×)/CRM(21.6×)比也不公平——它们握着企业的<b>数据与记录系统</b>,Adobe 只提供创作<b>工具</b>,而工具正是被多模态 AI 商品化到趋零的部分。</li>
+          <li><b>回购与重组在掩盖核心衰退。</b>$25B 回购是防御、不是增长——回购是因为缺有机增长/并购去处。更糟的是被多头夸的"静默裁撤数字体验(DX)团队"——DX 本是 Adobe 通往"真正企业数据公司"的桥;掏空它去打昂贵的防御性 AI 人才战,等于<b>放弃企业侧侧翼</b>,只为挡住 Canva 蚕食核心。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="font-weight:700;font-size:14px;margin:16px 0 6px;color:#1f2733">第 3 轮 · 收口陈词 Closing</div>
+    <div class="twocol">
+      <div class="bcard bull">
+        <div class="bh">🔵 多头收口</div>
+        <div style="font-size:13px;color:#333;line-height:1.55">Adobe 是当前大盘科技里最佳的不对称风险/回报。市场对"SaaS 末日"彻底投降,把它压到荒谬的 14.7×,当成终局型遗老定价,而非一家高利润、深嵌入的工作流垄断者。它在创纪录吐现金、回购、把用户迁到 AI 套餐(35% 渗透)。<b>6/11 门槛已低到地板——它甚至不需要惊艳增长就能跳涨,只要证明"自己没在死"。</b>有企业级 IP 赔付保住 Firefly 黏性,它就是一台等待倍数重估的、被错杀的现金机器。</div>
+      </div>
+      <div class="bcard bear">
+        <div class="bh">🔴 空头收口</div>
+        <div style="font-size:13px;color:#333;line-height:1.55">Adobe 是典型的 AI 价值陷阱。14.7× 是幻觉,掩盖核心商业模式不可逆的衰退。当多模态 AI 能从一句话生成成品,需要几十个人在 Photoshop 里挪像素的"席位"会指数级下降。净新增 ARR 减速就是煤矿里的金丝雀——证明 Firefly 在蚕食增长而非创造新收入。在 AI 大战中一边换帅、一边掏空企业团队,透着严重内部困境。期权定价的剧烈 9.5% 波动意味着 <b>6/11 的数字会揭穿:Adobe 站在 AI 范式转移的错误一侧。</b></div>
+      </div>
+    </div>
+
+    <div class="note blue" style="margin-top:14px;">
+      <b>⚖ 唯一的胜负手(双方都收敛到同一变量):</b> <b>ARPU 升级 vs 席位收缩</b>——把老用户升到更贵 AI 套餐多赚的钱,能不能在数学上盖过"AI 让每个设计师效率 ×10、企业因此买更少订阅"少赚的钱。<br>
+      <b>✨ Gemini 最终判决:lean = 多头。</b>原话:"在 14.7× 市盈率,Adobe 被按 AI 末日定价——意味着 Q2 的 ARR 哪怕只是企稳,都会触发剧烈的向上重估。"<br>
+      <b>🤖 Claude 的合议:</b>同意胜负手在 ARR;但我给"结构性下行"更高权重,故近端略偏空。两模型在<b>方向</b>上分歧、在<b>赔率</b>(坏消息已 price-in、上行弹性更大)上一致——这正是 6/11 值得盯紧的原因。
+    </div>
+
+    <h2 style="margin-top:18px;">6/11 前后的宏观大事 Macro around the print</h2>
+    <div class="note">
+      这是个<b>宏观密集窗口</b>,会放大或抵消 Adobe 自己的财报:<br>
+      · <b>6/10(周三)8:30 ET — 5月 CPI</b>:最重磅。CPI 偏热 → 降息预期降温 → 成长/软件承压(对 ADBE 不利);CPI 偏冷 → risk-on 顺风。<br>
+      · <b>6/11(周四)8:30 ET — 5月 PPI</b>:与 ADBE 财报<b>同一天</b>(财报为盘后)。<br>
+      · <b>6/16–17 — FOMC + 点阵图</b>:财报后一周的大事;ADBE 报完正赶上市场为美联储定调,波动可能被放大。<br>
+      <b>解读:</b>ADBE 这次是"<b>在被 CPI/PPI 搅动、且 FOMC 在即</b>"的大盘里报财报——就算自身数字不错,也可能被宏观情绪盖过;反之宏观顺风能放大好财报的弹性。<b>看 ADBE 反应时,先扣掉当天大盘的 beta。</b>
+    </div>
+  </div>
+
+  <footer>
+    Data: stockanalysis.com (Adobe FY2025 10-K, Q1 FY2026 10-Q, live quote &amp; ratio history) · peer multiples, news, options-implied move &amp; macro calendar from public reporting (Jun 2026). Scenario probabilities are the author's estimates, not forecasts. TTM income = FY2025 − Q1 FY2025 + Q1 FY2026, all nodes reconciled.<br>
+    Educational illustration, not investment advice.
+  </footer>
+</div>
+
+<script>
+/* ---------- plain-language definitions (shown on hover) ---------- */
+var DEF = {
+  // income
+  'Revenue':'营业收入。卖电收到的全部钱:零售卖给家庭/企业(TXU 等)+ 批发把发的电卖到电网。',
+  'Fuel & Purchased Power':'燃料和外购电。发电烧的天然气/煤,以及为履约从市场买的电。这是最大一块直接成本,随天然气和电价上下浮动,约占收入一半。',
+  'Operations & Maintenance':'运营维护费(O&M)。电厂日常运行:人工、检修、核电运维、排放处理等。',
+  'Other Op. (SG&A)':'其他运营费用 + 销售管理费:营销获客、总部行政、坏账等。',
+  'Depreciation & Amort.':'折旧摊销。把几百亿建/买来的电厂按年一点点计入费用。不是当期真花出去的现金,但金额巨大。',
+  'Operating Income':'营业利润 = 收入 − 燃料 − 运维 − 折旧等。衡量"发电卖电这门生意本身"赚多少。',
+  'Net Interest & Other':'净利息及其他。VST 背着约 $210 亿债,一年利息支出十几亿;再加投资/其他损益的净额。',
+  'Pre-Tax Income':'税前利润。交税之前的利润。',
+  'Income Tax':'所得税。',
+  'Net Income':'GAAP 净利润(账面最终利润)。⚠ 对 VST 这个数极不稳:套保衍生品的"市价记账"会让它在不同季度暴涨暴跌,不代表真实经营好坏。看 EBITDA 和现金流更靠谱。',
+  // balance sheet
+  'Cash & Equivalents':'现金及等价物。银行里随时能用的钱。VST 现金很少(~$6.7亿),靠现金流和循环贷周转。',
+  'Receivables/Inventory/Deriv.':'应收账款 + 存货(燃料)+ 流动衍生品资产。其中"衍生品"是套保合约的浮盈和保证金,金额大且随电价波动。',
+  'Net PP&E (Power Plants)':'固定资产净值 = 发电厂。核电、燃气、煤电、太阳能+储能等实物机组,是 VST 的"印钞机",占总资产近一半。',
+  'Goodwill + Intangibles':'商誉 + 无形资产。历次收购(如 Energy Harbor 核电)超出净资产多付的钱 + 买来的合约/牌照。',
+  'Other Non-Current':'其他非流动资产:核电退役信托基金(法律要求预留的拆核电站的钱)、长期衍生品、递延税等。',
+  'TOTAL ASSETS':'总资产 = 公司拥有的所有东西。永远等于"总负债 + 股东权益"。',
+  'Total Liabilities':'总负债 = 公司欠别人的所有钱($357亿)。VST 是高杠杆公司,负债占总资产 86%。',
+  "Shareholders' Equity":'股东权益/账面净资产 = 总资产 − 总负债 = 仅 $56亿。只占总资产 14%——杠杆很高,家底薄。',
+  'Current Liabilities':'流动负债。一年内要还的:应付账款、一年内到期的债、流动衍生品负债、保证金等。',
+  'Long-Term Debt':'长期借款 $177亿。一年以上到期的债。VST 债务负担重是空头最大的担忧。',
+  'Other LT Liabilities':'其他长期负债:核电退役义务、长期衍生品、递延税、养老金等。',
+  // integrated
+  'Cash & Investments':'现金 + 短期投资,公司手上的"闲钱"(仅 ~$6.7亿)。远小于它的债,是"净负债"公司。',
+  'Other Assets':'除现金外的全部资产:发电厂、应收、衍生品、商誉、核退役信托等($406亿)。',
+  'Book Equity (Net Worth)':'账面净资产 = 总资产 − 总负债 = $56亿。只占市值 11%——因为杠杆高、账面权益被债压薄。',
+  'Market Premium':'市场溢价 = 市值 − 账面净资产 = $446亿。市场为"未来现金流 + AI 电力长约"多付的钱。注意:VST 溢价大主要是因为杠杆高(账面薄),不是市值虚高——按 EV/EBITDA 才 ~10.6×,在合理区间。',
+  'MARKET CAP':'市值 = 股价 × 总股本 = 这家公司全部股票今天值多少钱($502亿)。',
+  'Total Liab.':'总负债 = 公司欠别人的所有钱($357亿)。'
+};
+
+/* ---------- helpers ---------- */
+var fmtM = function(v){ return '$' + Math.round(v).toLocaleString('en-US') + 'M'; };
+var nodeLabel = function(p){ return p.name + '\n' + fmtM(p.value); };
+
+function richTip(refTotal, refLabel){
+  return function(p){
+    if(p.dataType === 'edge'){
+      return '<div style="font-weight:700">' + p.data.source + '  →  ' + p.data.target + '</div>'
+           + '<div style="font-size:15px;font-weight:700;color:#2e9e5b;margin-top:2px">' + fmtM(p.data.value) + '</div>';
+    }
+    var pct = (p.value / refTotal * 100).toFixed(1);
+    var def = DEF[p.name] || '';
+    return '<div style="max-width:300px;white-space:normal">'
+      + '<div style="font-weight:700;margin-bottom:2px">' + p.name + '</div>'
+      + '<div style="font-size:15px;font-weight:700;color:#1f2733">' + fmtM(p.value)
+      + ' <span style="font-weight:400;color:#5b6573;font-size:11.5px">· ' + pct + '% of ' + refLabel + '</span></div>'
+      + (def ? '<div style="font-size:12px;color:#566;margin-top:6px;line-height:1.5">' + def + '</div>' : '')
+      + '</div>';
+  };
+}
+var tipCfg = function(ref,lab){ return {trigger:'item', triggerOn:'mousemove', confine:true,
+  extraCssText:'max-width:320px;white-space:normal;box-shadow:0 4px 18px rgba(0,0,0,.12);', formatter:richTip(ref,lab)}; };
+
+var charts = {};
+
+/* ---------- ① INCOME (TTM) ---------- */
+function buildIncome(){
+  var REV = 17738;
+  var G='#2e9e5b', G2='#46c07a', O='#e8923a', O2='#efb066', R='#e05c54', GR='#9aa3ad';
+  var nodes = [
+    {name:'Revenue',                value:17738, depth:0, itemStyle:{color:G}},
+    {name:'Fuel & Purchased Power', value:9101,  depth:1, itemStyle:{color:O}},
+    {name:'Operations & Maintenance',value:4517, depth:1, itemStyle:{color:O}},
+    {name:'Depreciation & Amort.',  value:1986,  depth:1, itemStyle:{color:O2}},
+    {name:'Other Op. (SG&A)',       value:228,   depth:1, itemStyle:{color:O2}},
+    {name:'Operating Income',       value:1906,  depth:1, itemStyle:{color:G2}},
+    {name:'Net Interest & Other',   value:783,   depth:2, itemStyle:{color:GR}},
+    {name:'Pre-Tax Income',         value:1123,  depth:2, itemStyle:{color:G2}},
+    {name:'Income Tax',             value:179,   depth:3, itemStyle:{color:R}},
+    {name:'Net Income',             value:944,   depth:3, itemStyle:{color:G}}
+  ];
+  var links = [
+    {source:'Revenue', target:'Fuel & Purchased Power', value:9101},
+    {source:'Revenue', target:'Operations & Maintenance', value:4517},
+    {source:'Revenue', target:'Depreciation & Amort.', value:1986},
+    {source:'Revenue', target:'Other Op. (SG&A)', value:228},
+    {source:'Revenue', target:'Operating Income', value:1906},
+    {source:'Operating Income', target:'Net Interest & Other', value:783},
+    {source:'Operating Income', target:'Pre-Tax Income', value:1123},
+    {source:'Pre-Tax Income', target:'Income Tax', value:179},
+    {source:'Pre-Tax Income', target:'Net Income', value:944}
+  ];
+  return {
+    tooltip:tipCfg(REV,'revenue'),
+    series:[{ type:'sankey', left:'1%', right:'15%', top:'3%', bottom:'3%',
+      nodeWidth:16, nodeGap:14, draggable:true, layoutIterations:0, emphasis:{focus:'adjacency'},
+      data:nodes, links:links,
+      label:{ formatter:function(p){
+          var ANOM={'Net Income':'⚠ 套保会计失真','Fuel & Purchased Power':'⚠ 占收入 51%·商品价波动','Net Interest & Other':'⚠ 高债务·利息重'};
+          var pct=(p.value/REV*100).toFixed(0); var s='{nm|'+p.name+'}\n{val|'+fmtM(p.value)+' · '+pct+'%}';
+          if(ANOM[p.name]) s+='\n{warn|'+ANOM[p.name]+'}';
+          return s; },
+        rich:{ nm:{fontSize:11,color:'#27313d',fontWeight:700,lineHeight:14},
+          val:{fontSize:11,color:'#5b6573',lineHeight:14},
+          warn:{fontSize:10,color:'#c0392b',fontWeight:700,lineHeight:15,backgroundColor:'#fdecea',padding:[1,4],borderRadius:2} } },
+      lineStyle:{color:'gradient', opacity:0.32, curveness:0.5} }]
+  };
+}
+
+/* ---------- ② BALANCE SHEET (Feb 27, 2026) ---------- */
+function buildBalance(){
+  var TA = 41308;
+  var B='#3b82c4', B2='#6aa7d8', B3='#86b8de', GW='#2f6aa3', O='#e8923a', O2='#efa45a', P='#8a63c4';
+  var nodes = [
+    {name:'Cash & Equivalents',          value:671,   depth:0, itemStyle:{color:B}},
+    {name:'Receivables/Inventory/Deriv.',value:8345,  depth:0, itemStyle:{color:B3}},
+    {name:'Net PP&E (Power Plants)',     value:19876, depth:0, itemStyle:{color:B2}},
+    {name:'Goodwill + Intangibles',      value:5173,  depth:0, itemStyle:{color:GW}},
+    {name:'Other Non-Current',           value:7243,  depth:0, itemStyle:{color:B3}},
+    {name:'TOTAL ASSETS',                value:41308, depth:1, itemStyle:{color:'#244e74'}},
+    {name:'Total Liabilities',           value:35698, depth:2, itemStyle:{color:O}},
+    {name:"Shareholders' Equity",        value:5610,  depth:2, itemStyle:{color:P}},
+    {name:'Current Liabilities',         value:10059, depth:3, itemStyle:{color:O2}},
+    {name:'Long-Term Debt',              value:17710, depth:3, itemStyle:{color:O}},
+    {name:'Other LT Liabilities',        value:7929,  depth:3, itemStyle:{color:O2}}
+  ];
+  var links = [
+    {source:'Cash & Equivalents',          target:'TOTAL ASSETS', value:671},
+    {source:'Receivables/Inventory/Deriv.',target:'TOTAL ASSETS', value:8345},
+    {source:'Net PP&E (Power Plants)',     target:'TOTAL ASSETS', value:19876},
+    {source:'Goodwill + Intangibles',      target:'TOTAL ASSETS', value:5173},
+    {source:'Other Non-Current',           target:'TOTAL ASSETS', value:7243},
+    {source:'TOTAL ASSETS', target:'Total Liabilities',    value:35698},
+    {source:'TOTAL ASSETS', target:"Shareholders' Equity", value:5610},
+    {source:'Total Liabilities', target:'Current Liabilities',  value:10059},
+    {source:'Total Liabilities', target:'Long-Term Debt',       value:17710},
+    {source:'Total Liabilities', target:'Other LT Liabilities', value:7929}
+  ];
+  return {
+    tooltip:tipCfg(TA,'total assets'),
+    series:[{ type:'sankey', left:'1%', right:'14%', top:'3%', bottom:'3%',
+      nodeWidth:16, nodeGap:12, draggable:true, layoutIterations:0, emphasis:{focus:'adjacency'},
+      data:nodes, links:links,
+      label:{formatter:function(p){ return p.name+'\n'+fmtM(p.value)+' · '+(p.value/TA*100).toFixed(0)+'%'; }, fontSize:11, color:'#27313d', fontWeight:600},
+      lineStyle:{color:'gradient', opacity:0.32, curveness:0.5} }]
+  };
+}
+
+/* ---------- ③ INTEGRATED: assets -> liab+equity -> market cap ---------- */
+function buildIntegrated(){
+  var MC = 50160;
+  var nodes = [
+    {name:'Cash & Investments',     value:671,    depth:0, itemStyle:{color:'#3b82c4'}},
+    {name:'Other Assets',           value:40637,  depth:0, itemStyle:{color:'#6aa7d8'}},
+    {name:'TOTAL ASSETS',           value:41308,  depth:1, itemStyle:{color:'#244e74'}},
+    {name:'Total Liab.',            value:35698,  depth:2, itemStyle:{color:'#e8923a'}},
+    {name:'Book Equity (Net Worth)',value:5610,   depth:2, itemStyle:{color:'#8a63c4'}},
+    {name:'Market Premium',         value:44550,  depth:2, itemStyle:{color:'#46c07a'}},
+    {name:'Long-Term Debt',         value:17710,  depth:3, itemStyle:{color:'#e8923a'}},
+    {name:'Other Liabilities',      value:17988,  depth:3, itemStyle:{color:'#efa45a'}},
+    {name:'MARKET CAP',             value:50160,  depth:3, itemStyle:{color:'#1f7a45'}}
+  ];
+  var links = [
+    {source:'Cash & Investments', target:'TOTAL ASSETS', value:671},
+    {source:'Other Assets',       target:'TOTAL ASSETS', value:40637},
+    {source:'TOTAL ASSETS', target:'Total Liab.',             value:35698},
+    {source:'TOTAL ASSETS', target:'Book Equity (Net Worth)', value:5610},
+    {source:'Total Liab.', target:'Long-Term Debt',    value:17710},
+    {source:'Total Liab.', target:'Other Liabilities',  value:17988},
+    {source:'Book Equity (Net Worth)', target:'MARKET CAP', value:5610},
+    {source:'Market Premium',          target:'MARKET CAP', value:44550}
+  ];
+  return {
+    tooltip:tipCfg(MC,'market cap'),
+    series:[{ type:'sankey', left:'1%', right:'12%', top:'4%', bottom:'4%',
+      nodeWidth:18, nodeGap:16, draggable:true, layoutIterations:0, emphasis:{focus:'adjacency'},
+      data:nodes, links:links,
+      label:{formatter:function(p){ return p.name+'\n'+fmtM(p.value)+' · '+(p.value/MC*100).toFixed(0)+'%'; }, fontSize:11, color:'#27313d', fontWeight:600},
+      lineStyle:{color:'gradient', opacity:0.34, curveness:0.5} }]
+  };
+}
+
+/* ---------- ③a EV BRIDGE ---------- */
+function buildEV(){
+  var cats = ['Market Cap','+ Debt','− Cash & Inv.','= Enterprise Value'];
+  var mc=50.16, debt=21.00, cash=0.67, ev=70.49;
+  var base   = [0, mc, ev, 0];
+  var amount = [mc, debt, cash, ev];
+  var colors = ['#8a63c4','#e8923a','#3b82c4','#1f7a45'];
+  return {
+    grid:{left:8, right:14, top:34, bottom:24, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ var i=p[0].dataIndex;
+        var ex={0:'股东那部分的总价值',1:'要替它还的债,买家得承担',2:'账上现金归买家,等于打折',3:'整个生意的价钱'};
+        return cats[i] + '<br/><b>$'+amount[i].toFixed(2)+'B</b><br/><span style="font-size:11px;color:#888">'+ex[i]+'</span>'; }},
+    xAxis:{type:'category', data:cats, axisLabel:{fontSize:11, color:'#5b6573'}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'US$ B', nameTextStyle:{fontSize:10,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[
+      {type:'bar', stack:'t', itemStyle:{color:'transparent'}, data:base, silent:true},
+      {type:'bar', stack:'t', barWidth:'50%',
+        itemStyle:{color:function(p){return colors[p.dataIndex];}, borderRadius:3},
+        label:{show:true, position:'top', fontSize:11.5, fontWeight:700, color:'#27313d',
+          formatter:function(p){return '$'+amount[p.dataIndex].toFixed(1)+'B';}},
+        data:amount}
+    ]
+  };
+}
+
+/* ---------- ③b MARKET CAP COMPOSITION ---------- */
+function buildComp(){
+  return {
+    grid:{left:6, right:14, top:8, bottom:34, containLabel:true},
+    tooltip:{trigger:'item', formatter:function(p){ return p.seriesName+'<br/><b>$'+p.value.toFixed(2)+'B</b> ('+(p.value/50.16*100).toFixed(0)+'% of market cap)'; }},
+    legend:{bottom:0, itemWidth:12, itemHeight:12, textStyle:{fontSize:11,color:'#5b6573'}},
+    xAxis:{type:'value', max:50.16, axisLabel:{show:false}, splitLine:{show:false}, axisTick:{show:false}, axisLine:{show:false}},
+    yAxis:{type:'category', data:['Market Cap\n$50.2B'], axisLabel:{fontSize:11,color:'#5b6573'}, axisTick:{show:false}, axisLine:{show:false}},
+    series:[
+      {name:'Book Value (net assets) 账面净资产', type:'bar', stack:'m', barWidth:42,
+        itemStyle:{color:'#8a63c4', borderRadius:[4,0,0,4]},
+        label:{show:true, color:'#fff', fontSize:11, fontWeight:700, formatter:'$5.6B'}, data:[5.61]},
+      {name:'Future cash flow · AI-power premium 溢价', type:'bar', stack:'m', barWidth:42,
+        itemStyle:{color:'#46c07a', borderRadius:[0,4,4,0]},
+        label:{show:true, color:'#fff', fontSize:11, fontWeight:700, formatter:'$44.6B (89%)'}, data:[44.55]}
+    ]
+  };
+}
+
+/* ---------- ④ P/E & P/B history ---------- */
+function buildMultiples(){
+  var x  = ['Jun 24','Sep 24','Dec 24','Mar 25','Jun 25','Sep 25','Dec 25','Mar 26\n(now)'];
+  var ev = [9.93, 9.57, 8.67, 12.89, 16.83, 15.13, 10.86, 10.22];
+  var pe = [22.12, 19.70, 18.47, 30.91, 70.73, 74.00, 25.18, 25.11];
+  return {
+    grid:{left:10, right:18, top:46, bottom:34, containLabel:true},
+    tooltip:{trigger:'axis', formatter:function(ps){
+      var s='<b>'+ps[0].axisValueLabel.replace('\n',' ')+'</b>';
+      ps.forEach(function(p){ s+='<br/>'+p.marker+p.seriesName+': <b>'+p.value+'×</b>'; });
+      return s; }},
+    legend:{top:6, itemWidth:18, textStyle:{fontSize:12}},
+    xAxis:{type:'category', data:x, boundaryGap:false, axisLabel:{fontSize:11,color:'#5b6573'}},
+    yAxis:[
+      {type:'value', name:'EV/EBITDA ×（该用的尺）', position:'left', nameTextStyle:{color:'#2e9e5b',fontSize:10},
+       axisLabel:{fontSize:10,color:'#2e9e5b'}, splitLine:{lineStyle:{color:'#f0f2f5'}}},
+      {type:'value', name:'GAAP P/E ×（失真）', position:'right', nameTextStyle:{color:'#e05c54',fontSize:10},
+       axisLabel:{fontSize:10,color:'#e05c54'}, splitLine:{show:false}}
+    ],
+    series:[
+      {name:'EV/EBITDA（稳·该用这个）', type:'line', yAxisIndex:0, data:ev, smooth:true,
+       symbol:'circle', symbolSize:7, lineStyle:{width:3,color:'#2e9e5b'}, itemStyle:{color:'#2e9e5b'},
+       label:{show:true, fontSize:10, color:'#2e9e5b', formatter:'{c}×'},
+       areaStyle:{color:'rgba(46,158,91,0.06)'}},
+      {name:'GAAP 市盈率（过山车·别用）', type:'line', yAxisIndex:1, data:pe, smooth:true,
+       symbol:'circle', symbolSize:7, lineStyle:{width:2.5,color:'#e05c54',type:'dashed'}, itemStyle:{color:'#e05c54'},
+       label:{show:true, fontSize:9, color:'#e05c54', formatter:'{c}×'}}
+    ]
+  };
+}
+
+/* ---------- ⑤ PEER P/E COMPARISON ---------- */
+function buildPeers(){
+  var t = ['TLN','NRG','VST','DUK','SO','CEG'];
+  var v = [10.3, 11.1, 13.6, 17.3, 18.8, 18.7];
+  var reg = {'DUK':1,'SO':1};
+  var col = t.map(function(x){ return x==='VST' ? '#e05c54' : (reg[x] ? '#9aa3ad' : '#6aa7d8'); });
+  return {
+    grid:{left:8, right:18, top:30, bottom:24, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ return p[0].axisValue + ': <b>' + p[0].value + '× P/E</b>'; }},
+    xAxis:{type:'category', data:t, axisLabel:{fontSize:12,fontWeight:700,color:'#5b6573'}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'P/E ×', nameTextStyle:{fontSize:10,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{ type:'bar', barWidth:'52%',
+      data:v.map(function(val,i){ return {value:val, itemStyle:{color:col[i], borderRadius:3}}; }),
+      label:{show:true, position:'top', fontSize:11.5, fontWeight:700, color:'#27313d', formatter:'{c}×'},
+      markLine:{ silent:true, symbol:'none', lineStyle:{color:'#e8923a', type:'dashed'},
+        data:[{yAxis:22, label:{formatter:'S&P 500 ≈ 22×', position:'insideEndTop', fontSize:10, color:'#e8923a'}}] }
+    }]
+  };
+}
+
+/* ---------- ⑥ JUNE 11 SCENARIO MATRIX ---------- */
+function buildScenario(){
+  var x  = ['🚀 上调EBITDA\n+新数据中心单','✅ 重申指引\n夏季强劲','😐 基本符合','⚠️ 电价转弱/\nCogentrix拖累','💥 大幅不及\n+砍指引'];
+  var mv = [9, 3, -0.5, -7, -13];
+  var prob = [25, 35, 18, 17, 5];
+  return {
+    grid:{left:8, right:14, top:30, bottom:46, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ var i=p[0].dataIndex;
+        return x[i].replace('\n','') + '<br/>概率 <b>'+prob[i]+'%</b><br/>预期股价 <b>'+(mv[i]>0?'+':'')+mv[i]+'%</b>'; }},
+    xAxis:{type:'category', data:x, axisLabel:{fontSize:10, color:'#5b6573', interval:0, lineHeight:13}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'预期股价反应 %', nameTextStyle:{fontSize:10,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad', formatter:'{value}%'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{ type:'bar', barWidth:'46%',
+      data:mv.map(function(v){ return {value:v, itemStyle:{color:v>=0?'#2e9e5b':'#e05c54', borderRadius:3}}; }),
+      label:{show:true, position:'top', fontSize:11, fontWeight:700, color:'#27313d',
+        formatter:function(p){ return prob[p.dataIndex]+'%'; }},
+      markLine:{silent:true, symbol:'none', lineStyle:{color:'#9aa3ad'}, data:[{yAxis:0}]} }]
+  };
+}
+
+/* ---------- ⑥ ACTUAL (Q1) vs FORECAST (Q2) quarterly income sankeys ---------- */
+var Q1ACTUAL = {rev:5640, fuel:2530, om:1111, da:500, oi:1499, nonop:287, pretax:1212, tax:183, net:1029};
+var Q2FCAST  = {rev:5770, fuel:2989, om:1150, da:510, oi:1121, nonop:270, pretax:851, tax:140, net:711};
+function quarterSankey(d, forecast){
+  var A = forecast?'#e8923a':'#2e9e5b', A2 = forecast?'#efb066':'#46c07a', O='#e8923a', O2='#efb066', R='#e05c54', GR='#9aa3ad';
+  var nodes = [
+    {name:'Revenue',value:d.rev,depth:0,itemStyle:{color:A}},
+    {name:'Fuel & Pwr',value:d.fuel,depth:1,itemStyle:{color:O}},
+    {name:'O&M',value:d.om,depth:1,itemStyle:{color:O}},
+    {name:'D&A',value:d.da,depth:1,itemStyle:{color:O2}},
+    {name:'Operating Income',value:d.oi,depth:1,itemStyle:{color:A2}},
+    {name:'Net Int.&Other',value:d.nonop,depth:2,itemStyle:{color:GR}},
+    {name:'Pre-Tax',value:d.pretax,depth:2,itemStyle:{color:A2}},
+    {name:'Tax',value:d.tax,depth:3,itemStyle:{color:R}},
+    {name:'Net Income',value:d.net,depth:3,itemStyle:{color:A}}
+  ];
+  var links = [
+    {source:'Revenue',target:'Fuel & Pwr',value:d.fuel},
+    {source:'Revenue',target:'O&M',value:d.om},
+    {source:'Revenue',target:'D&A',value:d.da},
+    {source:'Revenue',target:'Operating Income',value:d.oi},
+    {source:'Operating Income',target:'Net Int.&Other',value:d.nonop},
+    {source:'Operating Income',target:'Pre-Tax',value:d.pretax},
+    {source:'Pre-Tax',target:'Tax',value:d.tax},
+    {source:'Pre-Tax',target:'Net Income',value:d.net}
+  ];
+  return {
+    tooltip:{trigger:'item', triggerOn:'mousemove', confine:true,
+      formatter:function(p){ if(p.dataType==='edge') return p.data.source+' → '+p.data.target+'<br/><b>'+fmtM(p.data.value)+'</b>';
+        return '<b>'+p.name+'</b><br/>'+fmtM(p.value)+(forecast?'<br/><span style="color:#e8923a">模型预测值 est.</span>':'<br/><span style="color:#2e9e5b">实际值</span>'); }},
+    series:[{ type:'sankey', left:'2%', right:'15%', top:'4%', bottom:'4%', nodeWidth:14, nodeGap:10,
+      draggable:false, layoutIterations:0, emphasis:{focus:'adjacency'}, data:nodes, links:links,
+      label:{formatter:function(p){ return p.name+'\n'+fmtM(p.value)+' · '+(p.value/d.rev*100).toFixed(0)+'%'; }, fontSize:9.5, color:'#27313d', fontWeight:600},
+      lineStyle:{color:'gradient', opacity:0.3, curveness:0.5} }]
+  };
+}
+
+/* ---------- ⑥ pre-earnings relative setup (since last-earnings baseline) ---------- */
+function buildBaseline(){
+  var x = ['VST', 'CEG 同行AI电力', 'SPY 大盘'];
+  var v = [-3.4, -18.0, 0.5];
+  var col = ['#e05c54', '#3b82c4', '#9aa3ad'];
+  return {
+    grid:{left:8, right:14, top:30, bottom:24, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ return p[0].axisValue + ': <b>' + (p[0].value>0?'+':'') + p[0].value + '%</b>'; }},
+    xAxis:{type:'category', data:x, axisLabel:{fontSize:11, color:'#5b6573'}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'自上次财报(5/7)以来 %', nameTextStyle:{fontSize:9.5,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad', formatter:'{value}%'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{ type:'bar', barWidth:'48%',
+      data:v.map(function(val,i){ return {value:val, itemStyle:{color:col[i], borderRadius:3}}; }),
+      label:{show:true, position:'top', fontSize:11.5, fontWeight:700, color:'#27313d',
+        formatter:function(p){ return (p.value>0?'+':'') + p.value + '%'; }} }]
+  };
+}
+
+/* ---------- ⑥ volume: accumulation vs distribution ---------- */
+function buildFlow(){
+  var x = ['上涨日均量', '下跌日均量', '财报前6月均量'];
+  var v = [6.16, 5.14, 4.82];
+  var col = ['#2e9e5b', '#e05c54', '#9aa3ad'];
+  return {
+    grid:{left:8, right:14, top:30, bottom:24, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ return p[0].axisValue + ': <b>' + p[0].value + 'M 股/日</b>'; }},
+    xAxis:{type:'category', data:x, axisLabel:{fontSize:11, color:'#5b6573'}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'百万股/日', nameTextStyle:{fontSize:10,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad', formatter:'{value}M'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{ type:'bar', barWidth:'48%',
+      data:v.map(function(val,i){ return {value:val, itemStyle:{color:col[i], borderRadius:3}}; }),
+      label:{show:true, position:'top', fontSize:11.5, fontWeight:700, color:'#27313d',
+        formatter:function(p){ return p.value + 'M'; }} }]
+  };
+}
+
+/* ---------- ② revenue -> profit -> market cap, with explicit "story amplifier" (valid Sankey) ---------- */
+function buildStory(){
+  var MC=50160;
+  var nodes=[
+    {name:'年收入',value:17738,depth:0,itemStyle:{color:'#2e9e5b'}},
+    {name:'成本+税',value:16794,depth:1,itemStyle:{color:'#e8923a'}},
+    {name:'年净利润',value:944,depth:1,itemStyle:{color:'#46c07a'}},
+    {name:'预期放大器',value:43606,depth:1,itemStyle:{color:'#8a63c4'}},
+    {name:'故事溢价',value:44550,depth:2,itemStyle:{color:'#6aa7d8'}},
+    {name:'现金',value:671,depth:0,itemStyle:{color:'#3b82c4'}},
+    {name:'其他资产',value:40637,depth:0,itemStyle:{color:'#6aa7d8'}},
+    {name:'总资产',value:41308,depth:1,itemStyle:{color:'#244e74'}},
+    {name:'负债',value:35698,depth:2,itemStyle:{color:'#e8923a'}},
+    {name:'账面净资产',value:5610,depth:2,itemStyle:{color:'#8a63c4'}},
+    {name:'市值',value:50160,depth:3,itemStyle:{color:'#1f7a45'}}
+  ];
+  var links=[
+    {source:'年收入',target:'成本+税',value:16794},
+    {source:'年收入',target:'年净利润',value:944},
+    {source:'年净利润',target:'故事溢价',value:944},
+    {source:'预期放大器',target:'故事溢价',value:43606},
+    {source:'故事溢价',target:'市值',value:44550},
+    {source:'账面净资产',target:'市值',value:5610},
+    {source:'现金',target:'总资产',value:671},
+    {source:'其他资产',target:'总资产',value:40637},
+    {source:'总资产',target:'负债',value:35698},
+    {source:'总资产',target:'账面净资产',value:5610}
+  ];
+  return {
+    tooltip:{trigger:'item', triggerOn:'mousemove', confine:true, extraCssText:'max-width:300px;white-space:normal;box-shadow:0 4px 18px rgba(0,0,0,.12);',
+      formatter:function(p){ if(p.dataType==='edge') return p.data.source+' → '+p.data.target+'<br/><b>$'+(p.data.value/1000).toFixed(1)+'B</b>';
+        var DEFU={'年收入':'一年卖电收到的全部钱(零售卖给终端 + 批发卖到电网)。','成本+税':'收入里没留下的部分:燃料/外购电 + 运维 + 折旧 + 利息 + 税。','年净利润':'GAAP 账面净利。⚠ VST 这个数被套保会计搅得很跳,不代表真实经营;真正撑市值的是 EBITDA 和现金流。','预期放大器':'市场基于"未来现金流 + AI 电力 20 年长约",在账面利润之上额外多付的钱。','故事溢价':'市值里超出账面净资产的部分 = 账面利润 + 预期放大器。注意:VST 这块大,主因是杠杆高(账面薄),不是市值虚高——按 EV/EBITDA 才 ~10.6×。','现金':'银行里随时能用的钱(VST 现金很少,仅 ~$6.7亿)。','其他资产':'除现金外的全部资产:发电厂、应收、衍生品、商誉、核退役信托等。','总资产':'公司拥有的所有东西加总。永远 = 负债 + 账面净资产。','负债':'公司欠别人的所有钱($357亿,杠杆高)。','账面净资产':'总资产 − 总负债 = 仅 $56亿,只占市值 11%。','市值':'股价 × 总股本 = 公司全部股票今天值多少钱($502亿)。'};
+        var d=DEFU[p.name]||'';
+        return '<b>'+p.name+'</b><br/>$'+(p.value/1000).toFixed(1)+'B · '+(p.value/MC*100).toFixed(0)+'% of 市值'+(d?'<br/><span style="font-size:11.5px;color:#566;line-height:1.5">'+d+'</span>':''); }},
+    series:[{ type:'sankey', left:'2%', right:'13%', top:'4%', bottom:'4%', nodeWidth:16, nodeGap:11,
+      draggable:false, layoutIterations:0, emphasis:{focus:'adjacency'}, data:nodes, links:links,
+      label:{formatter:function(p){ return p.name+'\n$'+(p.value/1000).toFixed(1)+'B·'+(p.value/MC*100).toFixed(0)+'%'; }, fontSize:10, color:'#27313d', fontWeight:600},
+      lineStyle:{color:'gradient', opacity:0.30, curveness:0.5} }]
+  };
+}
+
+/* ---------- ② fair value (DCF + anchors, via price-over-value/valuation.py) ---------- */
+function buildFairValue(){
+  var x = ['今天股价\n9.8× EBITDA', '熊市 9×', '中性 11×', '牛市 13×'];
+  var v = [149, 132, 175, 217];
+  var col = ['#e05c54', '#ef8a84', '#2e9e5b', '#1f7a45'];
+  return {
+    grid:{left:8, right:14, top:30, bottom:40, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ return p[0].axisValue.replace('\n','') + ': <b>$' + p[0].value + '</b>'; }},
+    xAxis:{type:'category', data:x, axisLabel:{fontSize:10, color:'#5b6573', interval:0, lineHeight:13}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'每股 $', nameTextStyle:{fontSize:10,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad', formatter:'${value}'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{ type:'bar', barWidth:'50%',
+      data:v.map(function(val,i){ return {value:val, itemStyle:{color:col[i], borderRadius:3}}; }),
+      label:{show:true, position:'top', fontSize:11.5, fontWeight:700, color:'#27313d',
+        formatter:function(p){ return '$' + p.value; }},
+      markLine:{silent:true, symbol:'none', lineStyle:{color:'#e05c54', type:'dashed'},
+        data:[{yAxis:149, label:{formatter:'今天 $149', position:'insideEndTop', fontSize:10, color:'#e05c54'}}]} }]
+  };
+}
+
+/* ---------- ② AI/cloud cost trend (cost of revenue % + capex %) ---------- */
+function buildCloud(){
+  var x=['FY2022','FY2023','FY2024','FY2025'];
+  var cogs=[55,51,42,51];
+  var capex=[9.5,11.3,12.1,15.5];
+  return {
+    grid:{left:8,right:16,top:36,bottom:24,containLabel:true},
+    legend:{top:4,itemWidth:18,textStyle:{fontSize:11}},
+    tooltip:{trigger:'axis',valueFormatter:function(v){return v+'%';}},
+    xAxis:{type:'category',data:x,axisLabel:{fontSize:11,color:'#5b6573'},axisTick:{show:false}},
+    yAxis:{type:'value',name:'占收入 %',nameTextStyle:{fontSize:10,color:'#9aa3ad'},axisLabel:{fontSize:10,color:'#9aa3ad',formatter:'{value}%'},splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[
+      {name:'燃料/外购电 占收入%（随气价波动）',type:'line',data:cogs,smooth:true,symbol:'circle',symbolSize:7,lineStyle:{width:3,color:'#3b82c4'},itemStyle:{color:'#3b82c4'},label:{show:true,fontSize:10,color:'#3b82c4',formatter:'{c}%'}},
+      {name:'资本开支 占收入%（建电厂·在爬升）',type:'line',data:capex,smooth:true,symbol:'circle',symbolSize:7,lineStyle:{width:3,color:'#e8923a'},itemStyle:{color:'#e8923a'},label:{show:true,fontSize:10,color:'#e8923a',formatter:'{c}%'}}
+    ]
+  };
+}
+
+/* ---------- ① generation fleet by fuel type (GW, approximate public figures) ---------- */
+function buildRevenue(){
+  var TOT=40.4;
+  var NOTE={'发电总装机 ~40GW':'不含待收购的 Cogentrix 5.5GW 燃气','天然气 Natural Gas':'可随时调度·跟 AI 数据中心"基荷"最配','核电 Nuclear':'AWS+Meta 20年长约的来源·零碳基荷','煤电 Coal':'在逐步退役·占比下降','太阳能+储能 Solar+Storage':'在扩张·配合电网调峰'};
+  function lab(p){ var n=NOTE[p.name]; return p.name+'\n'+p.value.toFixed(1)+'GW · '+(p.value/TOT*100).toFixed(0)+'%'; }
+  var nodes=[
+    {name:'发电总装机 ~40GW',value:40.4,depth:0,itemStyle:{color:'#2e9e5b'}},
+    {name:'天然气 Natural Gas',value:24.0,depth:1,itemStyle:{color:'#e8923a'}},
+    {name:'核电 Nuclear',value:6.4,depth:1,itemStyle:{color:'#8a63c4'}},
+    {name:'煤电 Coal',value:6.0,depth:1,itemStyle:{color:'#9aa3ad'}},
+    {name:'太阳能+储能 Solar+Storage',value:4.0,depth:1,itemStyle:{color:'#46c07a'}}
+  ];
+  var links=[
+    {source:'发电总装机 ~40GW',target:'天然气 Natural Gas',value:24.0},
+    {source:'发电总装机 ~40GW',target:'核电 Nuclear',value:6.4},
+    {source:'发电总装机 ~40GW',target:'煤电 Coal',value:6.0},
+    {source:'发电总装机 ~40GW',target:'太阳能+储能 Solar+Storage',value:4.0}
+  ];
+  return {
+    tooltip:{trigger:'item', triggerOn:'mousemove', confine:true,
+      formatter:function(p){ if(p.dataType==='edge') return p.data.source+' → '+p.data.target+'<br/><b>'+p.data.value.toFixed(1)+'GW</b>';
+        var n=NOTE[p.name]||''; return '<b>'+p.name+'</b><br/>'+p.value.toFixed(1)+'GW · '+(p.value/TOT*100).toFixed(0)+'% of fleet'+(n?'<br/><span style="font-size:11.5px;color:#566">'+n+'</span>':''); }},
+    series:[{ type:'sankey', left:'2%', right:'18%', top:'5%', bottom:'5%', nodeWidth:18, nodeGap:18,
+      draggable:false, layoutIterations:0, emphasis:{focus:'adjacency'}, data:nodes, links:links,
+      label:{formatter:lab, fontSize:11, color:'#27313d', fontWeight:600},
+      lineStyle:{color:'gradient', opacity:0.32, curveness:0.5} }]
+  };
+}
+
+/* ---------- ⑤ competitor ARR growth (customer flow) ---------- */
+function buildCompete(){
+  var x = ['VST\n(AWS+Meta)', 'Talen\n(Amazon)', 'Constellation\n(MSFT+Meta)'];
+  var v = [3.8, 1.9, 1.9];
+  var col = ['#e05c54', '#6aa7d8', '#6aa7d8'];
+  return {
+    grid:{left:8, right:14, top:30, bottom:42, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ return p[0].axisValue.replace('\n','') + ': <b>' + p[0].value + ' GW</b> 已签数据中心/核电长约（公开公告·近似）'; }},
+    xAxis:{type:'category', data:x, axisLabel:{fontSize:10, color:'#5b6573', interval:0, lineHeight:13}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'已签数据中心供电长约 (GW)', nameTextStyle:{fontSize:10,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad', formatter:'{value}GW'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{ type:'bar', barWidth:'46%',
+      data:v.map(function(val,i){ return {value:val, itemStyle:{color:col[i], borderRadius:3}}; }),
+      label:{show:true, position:'top', fontSize:11.5, fontWeight:700, color:'#27313d',
+        formatter:function(p){ return p.value + 'GW'; }} }]
+  };
+}
+
+/* ---------- ④ de-rating evolution scatter (history) ---------- */
+function buildDerate(){
+  function P(a){return a.map(function(d){return {value:[d[0],d[1]],name:d[2]};});}
+  var green=[[28,-77,'Meta'],[33,-76,'Netflix'],[16,-56,'Nvidia18'],[18,-66,'Nvidia22'],[22,-44,'Apple13'],[28,-59,'Salesforce']];
+  var red=[[58,-87,'PayPal'],[68,-82,'Zoom'],[55,-74,'Nike'],[63,-49,'Disney'],[70,-64,'Kraft*']];
+  var open=[[8,-32,'CEG 同行']];
+  var here=[[8,-32,'VST 现在']];
+  var INFO={'Meta':'砍成本利润反涨→15个月回本','Netflix':'广告档+打击共享→27个月回本','Nvidia18':'库存暂时性→14个月','Nvidia22':'撞上AI爆发→7个月(最快)','Apple13':'利润持续长→15个月','Salesforce':'提利润率+AI→15个月','PayPal':'增速从20%+塌到个位→至今-87%','Zoom':'疫情透支增长归零→至今-82%','Nike':'渠道+中国利润下滑→至今-74%','Disney':'流媒体亏损→至今-49%','Kraft*':'品牌失提价权+砍息→实际9年+未回本','CEG 同行':'同为核电AI股,自5月财报跌-21%,跌得比VST更狠','VST 现在':'2026 EBITDA 指引 +24% 仍在涨,跌因AI电力整组轮出+杠杆担忧→典型"错杀型",~8个月、-32%,落在健康恢复区'};
+  function lab(p){return p.name;}
+  function ser(name,data,color){return {name:name,type:'scatter',symbolSize:13,itemStyle:{color:color},data:P(data),label:{show:true,position:'top',fontSize:10,color:color,fontWeight:600,formatter:lab}};}
+  return {
+    grid:{left:10,right:20,top:34,bottom:42,containLabel:true},
+    legend:{top:2,itemWidth:11,itemHeight:11,textStyle:{fontSize:10},data:['利润还在长→已回本','利润塌了→未回本','利润还长但未回本(待定)','VST 现在']},
+    tooltip:{trigger:'item',confine:true,extraCssText:'max-width:240px;white-space:normal;box-shadow:0 4px 18px rgba(0,0,0,.12);',
+      formatter:function(p){return '<b>'+p.name+'</b><br/>最大跌幅 <b>'+p.value[1]+'%</b><br/>用时/已耗 <b>'+p.value[0]+'</b> 个月<br/><span style="font-size:11px;color:#666">'+(INFO[p.name]||'')+'</span>';}},
+    xAxis:{type:'value',name:'从顶点到回本(或至今)月数 →',nameLocation:'middle',nameGap:24,nameTextStyle:{fontSize:10,color:'#9aa3ad'},min:0,max:75,axisLabel:{fontSize:10,color:'#9aa3ad',formatter:'{value}m'},splitLine:{lineStyle:{color:'#eef1f5'}}},
+    yAxis:{type:'value',name:'最大跌幅 %',nameTextStyle:{fontSize:10,color:'#9aa3ad'},max:0,min:-95,axisLabel:{fontSize:10,color:'#9aa3ad',formatter:'{value}%'},splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[
+      ser('利润还在长→已回本',green,'#2e9e5b'),
+      ser('利润塌了→未回本',red,'#e05c54'),
+      ser('利润还长但未回本(待定)',open,'#e8923a'),
+      {name:'VST 现在',type:'scatter',symbol:'pin',symbolSize:48,itemStyle:{color:'#1f2733'},data:P(here),
+       label:{show:true,position:'top',fontSize:10.5,color:'#1f2733',fontWeight:700,formatter:lab},
+       markArea:{silent:true,itemStyle:{color:'rgba(46,158,91,0.07)'},
+         label:{show:true,position:'insideTop',color:'#2e9e5b',fontSize:10,formatter:'健康恢复区 6–33 个月'},
+         data:[[{xAxis:6,yAxis:0},{xAxis:33,yAxis:-95}]]}}
+    ]
+  };
+}
+
+/* ---------- ④ explosive-growth (multibagger) analogue scatter ---------- */
+function buildExplosive(){
+  function P(a){return a.map(function(d){return {value:[d[0],d[1]],name:d[2]};});}
+  var pts=[[3.6,20,'Nvidia'],[1.2,14,'SuperMicro'],[6.5,41,'Tesla'],[4.4,4.3,'礼来'],[2.8,32,'Palantir'],[1.4,8,'Abercrombie'],[22.4,1038,'Monster'],[11.3,18,'Amazon']];
+  var TRIG={'Nvidia':'2023/5 财报指引暴涨 50%,坐实 AI 算力需求','SuperMicro':'AI服务器订单+财报连环超预期','Tesla':'2020首次持续盈利→进标普500→强制买入','礼来':'减肥药GLP-1数据+放量','Palantir':'转盈利+AI平台放量+进标普500','Abercrombie':'品牌起死回生，连续几季业绩炸裂','Monster':'能量饮料新品类+可口可乐分销','Amazon':'AWS云利润引擎显形'};
+  return {
+    grid:{left:10,right:24,top:16,bottom:40,containLabel:true},
+    tooltip:{trigger:'item',confine:true,extraCssText:'max-width:240px;white-space:normal;box-shadow:0 4px 18px rgba(0,0,0,.12);',
+      formatter:function(p){return '<b>'+p.name+'</b><br/>涨幅 <b>'+p.value[1]+'×</b> · 用时 <b>'+p.value[0]+' 年</b><br/><span style="font-size:11px;color:#666">点火：'+(TRIG[p.name]||'')+'</span>';}},
+    xAxis:{type:'value',name:'用时(年) →',nameLocation:'middle',nameGap:24,nameTextStyle:{fontSize:10,color:'#9aa3ad'},min:0,max:24,axisLabel:{fontSize:10,color:'#9aa3ad',formatter:'{value}y'},splitLine:{lineStyle:{color:'#eef1f5'}}},
+    yAxis:{type:'log',name:'涨幅(倍，对数轴)',nameTextStyle:{fontSize:10,color:'#9aa3ad'},axisLabel:{fontSize:10,color:'#9aa3ad',formatter:'{value}×'},splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{type:'scatter',symbolSize:14,itemStyle:{color:'#8a63c4'},data:P(pts),
+      label:{show:true,position:'right',fontSize:10,color:'#5b4a86',fontWeight:600,formatter:function(p){return p.name+' '+p.value[1]+'×';}},
+      markLine:{silent:true,symbol:'none',lineStyle:{color:'#2e9e5b',type:'dashed'},data:[{yAxis:10,label:{formatter:'10× 线',position:'insideEndTop',fontSize:10,color:'#2e9e5b'}}]}}]
+  };
+}
+
+/* ---------- tabs + lazy render ---------- */
+var built = {};
+function mk(id, opt){ var c = echarts.init(document.getElementById(id)); c.setOption(opt); charts[id]=c; }
+var GROUPS = { fin:['income','balance'], val:['bigpic','mult'], diag:['diag'], play:['play'] };
+var ALLPANELS = ['income','balance','bigpic','mult','diag','play'];
+var PANELINIT = {
+  income:  function(){ mk('incomeChart', buildIncome()); mk('revenueChart', buildRevenue()); },
+  balance: function(){ mk('balanceChart', buildBalance()); mk('cloudChart', buildCloud()); },
+  bigpic:  function(){ mk('integratedChart', buildIntegrated()); mk('storyChart', buildStory()); mk('evChart', buildEV()); mk('compChart', buildComp()); },
+  mult:    function(){ mk('fairChart', buildFairValue()); mk('multiplesChart', buildMultiples()); mk('explosiveChart', buildExplosive()); mk('derateChart', buildDerate()); },
+  diag:    function(){ mk('peerChart', buildPeers()); mk('competeChart', buildCompete()); },
+  play:    function(){ mk('scenChart', buildScenario()); mk('baselineChart', buildBaseline()); mk('flowChart', buildFlow()); mk('q1Chart', quarterSankey(Q1ACTUAL,false)); mk('q2Chart', quarterSankey(Q2FCAST,true)); }
+};
+function render(group){
+  var show = GROUPS[group] || [group];
+  ALLPANELS.forEach(function(p){ document.getElementById('panel-'+p).classList.toggle('hide', show.indexOf(p)<0); });
+  show.forEach(function(p){ if(!built[p]){ PANELINIT[p](); built[p]=1; } });
+  setTimeout(function(){ Object.keys(charts).forEach(function(k){ charts[k] && charts[k].resize(); }); }, 30);
+}
+
+document.querySelectorAll('.tab').forEach(function(t){
+  t.addEventListener('click', function(){
+    var name = t.getAttribute('data-tab');
+    document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('active'); });
+    t.classList.add('active');
+    render(name);
+  });
+});
+
+render('fin');
+window.addEventListener('resize', function(){ Object.keys(charts).forEach(function(k){ charts[k] && charts[k].resize(); }); });
+</script>
+<script src="nav.js"></script>
+</body>
+</html>
