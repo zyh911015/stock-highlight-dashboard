@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FN · 260610 — Money Flow 财报流向 (sankey)</title>
+<script src="echarts.min.js"></script>
+<style>
+  :root{
+    --green:#2e9e5b; --green2:#46c07a; --red:#e05c54; --orange:#e8923a;
+    --blue:#3b82c4; --blue2:#6aa7d8; --purple:#8a63c4; --gray:#9aa3ad;
+    --ink:#1f2733; --muted:#5b6573; --line:#e6e9ee; --bg:#f6f8fb; --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:28px 20px 60px;}
+  header.top{display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:14px; margin-bottom:6px;}
+  h1{font-size:26px; margin:0; letter-spacing:-.4px;}
+  h1 .tick{color:var(--red); font-weight:800;}
+  .sub{color:var(--muted); font-size:13.5px; margin-top:4px;}
+  .asof{color:var(--muted); font-size:12px; text-align:right;}
+
+  .kpis{display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin:20px 0 8px;}
+  .kpi{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px;}
+  .kpi .l{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px;}
+  .kpi .v{font-size:20px; font-weight:700; margin-top:3px;}
+  .kpi .d{font-size:11.5px; margin-top:2px;}
+  .up{color:var(--green);} .down{color:var(--red);}
+
+  .tabs{display:flex; gap:6px; margin:24px 0 0; flex-wrap:wrap;}
+  .tab{
+    border:1px solid var(--line); background:var(--card); color:var(--muted);
+    padding:10px 16px; border-radius:10px 10px 0 0; cursor:pointer; font-size:14px; font-weight:600;
+    border-bottom:none;
+  }
+  .tab.active{color:var(--ink); background:var(--card); box-shadow:0 -2px 0 var(--red) inset;}
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:0 12px 12px 12px; padding:18px 20px 24px;}
+  .panel h2{font-size:18px; margin:2px 0 2px;}
+  .panel .hint{color:var(--muted); font-size:13px; margin:0 0 6px;}
+  .chart{width:100%;}
+  #incomeChart{height:560px;} #balanceChart{height:600px;} #integratedChart{height:560px;}
+  #evChart{height:300px;} #compChart{height:170px;} #multiplesChart{height:380px;} #peerChart{height:320px;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
+  .takeaways{margin-top:8px; background:#fbfcfe; border:1px solid var(--line); border-radius:10px; padding:12px 16px;}
+  .takeaways b{color:var(--ink);}
+  .takeaways ul{margin:6px 0 0; padding-left:18px;}
+  .takeaways li{margin:4px 0; font-size:13.5px; color:#333;}
+  .note{border-radius:10px; padding:11px 15px; font-size:13px; margin-top:14px; line-height:1.55;}
+  .note.amber{background:#fff8ec; border:1px solid #f3e2c2; color:#7a5b1e;}
+  .note.blue{background:#eef5fc; border:1px solid #cfe0f1; color:#2b5a82;}
+  .note.green{background:#eef8f1; border:1px solid #cfe9d8; color:#27663f;}
+  .hide{display:none;}
+  footer{color:var(--muted); font-size:11.5px; margin-top:22px; text-align:center;}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin:2px 0 10px;}
+  .legend span{display:inline-flex; align-items:center; gap:5px;}
+  .dot{width:10px; height:10px; border-radius:3px; display:inline-block;}
+  .ctxgrid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:10px;}
+  .ctxcard{border:1px solid var(--line); border-radius:10px; padding:12px 14px; background:#fbfcfe;}
+  .ctxcard .big{font-size:22px; font-weight:800;}
+  .ctxcard .lab{font-size:12px; color:var(--muted); margin-bottom:2px;}
+  .ctxcard p{font-size:12.5px; color:#444; margin:6px 0 0; line-height:1.5;}
+  .pill{display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:6px;}
+  .pill.low{background:#e7f6ec; color:#1f7a45;} .pill.high{background:#fdecea; color:#b23b30;}
+  .twocol{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .bcard{border:1px solid var(--line); border-radius:10px; padding:14px 16px; background:#fbfcfe;}
+  .bcard .bh{font-weight:700; font-size:14px; margin-bottom:6px;}
+  .bcard ul{margin:6px 0 0; padding-left:18px;}
+  .bcard li{font-size:13px; margin:5px 0; color:#333; line-height:1.5;}
+  .bcard.bull{background:#f0f9f3; border-color:#cfe9d8;}
+  .bcard.bear{background:#fdf3f1; border-color:#f3d6d0;}
+  .note.red{background:#fdecea; border:1px solid #f5c6c0; color:#a13225;}
+  .pan{border-radius:10px; padding:12px 14px;}
+  .pan.bull{background:#f0f9f3; border:1px solid #cfe9d8;}
+  .pan.bear{background:#fdf3f1; border:1px solid #f3d6d0;}
+  .pan .ph{font-weight:700; margin-bottom:6px; font-size:13.5px;}
+  .pan ul{margin:0; padding-left:0; list-style:none;}
+  .pan li{font-size:12.5px; margin:6px 0; color:#333; display:flex; justify-content:space-between; gap:8px; align-items:center;}
+  .pan .w{flex:none; font-weight:700; font-size:11px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:0 8px; line-height:18px;}
+  .tilt{margin-top:14px;}
+  .tilt-track{position:relative; height:9px; border-radius:6px; background:linear-gradient(90deg,#46c07a,#e6e9ee 50%,#e05c54);}
+  .tilt-mark{position:absolute; top:-4px; width:4px; height:17px; background:#1f2733; border-radius:2px; transform:translateX(-50%);}
+  .tilt-labels{display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); margin-top:5px;}
+  .scen{width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px;}
+  .scen th,.scen td{border:1px solid var(--line); padding:7px 9px; text-align:left; vertical-align:top;}
+  .scen th{background:#f3f6fa; font-size:11.5px;}
+  .scen .up{color:var(--green); font-weight:700; white-space:nowrap;}
+  .scen .dn{color:var(--red); font-weight:700; white-space:nowrap;}
+  .scen .pb{font-weight:700;}
+  .qtag{font-size:13px;font-weight:700;padding:7px 11px;border-radius:8px 8px 0 0;}
+  .qtag.act{background:#eef8f1;color:#27663f;border:1px solid #cfe9d8;border-bottom:none;}
+  .qtag.fc{background:#fff8ec;color:#8a5a1e;border:1px dashed #e6c98a;border-bottom:none;}
+  #q1Chart,#q2Chart{height:400px;} #baselineChart{height:260px;} #flowChart{height:260px;} #competeChart{height:280px;} #revenueChart{height:320px;} #fairChart{height:300px;} #storyChart{height:470px;} #cloudChart{height:300px;} #derateChart{height:440px;}
+  .mtag{font-size:10px;font-weight:700;padding:0 5px;border-radius:8px;margin-left:4px;}
+  .mtag.c{background:#eef1f5;color:#475569;} .mtag.g{background:#efe7fb;color:#7c3aed;}
+  @media(max-width:880px){ .kpis{grid-template-columns:repeat(3,1fr);} .grid2,.ctxgrid,.twocol{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>Fabrinet <span class="tick">FN</span> — Money Flow Map</h1>
+      <div class="sub">给英伟达、思科、亚马逊们<b>代工 AI 光模块</b>(让 GPU 之间用光纤高速互连的收发器)的泰国精密工厂。钱从哪来、到哪去,以及一年涨 1.5 倍、P/E 翻倍之后市值靠什么撑 &nbsp;|&nbsp; hover 每个块看通俗解释</div>
+    </div>
+    <div class="asof">
+      Analysis: <b>2026-06-10</b> · FN 高位体检 · strategy: sankey<br>
+      Income = <b>TTM</b> (近 12 个月,截至 Mar 27, 2026)<br>
+      Balance Sheet = <b>Mar 27, 2026</b> (FQ3 FY2026)<br>
+      Market data as of <b>Jun 9, 2026</b> · 金额单位 US$ 百万
+    </div>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi"><div class="l">Stock Price</div><div class="v">$586</div><div class="d down">▼ −21% vs 5/14 高点 $746;但仍比一年前 +1.5 倍</div></div>
+    <div class="kpi"><div class="l">Market Cap</div><div class="v">$21.0B</div><div class="d">35.8M shares · 净现金 $0.94B</div></div>
+    <div class="kpi"><div class="l">P/E · P/B</div><div class="v">50.3× · 9.1×</div><div class="d down">一年前 P/E 才 22×;前瞻 33.9×</div></div>
+    <div class="kpi"><div class="l">TTM Revenue</div><div class="v">$4.24B</div><div class="d up">▲ 最新季 +39% YoY</div></div>
+    <div class="kpi"><div class="l">TTM Net Income</div><div class="v">$421M</div><div class="d up">▲ 最新季 +54% YoY</div></div>
+    <div class="kpi"><div class="l">Margins</div><div class="v">12.0%</div><div class="d">毛利率 · 营业 9.9% · 净利 9.9%</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="fin">① 财务:钱怎么流</div>
+    <div class="tab" data-tab="val">② 估值:市值由什么撑</div>
+    <div class="tab" data-tab="diag">③ 诊断:追捧还是泡沫</div>
+    <div class="tab" data-tab="play">④ 8/24 推演 + 结论</div>
+  </div>
+
+  <!-- ① INCOME -->
+  <div class="panel" id="panel-income">
+    <h2>Where every dollar of revenue goes 收入这条河怎么分流</h2>
+    <p class="hint">最近 12 个月(TTM,截至 2026-03-27)口径。收入流进来 → 扣掉巨大的直接成本只剩 12% 毛利 → 再扣很薄的管理销售费 → 营业利润 → 扣税 → 净利润。粗细=金额。<b>把鼠标停在任意色块上,会弹出这一项是什么的大白话解释。</b></p>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--green)"></i>Revenue / Profit 收入·利润</span>
+      <span><i class="dot" style="background:var(--orange)"></i>Costs &amp; expenses 成本费用</span>
+      <span><i class="dot" style="background:var(--red)"></i>Tax 税</span>
+    </div>
+    <div id="incomeChart" class="chart"></div>
+    <div class="note red">
+      ⚠ <b>这张利润表的三个"不寻常":</b>① <b>毛利率只有 12%</b>——FN 是代工厂(挣加工费),不是卖软件的(Adobe 毛利 88%)。100 块收入有 88 块直接付给了零件和产线。这不是它做得差,是商业模式天生如此,15 年来一直 12% 上下。② <b>费用极薄:SG&A(销售+管理费)只占收入 2.2%</b>——同行里几乎最低,所以 12% 毛利还能剩下 9.9% 营业利润,经营杠杆极强。③ <b>所得税率只有 6.2%</b>——泰国 BOI(投资促进委员会)给的税收优惠,这是它净利率(9.9%)能接近毛利率的关键;万一优惠政策变化是个隐藏风险。<br><b>大局:生意本身极健康——最新季收入 +39%、净利 +54%、连续超指引。</b>要操心的不在利润表,在"② 估值"(价格已计入多少)和"④ 推演"(8/24 财报)。
+    </div>
+    <div class="takeaways">
+      <b>读图要点</b>
+      <ul>
+        <li><b>毛利率 12%,挣的是"加工费"。</b>河流刚进来就被砍掉 88%(光器件、芯片、电子料、泰国产线人工)。代工模式:收入巨大、利润很薄,靠量和良率取胜。</li>
+        <li><b>100 块收入 → 落袋约 10 块净利润。</b>对代工厂来说 9.9% 净利率非常高(传统 EMS 同行 Jabil/Flex 大约 3–5%),靠的是高难度光学封装(别人做不了)+ 泰国低成本 + 6.2% 低税率。</li>
+        <li><b>利息+汇兑还倒贴 $31M。</b>账上 $9.4 亿净现金生息;但泰铢升值是毛利率的逆风(本季已压掉 30 个基点,管理层说 Q4 还会持续)。</li>
+      </ul>
+    </div>
+    <div class="note amber">🔗 <b>利润表怎么连到资产负债表:</b>这 $421M 净利润不会消失——它流进资产负债表的<b>留存收益</b>(已累计 $24.3 亿),变成 Chonburi 新厂房(Building 10)、设备和存货。FN 不分红、近期也几乎没回购,赚的钱全部再投入扩产能——这是"利润变资产"最教科书的样子。</div>
+
+    <h2 style="margin-top:22px;">收入从哪来(按终端市场,最新季 FQ3 FY2026 实际数)</h2>
+    <p class="hint">把最新一季 $1,214M 收入按"卖给谁/做什么"拆开,每根柱子标 <b>$金额 · 占收入% · 同比增速</b>。数据来自 10-Q(SEC 官方),不是估算。</p>
+    <div id="revenueChart" class="chart"></div>
+    <div class="note">
+      <b>读图:</b>光通信合计占 <b>73%</b>,是绝对主业,里面分三块——<b>电信 Telecom $431M(+42%)</b>:电信网络和路由器用的光器件;<b>数通 Datacom $260M(只 +4%)</b>:<b>正是英伟达链的 AI 数据中心光模块(800G 收发器)</b>,管理层解释慢是因为"激光器/内存/ASIC 缺料,需求远超出货能力"——增长被供应卡住,不是没需求(这句话信不信,是多空分歧点之一);<b>数据中心互连 DCI $197M(+90%)</b>:连接两个数据中心的长距光模块,增长最猛。非光通信里:<b>HPC 高性能计算 $107M</b>(新拆出来的列示项,环比 +25%)、汽车 $115M(−11%)、工业激光 $44M(+9%)。<b>一句话:AI 相关(数通+DCI+HPC)≈ 46% 收入,是增长引擎;数通那条"被供应约束压住的 +4%",8/24 能不能放量是头号看点。</b>
+    </div>
+    <div class="note" style="font-size:11.5px;color:#5b6573;">
+      <b>📚 本节数据来源:</b>TTM 各行 = 最近 4 个季度(FQ4 FY25 + FQ1–FQ3 FY26)逐行相加,出自 Fabrinet 各季 10-Q/8-K(经 yfinance 核对),各节点已对账;分市场拆分与"供应约束"表述出自 <a href="https://www.sec.gov/Archives/edgar/data/0001408710/000140871026000016/fn-20260327.htm" target="_blank">FQ3 FY2026 10-Q</a> 与 5/4 财报电话会(Investing.com 全文)。
+    </div>
+  </div>
+
+  <!-- ② BALANCE -->
+  <div class="panel hide" id="panel-balance">
+    <h2>What it owns vs. who funded it 资产 = 负债 + 权益</h2>
+    <p class="hint">左边=公司拥有的全部资产汇成总资产;右边=这些资产谁出的钱(欠的=负债,股东的=权益)。两边永远相等。<b>hover 看每项解释。</b></p>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--blue)"></i>Assets 资产</span>
+      <span><i class="dot" style="background:var(--orange)"></i>Liabilities 负债</span>
+      <span><i class="dot" style="background:var(--purple)"></i>Equity 股东权益</span>
+    </div>
+    <div id="balanceChart" class="chart"></div>
+    <div class="note red">
+      ⚠ <b>不寻常处(都和"为爆单备货"有关):</b>① <b>存货 9 个月暴涨 51%($581M → $876M)</b>,应收账款也 +20% 到 $909M——为新项目疯狂备料、垫资。备对了是下季的收入,备错了(客户砍单)就是减值炸弹。② 这直接导致<b>账面赚 $421M、口袋只进 $45M</b>(TTM 自由现金流),最近两个季度自由现金流是负的——钱全压在存货和应收上。③ 好消息是家底极干净:<b>几乎零有息负债</b>(只有 $4M 租赁),现金+短投 $945M,负债大头是欠供应商的应付账款 $859M(占用别人的钱,免息)。<b>没有商誉</b>——和 Intuit($140 亿商誉)完全相反,这是真刀真枪攒出来的硬资产。
+    </div>
+    <div class="takeaways">
+      <b>读图要点</b>
+      <ul>
+        <li><b>四大块资产:存货 $876M(25%)+ 应收 $909M(26%)+ 现金短投 $945M(27%)+ 厂房设备 $529M(15%)。</b>制造业的典型结构——一半资产是"正在周转的营运资金"。</li>
+        <li><b>账面净资产 $2.30B,含金量高:</b>没有商誉、没有水分,大头是 15 年留存收益 $2.43B 累积出来的厂房、设备、现金。</li>
+        <li><b>厂房设备一年从 $381M 涨到 $529M(+39%)</b>——Chonburi Building 10 在拼命盖(下文)。</li>
+      </ul>
+    </div>
+
+    <h2 style="margin-top:22px;">🏗️ 资本开支:FN 是 AI 大基建里"卖铲子的人"的代工厂</h2>
+    <p class="hint">和软件公司"怕 AI 算力成本压垮毛利"相反,FN 的故事是:超大规模云厂商每年砸 6000 亿+ 建数据中心 → 需要海量光模块 → FN 接单扩厂。下图是毛利率和资本开支占收入比的 5 年趋势。</p>
+    <div id="cloudChart" class="chart"></div>
+    <div class="note green">
+      <b>结论:资本开支翻倍是"需求信号",不是"成本失控"。</b>资本开支占收入从 FY24 的 1.7% 拉到 TTM 的 5.0%——在盖 Chonburi <b>Building 10:200 万平方英尺,2026 年 6 月首层投产、2027 年 1 月全部完工,建成新增约 $30 亿/年收入产能</b>(现有收入才 $42 亿);还顺手买了 Navanakorn 一栋 20 万平方英尺楼($11M)。管理层说全部土地用满可支撑 <b>$115 亿收入</b>。一个没拿到客户需求承诺的代工厂不敢这么扩(多头逻辑);但<b>产能不等于订单</b>——FN 的供货协议"无最低采购承诺"(10-Q 原文),历史上顶点扩产翻车的公司也不少(空头逻辑)。同时注意毛利率:5 年纹丝不动 12% 上下——收入翻倍、利润率不涨,这就是代工模式的天花板。
+    </div>
+    <div class="note amber">
+      <b>它在 AI 食物链的哪一环:</b>云厂商(亚马逊/谷歌/微软/Meta,2026 年合计资本开支约 $6300 亿+)买英伟达的 GPU 平台(英伟达数据中心收入 FY2026 约 $1937 亿)→ GPU 集群之间要用<b>光模块</b>互连(800G → 1.6T 升级,单机柜用量越来越多)→ 光模块的<b>设计商</b>(InnoLight、Coherent、Lumentum 等)和英伟达自己,把<b>制造</b>外包给 FN。<b>FN 是"卖铲子的人"的代工厂:吃得到 AI 基建的量,吃不到设计环节的高毛利;链条繁荣它跟着吃饱,链条打喷嚏(或客户改自己组装)它先感冒。</b>
+    </div>
+    <div class="note" style="font-size:11.5px;color:#5b6573;">
+      <b>📚 本节数据来源:</b>资产负债表各项出自 <a href="https://www.sec.gov/Archives/edgar/data/0001408710/000140871026000014/fn-2026504xex991q326.htm" target="_blank">FQ3 FY2026 8-K 财报稿(SEC)</a>;资本开支/毛利率 5 年趋势出自历年 10-K(经 yfinance 提取);Building 10 产能、$115 亿上限、"供应协议无最低采购承诺"出自 5/4 财报电话会与 10-Q;云厂商资本开支、英伟达数据中心收入为各公司财报公开数据(2026)。
+    </div>
+  </div>
+
+  <!-- ③ BIG PICTURE -->
+  <div class="panel hide" id="panel-bigpic">
+    <h2>From balance sheet to market value 一张图把资产、负债、现金、市值全打通</h2>
+    <p class="hint">整合图:左边是公司的资产 → 汇成总资产 → 分成负债和<b>账面净资产(Book Equity)</b>;账面净资产继续往右,加上一条巨大的<b>市场溢价</b>,合成<b>市值</b>。<b>一眼看到 book value 从哪来(总资产−总负债),以及它在市值里只占多小一块。</b></p>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--blue)"></i>Assets 资产</span>
+      <span><i class="dot" style="background:var(--orange)"></i>Liabilities 负债</span>
+      <span><i class="dot" style="background:var(--purple)"></i>Book Equity 账面净资产</span>
+      <span><i class="dot" style="background:var(--green2)"></i>Premium 市场溢价</span>
+      <span><i class="dot" style="background:#1f7a45"></i>Market Cap 市值</span>
+    </div>
+    <div id="integratedChart" class="chart"></div>
+    <div class="note green">👀 <b>看那条绿色"溢价"河:</b>市值 $21.0B 里,<b>只有 $2.3B(11%)有账面净资产撑着</b>,其余 <b>$18.7B(89%)是市场为"AI 光模块未来还会大涨"多付的预期</b>。一年前(P/E 22× 时)溢价占比约 73%,现在被买到 89%——<b>这一年涨的主要不是"家底",是"故事"。</b>好消息:这 $2.3B 家底是零商誉的硬资产(现金+厂房+存货);坏消息:万一故事降温,89% 那块没有地板,要靠利润追上来接。</div>
+
+    <div class="note blue">
+      <b>🔗 收入/利润怎么变成市值:</b>市值不是凭空来的,是"利润 × 市场愿给的倍数"。<br>
+      · 净利润 <b>$421M</b>(TTM,利润表的终点)× <b>P/E ≈50</b>(市场为每 1 块年利润付 50 倍)= 市值 <b>$21.0B</b><br>
+      · 收入 <b>$4.24B</b>(利润表的起点)× <b>P/S 4.96</b> = 市值 <b>$21.0B</b><br>
+      过去 15 个月股价从 $196 涨到 $586,<b>约一半靠利润涨(EPS +50%+),另一半靠倍数从 22× 胀到 50×</b>——"业绩"和"故事"各出了一半力。8/24 财报会让倍数继续胀还是开始缩,是"④ 推演"页的落点。
+    </div>
+
+    <h2 style="font-size:16px;margin:18px 0 0;">整合大图:收入 → 资产/负债/现金 → 市值(一张表打通)</h2>
+    <p class="hint">这张图里<b>两条河同时汇向市值</b>:<b>① 利润河</b>:收入 → 净利润 →(加"预期放大器")→ 故事溢价;<b>② 家底河</b>:现金 + 其他资产 → 总资产 → 分成负债和账面净资产。流进 = 流出,完全合规。每块标 $金额·占市值%。<b>每块停鼠标看名词解释。</b></p>
+    <div class="note" style="font-size:12px;">
+      <b>名词速查(怕你不熟):</b> <b>净利润</b>=扣完所有成本费用税真正赚到的钱;<b>账面净资产</b>=总资产−总负债,清算后剩给股东的"看得见的家底";<b>故事溢价</b>=市值里超出家底的部分,市场为"未来"付的钱;<b>预期放大器</b>=故事溢价里"利润之外、靠预期多付"的那块;<b>市值</b>=股价×总股本。
+    </div>
+    <div id="storyChart" class="chart"></div>
+    <div class="note green">
+      <b>怎么读这张整合图:</b><br>
+      · <b>利润河(上)</b>:年收入 $4.24B 扣成本和税剩净利润 $0.42B;净利润 + "预期放大器"$18.3B = 故事溢价 $18.7B → 市值。(放大器 = 市场基于 AI 光模块成长预期多付的钱。)<br>
+      · <b>家底河(下)</b>:现金+短投 $0.95B + 其他资产 $2.56B = 总资产 $3.51B → 负债 $1.20B + 账面净资产 $2.30B;账面净资产 → 市值。<br>
+      · <b>两河在"市值"$21.0B 汇合</b>:账面家底只占 11%,其余 89% 是"利润 × 预期"的故事。<b>放大器($18.3B)是净利润的 43 倍</b>——意思是:按现在的年利润,要 43 年才能"赚回"市场预付的预期;市场赌的是利润未来几年翻几倍,把 43 年缩短到十几年。
+    </div>
+
+    <div class="note green">
+      <b>🧬 第一性原理:为什么"收支"早就和"资产、市值"连在一起</b><br>
+      ① <b>资产负债表 = 历年利润表的累积</b>:FN 上市 15 年净利润没分掉的部分 → 留存收益 $2.43B → 变成泰国的厂房、设备、存货和现金。<br>
+      ② <b>市值 = 过去利润(账面净资产 $2.3B)+ 未来利润的折现(溢价 $18.7B)。</b><br>
+      链条:<b>收入 − 支出 = 净利润 → 留存 → 变资产 → 撑起账面净资产 → 市值的"家底";同时 未来净利润 → 折现 → 溢价 → 市值的"预期"。</b>FN 这一年的大涨,几乎全涨在"预期"那块——所以它对"预期落空"也最敏感(财报 beat 都能跌 8–13%,见"④ 推演")。
+    </div>
+
+    <div class="grid2" style="margin-top:18px;">
+      <div>
+        <h2 style="font-size:15px;margin-bottom:0;">整个生意值多少钱(企业价值 EV)</h2>
+        <p class="hint" style="margin:2px 0 0;">从"股东那部分"(市值)出发,<b>加上要替它还的债、减去账上现金</b> = "连债主一起算、整个生意的总价"。每根柱子都标了金额。</p>
+        <div id="evChart" class="chart"></div>
+      </div>
+      <div>
+        <h2 style="font-size:15px;margin-bottom:0;">What the $21.0B market cap is made of</h2>
+        <p class="hint" style="margin:2px 0 0;">市值 = 账面净资产 + 市场溢价。下面那条横条让比例一目了然。</p>
+        <div id="compChart" class="chart"></div>
+        <div class="ctxcard" style="margin-top:6px;">
+          <div class="lab">book value 是哪来的?</div>
+          <p style="margin-top:3px;"><b>来自资产负债表:</b>账面净资产 = 总资产 $3.51B − 总负债 $1.20B = <b>$2.30B</b>。它就是资产负债表里的"Shareholders' Equity"(股东权益),在这张市值全景图里直接流进市值。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="note blue">
+      <b>什么是 Enterprise Value(企业价值,EV)?有什么用?</b><br>
+      市值只算"股东那部分";<b>EV 算的是"整个生意"值多少钱——把债主也算进来。</b>公式:<b>EV = 市值 + 有息债 − 现金</b>。<br>
+      · <b>为什么 +债:</b>整体收购一家公司,除了买下股票,还得替它还债,所以债要加上。<br>
+      · <b>为什么 −现金:</b>账上的现金收购后就归买家了,等于变相打折,所以减掉。<br>
+      FN:$21.0B 市值 + 几乎为零的债($4M 租赁)− $0.95B 现金短投 = <b>EV ≈ $20.1B</b>。它是少见的"净现金"公司,EV 比市值还低 ~$0.9B。<br>
+      <b>意义:</b>比较两家公司贵不贵时,EV 比市值更公平——剔除了"谁借的债多、谁现金多"的干扰,只比"生意本身"的价钱。
+    </div>
+  </div>
+
+  <!-- ④ VALUATION MULTIPLES -->
+  <div class="panel hide" id="panel-mult">
+    <h2>这只股票该值多少钱?(公允价值 · 正当倍数法)</h2>
+    <p class="hint">不用 DCF(要猜 10 年增速、太黑箱),改用更透明的<b>正当倍数法</b>:公允价 = <b>前瞻每股收益 $17.27(FY2027 non-GAAP 一致预期,9 位分析师)× 一个"该给的倍数"</b>。倍数从"同行给多少倍 + FN 的质量分 − 集中度/代工模式扣分"推出来(熊 20× / 中 28× / 牛 38×)。<b>红线 = 今天 $586(33.9×)。</b></p>
+    <div id="fairChart" class="chart"></div>
+    <div class="note green">
+      <b>公允价:$345(熊 20×)/ $483(中 28×)/ $656(牛 38×)。今天 $586 落在"中性偏牛"之间——市场已经按"供应解除、1.6T 顺利接棒、大客户不变心"的剧本在定价。</b><br>
+      <b>倍数怎么定的:</b>纯 EMS 代工同行(Jabil 25×、Celestica 25×、Flex 21×、Sanmina 19×)中枢约 19–25×;光器件设计商(Coherent 44×、Lumentum 45×)有自有芯片/IP,贵一档。熊档 20× = "它终究是代工厂"(增速回落到 10–15% 时市场会这么给);中档 28× = EMS 上限 + 独家光封装工艺 + 25% 增速的溢价;牛档 38× = 向设计商倍数靠拢(需要增速持续 25%+、供应约束解除、客户继续外包)。<br>
+      <b>这个方法把真正的赌点逼出来了:</b>① $17.27 的 FY27 预期 EPS 靠不靠谱(供应约束 + 客户集中是两大变数);② FN 配不配"超越代工"的倍数。<b>对照:分析师目标价低 $635 / 中位 $750 / 高 $850</b>——华尔街比本模型的中性档乐观得多(中位 $750 ≈ 43× 前瞻,直接按设计商倍数给)。今天的价 = 市场押在"分析师对、模型保守"那一边。
+    </div>
+
+    <h2 style="margin-top:22px;">P/E &amp; P/B over time — the RE-rating 估值倍数怎么变的</h2>
+    <p class="hint">和"杀估值"相反:FN 过去 15 个月经历了一轮<b>"涨估值"(re-rating)</b>——同一家公司、同一门生意,市场愿付的倍数翻了一倍多。下图是最近 10 个季度的 P/E(左轴)和 P/B(右轴)。</p>
+    <div id="multiplesChart" class="chart"></div>
+    <div class="note amber" style="margin-top:6px;">
+      📈 <b>核心故事:</b>2025 年 3 月 FN 还是 21.8× P/E、3.7× P/B 的"普通代工厂";AI 光模块爆单后,15 个月里 P/E 拉到 <b>50×</b>(高点 57×)、P/B 拉到 <b>9.1×(历史最高,自身历史区间 3–5×)</b>。股价 $196 → $586,<b>约一半来自利润上涨、一半来自倍数膨胀</b>。这意味着:现在买 FN,买的一半是"生意",一半是"市场会不会继续给高倍数"——后者在财报季可以一夜縮水(它 beat 后都能跌 8–13%)。
+    </div>
+    <h2 style="margin-top:24px;">📉 如果哪天"杀估值",会怎样?历史演化 + FN 现在的位置</h2>
+    <p class="hint">FN 现在还<b>不是</b>杀估值案例(倍数仍在高位),但 5/14 之后已回撤 21%——这张图回答"万一倍数开始塌,结局由什么决定"。历史经典案例的"最大跌幅 vs 回本用时":<b style="color:#2e9e5b">绿=利润还在长→已回本</b>、<b style="color:#e05c54">红=利润塌了→至今没回本</b>、<b style="color:#e8923a">橙=利润还长但未回本(待定)</b>、<b>黑钉=FN 现在的位置</b>。绿点都挤在左边(1.5–3 年回来),红点全甩到右边(多年回不来)。</p>
+    <div id="derateChart" class="chart"></div>
+    <div class="note" style="font-size:11.5px;color:#5b6573;">注:红点横坐标是"至今已耗月数(仍未回本)";Kraft 实际已 9 年+、Cisco 2000 年那次等了 <b>21 年</b>才回本(太长未画进图)。绿色阴影=经验上的"健康恢复区(顶点后约 6–33 个月)"。数据:yfinance 复权收盘价,顶点→谷底→首次回到顶点。这组样本是著名案例、不是随机抽样(有幸存者偏差);"回本"指回到前高,对底部买入者和山顶买入者意义完全不同。</div>
+
+    <div class="note green">
+      <b>🎯 核心规律(要记的那句):</b> <b>倍数掉了、但利润还在涨 → 大概率恢复,通常见底要 6–15 个月、回到旧高要 1.5–3 年</b>(Meta 15 个月、英伟达 2018 那次 14 个月)。反过来 <b>倍数掉、利润也塌 → 多数回不到旧高</b>(PayPal、Zoom、Kraft)。<b>关键:90% 的恢复是"利润长上来"完成的,不是倍数自己弹回去——所以盯利润,别盯倍数。</b>对 FN 这种 50× 的股票,这句话尤其重要:只要 E(利润)继续 +30%,就算倍数从 50× 缩到 35×,股价也能原地踏步等利润追上;但若 E 增速踩刹车,50× 会变成自由落体的起点。
+    </div>
+
+    <h2 style="margin-top:20px;font-size:16px;">把"杀估值"分三类:FN 万一回调,会落进哪类?</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px;">
+      <div class="ctxcard" style="border-color:#cfe9d8;background:#f3faf5;">
+        <div class="lab">A · 错杀型 <span class="pill low">FN 若增速守住 25%+ → 在此</span></div>
+        <div class="big" style="font-size:17px;color:#27663f;">~70–80% 会回</div>
+        <p><b>特征:</b>利润仍高速长,跌因恐慌/宏观/板块(比如 6/5 那种半导体集体跳水)。<br><b>结局:</b>1–2.5 年回旧高。<br><b>例:</b>Meta、英伟达 2018/2022、Netflix。</p>
+      </div>
+      <div class="ctxcard" style="border-color:#f3e2c2;background:#fffaf0;">
+        <div class="lab">B · 降速型 <span class="pill" style="background:#fff1d6;color:#8a5a1e;">若 FY27 增速掉到 ~10% → 在此</span></div>
+        <div class="big" style="font-size:17px;color:#8a5a1e;">几年"死钱"</div>
+        <p><b>特征:</b>还赚钱,但 AI 光模块周期见顶、增速永久降档,50× 倍数被慢慢磨回 20×。<br><b>结局:</b>3–5 年,回旧高约 30–50%。<br><b>例:</b>成熟硬件公司的常态。</p>
+      </div>
+      <div class="ctxcard" style="border-color:#f3d6d0;background:#fdf4f2;">
+        <div class="lab">C · 价值陷阱 <span class="pill high">触发条件:大客户抽单/CPO 替代</span></div>
+        <div class="big" style="font-size:17px;color:#a13225;">60–80% 回不去</div>
+        <p><b>特征:</b>利润真往下掉——英伟达把组装内包/转单、CPO(把光直接封进 GPU)淘汰可插拔模块。<br><b>结局:</b>多数回不到旧高。<br><b>例:</b>被单一大客户抛弃的供应商(如 2010s 的 GoPro 链)。</p>
+      </div>
+    </div>
+    <div class="note amber">
+      <b>🧭 FN 归类:今天它在"A 的入口"——利润还在 +39%/+54% 地长,回撤 21% 更多是板块β(6/5 SMH 单日 −9%)+ 高位获利盘;还没有任何"E 要塌"的实据。</b>但它和 Meta/Netflix 那类 A 有个本质区别:<b>它的 E 握在 4 个大客户手里(58% 收入)</b>——A→C 的切换可以没有预警(一纸转单通知)。所以对 FN,"分类"不是看宏观,是逐季核对三件事:数通收入有没有放量、客户集中度有没有恶化、毛利率有没有守住 12%。8/24 是下一个核对点(见"④ 推演")。
+    </div>
+
+    <h2 style="margin-top:20px;font-size:16px;">该盯哪场财报、盯什么内容(快速判断走哪条路)</h2>
+    <div class="note blue">
+      <b>🔴 决胜场:8 月 24 日盘后(估计日,公司未官宣)FQ4 + FY2026 全年财报,首次给 FQ1 FY2027 指引。</b>按重要性从高到低盯这几条,基本就能当场把 FN 归进 A / B / C:<br>
+      · <b>① FQ1 FY27 收入指引(最关键)</b> —— FY27 共识 $5.66B(+23%)隐含季均 ~$1.41B。指引 <b>≥$1.42B = A 类(供应解除、加速)</b>;<b>$1.32–1.40B = 中性</b>;<b>≤$1.30B(环比走平)= 滑向 B,50× 倍数撑不住</b>。<br>
+      · <b>② Datacom(数通,英伟达链)当季收入</b> —— 连续两季被供应约束压在 $260–280M;若放量回到 $300M+ 并且管理层确认缺料缓解 = 多头实锤;若继续走平且话术从"供应"变"需求/库存" = 红色警报。<br>
+      · <b>③ 新 hyperscaler 直供项目与 1.6T 进展</b> —— 5/4 电话会说"两个直供超大规模客户的数通项目 FQ4 开始爬坡、多个 merchant 项目下半年启动";8/24 要看到它们贡献收入(这是对冲英伟达集中度的关键)。<br>
+      · <b>④ 毛利率 ≥12%?</b> —— 泰铢逆风 + 新项目爬坡都在压毛利;跌破 11.5% 说明代工议价权恶化。<br>
+      <b>一句话:8/24 盯"FQ1 指引"这一个数,再用"数通放量没"验真伪,当场可把 FN 归进 A / B / C。</b>
+    </div>
+
+    <p class="hint" style="margin-top:12px;">⚠ 下面卡片里的"高/低"都是<b>相对两个基准</b>:<b>① 大盘(标普500 平均)</b>和 <b>② 这只股票自己的历史区间</b>。两个基准给的结论可能相反,所以每张卡把两边都标了。</p>
+    <div class="ctxgrid">
+      <div class="ctxcard">
+        <div class="lab">P/E 市盈率 = 股价 ÷ 每股利润</div>
+        <div class="big">50.3× <span class="pill high">很高 vs 大盘</span> <span class="pill high">历史最高区 vs 自身</span></div>
+        <p><b>什么水平:</b>标普500 约 22× → 高出一倍多;FN 自己 2024 年大部分时间是 <b>21–30×</b> → 现在 50×(高点 57×)处在自身历史最高区。市场按"AI 光模块还要爆几年"定价。<br><b>直觉:</b>按现在利润约 50 年回本——买它买的全是"利润快速翻倍"的预期。前瞻(用 FY27 预期 EPS)是 33.9×。</p>
+      </div>
+      <div class="ctxcard">
+        <div class="lab">P/B 市净率 = 市值 ÷ 账面净资产</div>
+        <div class="big">9.1× <span class="pill high">高 vs 大盘</span> <span class="pill high">历史最高 vs 自身</span></div>
+        <p><b>什么水平:</b>标普500 约 4–5×;FN 自身历史 <b>3–5×</b> → 现在 9.1× 是上市以来最高。<br><b>提醒:</b>FN 的"B"含金量很高(零商誉、全是现金厂房存货),所以 9.1× 意味着市场为每 1 块硬资产付 9.1 块——对制造业是极高的评价,历史上只有景气顶点才见到。</p>
+      </div>
+      <div class="ctxcard">
+        <div class="lab">这两个比值是"按钮"还是"结果"?</div>
+        <div class="big">是结果</div>
+        <p>P/E、P/B 不是推动股价的按钮,而是"股价÷利润/净资产"算出来的<b>比值</b>。但 <code>股价 = 每股利润 × P/E</code>,所以<b>倍数本身的胀缩,往往是 1–3 年股价涨跌的最大推手</b>——FN 过去 15 个月就是"利润×2 + 倍数×2.3"的双击;反过来双杀也是同一个公式。</p>
+      </div>
+      <div class="ctxcard">
+        <div class="lab">最小时间单元是一个季度吗?</div>
+        <div class="big">不是</div>
+        <p><b>分子(股价)每秒都在变</b> → P/E、P/B <b>每天都在动</b>;<b>分母(利润、净资产)每季度财报才更新一次</b>。数据按季度给快照,是因为分母被钉在每个季度,日内其实随股价一直漂。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ DIAGNOSIS -->
+  <div class="panel hide" id="panel-diag">
+    <h2>被追捧,还是被高估?先看同行坐标系</h2>
+    <p class="hint">先回答"这是全行业的事还是它一家的事"。把 FN 的<b>前瞻 P/E</b> 跟两组同行摆一起:左边四家是 EMS 代工同行(它的"出身"),右边两家是光器件设计商(它想"攀亲"的对象)。橙色虚线是标普500 前瞻 ~22×。</p>
+    <div id="peerChart" class="chart"></div>
+    <div class="note blue" style="margin-top:6px;">
+      <b>结论:FN 已经被市场"抬出"代工厂的定价区。</b>它 33.9× 的前瞻 P/E <b>比所有 EMS 代工同行都贵</b>(Sanmina 19×、Flex 21×、Jabil 25×、Celestica 25×——后两家同样吃到 AI 红利、增速 20–50% 也只给到 25×),但又明显低于有自有芯片/器件 IP 的设计商(Coherent 44×、Lumentum 45×)。<br><b>翻译:</b>市场当前给 FN 的身份是"半个设计商"——理由是它的高难度光学封装没人能替代、客户黏性极强。<b>多头要赌的是身份继续上移(向 44× 靠),空头赌的是均值回归(跌回 25× 的代工身份,那就是 −25%)。这不是"错杀股",是"身份之争"。</b>
+    </div>
+
+    <h2 style="margin-top:22px;">分部体检:哪条业务线在爆发、哪条被卡脖子(最新季收入同比)</h2>
+    <p class="hint">第一性原理:看"谁的收入涨得快"判断订单往哪流。下图是 FN 各终端市场最新一季(FQ3 FY26)的同比增速——绿色=爆发,橙色=被压制,红色=收缩。</p>
+    <div id="competeChart" class="chart"></div>
+    <div class="note amber">
+      <b>读数(分三类看):</b><br>
+      · <b>爆发中:</b>DCI 数据中心互连 <b>+90%</b>(连接两个数据中心的长距光模块,AI 集群越建越分散,需求最猛)、电信 <b>+42%</b>(电信系统商补库存+AI 回传网络)。HPC 高性能计算新拆列 $107M、环比 +25%(管理层把"$150M/季"里程碑推迟了一个季度,小瑕疵)。<br>
+      · <b>被卡住的:</b>数通 Datacom <b>只 +4%</b>——这正是英伟达链的 800G 光模块业务,管理层归因"激光器/内存/ASIC 缺料,需求远超出货能力"。<b>这条线是 FN 故事的心脏:信管理层=憋着的弹簧;不信=英伟达订单见顶的遮羞布。</b>外部还无法证伪,8/24 见分晓。<br>
+      · <b>收缩的:</b>汽车 −11%(电动车光雷达需求疲软,占比已降到 9.5%,影响有限)。<br>
+      <b>同行佐证(同期最新季收入增速):</b>光模块设计商 Lumentum +90%、Celestica +53%、Coherent +21%、Jabil +23%——整条 AI 光链都在爆单,FN 的 +39% 处在第一梯队。<b>行业β 是真的;问题只在 FN 自己的α(供应约束+客户集中)上。</b>
+    </div>
+
+    <h2 style="margin-top:22px;">为什么涨这么疯?多空一句话版本</h2>
+    <div class="twocol">
+      <div class="bcard bear">
+        <div class="bh">🐻 空头:这是周期顶点的代工厂</div>
+        <ul>
+          <li><b>命门是客户集中:</b>前 4 大客户 = <b>58.1%</b> 收入(一年前两家 47.5%),英伟达一家 27.6%(FY25)。代工厂没有定价权,供货协议<b>"无最低采购承诺"</b>(10-Q 原文)。</li>
+          <li><b>CPO(共封装光学)是悬顶之剑:</b>把光引擎直接封进 GPU,可插拔光模块长期可能被绕开;英伟达自己在推 CPO 交换机。</li>
+          <li><b>账面赚 $421M、口袋只进 $45M:</b>存货 9 个月 +51%、最近两季 FCF 为负——景气上行时是杠杆,下行时是减值炸弹。</li>
+          <li><b>市场已用脚投票:</b>最近 4 次财报 3 次大跌(−12.8%、−10.2%、−8.0%),beat 都救不了——预期跑在现实前面;P/B 9.1× 历史最高。</li>
+        </ul>
+      </div>
+      <div class="bcard bull">
+        <div class="bh">🐂 多头:这是 AI 光链的"光学台积电"</div>
+        <ul>
+          <li><b>真壁垒是高难度光学封装的良率和规模:</b>设计商(InnoLight/Coherent/Lumentum)和英伟达都把最难的制造交给它;客户集中恰恰说明"非它不可"。亚马逊 2025/3 签长期商业协议绑定。</li>
+          <li><b>需求被供应卡住,不是没需求:</b>"需求远超出货能力"+ 两个直供 hyperscaler 新项目 FQ4 爬坡 + merchant 项目下半年启动 = 弹药已上膛。</li>
+          <li><b>产能就是底气:</b>Building 10 新增 $30 亿收入产能(6 月首层投产),满地块可支撑 $115 亿收入——管理层敢扩,因为看得到需求。</li>
+          <li><b>财务极干净:</b>净现金 $9.4 亿、零有息债、净利率 9.9%(传统 EMS 的 2–3 倍)、6.2% 低税率;FY27 共识还有 +23%/+25% 的收入/EPS 增长。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note amber" style="margin-top:14px;">
+      <b>综合判断:</b>这<b>不是"错杀股",是"拥挤的好生意"</b>。生意本身是 A 级:增长 +39%、执行连续超指引、家底零水分;但价格已按"中性偏牛"剧本支付(33.9× 前瞻,高于所有代工同行),且筹码结构拥挤(beat 都跌、财报后跑输板块 18 个点)。<b>赔率结构和 Intuit 那类"坏消息已 price-in"正好相反:FN 是"好消息已 price-in"——上行要靠超预期再超预期,下行只需"不再更好"。</b>这不等于看空生意,等于对"现价买入"的胜率要求更高:要么等回调到中性档($480–520),要么等 8/24 验证数通放量后追确定性。
+    </div>
+
+    <h2 style="margin-top:22px;">FN 在扩张吗?有效吗?(公司行为信号)</h2>
+    <div class="note green">
+      <b>✅ 在大举扩张,且是"真金白银"级别:</b>① <b>Building 10(200 万平方英尺)6 月首层投产</b>、9–10 月再交一层、2027/1 全部完工,新增约 $30 亿收入产能(≈ 现有体量的 70%);② 再买 Navanakorn 一栋楼($11M);③ 3 月底入股台湾 Raytek Semiconductor 16%($32.4M)——往上游半导体封装伸手;④ 资本开支占收入从 1.7% 拉到 5.0%。<b>一家拿不到订单可见性的代工厂不会这么花钱。</b>这是"行为信号"里最硬的一类:管理层用自己的资产负债表投了赞成票。
+    </div>
+    <div class="note red">
+      <b>⚠ 但两件事还没被证明:</b>① <b>产能 ≠ 订单</b>——供货协议无最低采购承诺,扩产的回报要等订单落地才算数(8/24 起逐季验证);② <b>新客户分散化还在"说"的阶段</b>——前 4 大客户集中度过去一年从 47.5% 升到 58.1%,方向是在<b>变得更集中</b>而不是更分散;电话会说的"两个直供 hyperscaler 项目"要在报表里看到收入才作数。另:FN 是泰国工厂、约 1.6 万员工,Glassdoor 类信号对它参考性低,本报告用"产能/入股/资本开支"等公司行为代替招聘数据做扩张判断。
+    </div>
+
+    <h2 style="margin-top:22px;">下一个爆发点 / 要盯的信号 &amp; 日历</h2>
+    <div class="twocol">
+      <div class="bcard">
+        <div class="bh">📅 日历上的催化剂</div>
+        <ul>
+          <li><b>🔴 8 月 24 日盘后(估计日,以公司官宣为准):FQ4 + FY2026 全年财报</b>,并首次给 FQ1 FY2027 指引——决定 50× 倍数命运的一战。</li>
+          <li><b>FQ4 内(本季度):</b>两个直供 hyperscaler 数通项目开始爬坡;Building 10 首层投产。</li>
+          <li><b>2026 下半年:</b>merchant(公开市场)光模块项目启动;1.6T 量产节奏(客户保密,外部只能从收入反推)。</li>
+          <li><b>英伟达財报(8 月下旬)</b>:它是 FN 27.6% 的衣食父母,它的数据中心指引会直接带动 FN 的β。</li>
+        </ul>
+      </div>
+      <div class="bcard">
+        <div class="bh">🔎 验证多空的"铁证"</div>
+        <ul>
+          <li><b>数通收入</b>:从 $260M 放量到 $300M+ = 供应约束论被证实(多头胜);继续走平且话术变化 = 空头胜。</li>
+          <li><b>FQ1 FY27 收入指引</b> vs 共识隐含的 ~$1.41B/季。</li>
+          <li><b>客户集中度</b>(年报 10-K,9 月):英伟达占比升破 30% 还是回落;新客户有没有进 10% 名单。</li>
+          <li><b>存货/FCF</b>:存货增速回落 + FCF 转正 = 备货被消化;继续膨胀 = 风险积聚。</li>
+          <li><b>毛利率 ≥12%</b>:代工议价权的体温计。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note blue" style="margin-top:14px;">
+      <b>思路过程(怎么从证据推到结论):</b>① 先分清<b>行业β 还是个股α</b>——整条 AI 光链(LITE +90%、CLS +53%)都在爆单,FN +39% 是行业景气的一部分 → β 是真的;② 看<b>价格付了多少</b>——P/E 50×/P/B 9.1× 均为自身历史最高,前瞻 33.9× 高于全部代工同行 → 好消息已大量 price-in;③ 找<b>个股α 风险</b>——客户集中度升到 58%、数通被供应卡住、FCF 为负,三个都还没爆但都没解除;④ 看<b>筹码行为</b>——beat 后照跌、财报后跑输 SMH 18 个点、下跌日量大于上涨日 → 边际买家疲劳;⑤ 结论不是"看空",是"<b>赔率不站在追高这边;等回调或等 8/24 验证,胜率更高</b>"。
+    </div>
+  </div>
+
+  <!-- ⑥ PLAYBOOK -->
+  <div class="panel hide" id="panel-play">
+    <h2>8/24 推演:不等数据,先算概率 Earnings Playbook</h2>
+    <p class="hint">下次财报:<b>FQ4 + FY2026 全年,预计 8 月 24 日盘后</b>(TipRanks/Investing 给出的估计日,公司尚未官宣),并首次给 <b>FQ1 FY2027 指引</b>。<b>FQ4 门槛 = FN 自己的官方指引</b>:收入 $1.25–1.29B(中点同比 +40%)、non-GAAP EPS $3.72–3.87、GAAP EPS $3.48–3.63。FN 财报日波动极大:最近 4 次反应 −12.8% / +3.7% / −10.2% / −8.0%——<b>三次大跌里有两次当季其实是 beat</b>,跌的是"预期太高"。</p>
+
+    <div class="note green">
+      <b>🎯 决胜尺:FQ1 FY2027 收入指引 + 数通(Datacom)放量与否</b><br>
+      · 已知事实(FQ3 FY26,官方 8-K):收入 $1,214.3M(+39%)、GAAP EPS $3.45、non-GAAP EPS $3.72(超共识 $3.54);连续第 N 次超自己指引上限。<br>
+      · 分部:电信 +42%、DCI +90%、<b>数通只 +4%(供应约束)</b>、汽车 −11%、HPC 新列示 $107M。<br>
+      · <b>所以 8/24 真正要盯的两把尺子:① FQ1 FY27 收入指引</b>——共识 FY27 $5.66B(+23%)隐含季均 ~$1.41B,指引 ≥$1.42B 算加速、≤$1.30B 算失速;<b>② 数通当季有没有从 $260M 放量到 $300M+</b>(验证"供应约束"不是遮羞布)。这两个数直接决定 50× 的倍数是继续胀还是开缩。
+      <div style="font-size:11px;color:#5b6573;margin-top:6px;">📚 来源:<a href="https://www.sec.gov/Archives/edgar/data/0001408710/000140871026000014/fn-2026504xex991q326.htm" target="_blank">Fabrinet FQ3 FY2026 财报稿(SEC 8-K,2026-05-04)</a>、<a href="https://www.sec.gov/Archives/edgar/data/0001408710/000140871026000016/fn-20260327.htm" target="_blank">10-Q</a>、财报电话会全文(Investing.com)。</div>
+    </div>
+
+    <div class="note green">
+      <b>✅ 预期来源已核实(命门):</b>上面 FQ4 的门槛是 <b>FN 自己 5/4 给的官方指引</b>(收入 $1.25–1.29B、non-GAAP EPS $3.72–3.87,均注明 GAAP/non-GAAP 口径与 36.3M 股本),不是小道消息;分析师对 FQ4 的共识(~$1.27B 收入、non-GAAP EPS ~$3.80)基本就贴着指引中点。交叉验证:FY26 共识 $4.60B − 前三季实际 $3.33B = Q4 隐含 $1.27B ✓ 对得上。FY27 共识(收入 $5.66B、EPS $17.27)来自 stockanalysis.com 汇总的 9 位分析师(S&amp;P Global 口径)。分析师评级"买入",目标价低 $635 / 中位 $750 / 高 $850。
+    </div>
+
+    <div class="note blue">
+      <b>口径:</b>本页是"预期/推演";Sankey 只画<b>已发生</b>的真实数,预期单独画、标 est.,不和实际混在一起。FN 的季节性很弱(没有 Intuit 那种报税季),季度间主要看产能爬坡节奏,所以"环比有没有继续涨"本身就是信号。
+    </div>
+
+    <h2 style="margin-top:18px;">上次财报以来:乐观还是恐惧被 price-in?(撇除大盘/板块)</h2>
+    <p class="hint">方法:以上次财报反应后一周(5/5–5/11)的均价为基线,看现在相对<b>半导体板块(SMH)</b>跑赢还是跑输——自动剔除大盘/AI 行情的共同部分,只留个股信号。跑输=个股层面有担忧在积累;跑赢=乐观在加码。</p>
+    <div id="baselineChart" class="chart"></div>
+    <div class="note amber">
+      <b>读数:</b>上次财报(5/4)后到 6/9,<b>半导体板块 SMH +8.5%、大盘 SPY +0.8%,而 FN −9.5%</b>——撇除板块后,FN <b>跑输半导体约 18 个点</b>。过程很戏剧:beat 后先 −8%(获利了结),5/14 又创历史新高 $746,然后 6/5 跟着半导体单日 −13%、至今未收复。<br>
+      <b>结论:高位的乐观已被挤出一部分,但谈不上"恐惧 price-in"。</b>$586 仍是 50× P/E / 9.1× P/B(历史最高区),只是从"极度拥挤"退到"拥挤"。和 Intuit 那种"价格踩在最熊目标价上"完全不同——FN 现价比最低分析师目标($635)还<b>低 8%</b>,这是这轮回调后才出现的一点点安全垫。<br>
+      <b>⚠ 提醒:</b>这读的是"赔率/仓位",不是"会不会 beat";FN 的执行记录(连续超指引)恰恰很好,跌从来不是因为没达标,而是因为"达标不够"。
+    </div>
+
+    <h2 style="margin-top:18px;">资金动向:在吸筹还是派发?(量能趋势)</h2>
+    <p class="hint">成交量能被伪装,所以只看<b>趋势</b>和<b>结构</b>:上涨日的量 vs 下跌日的量(吸筹 vs 派发)、换手率。⚠ 这些是技术代理,<b>不等于真·机构席位</b>(那要看滞后的 13F)。</p>
+    <div id="flowChart" class="chart"></div>
+    <div class="note amber">
+      <b>读数(上次财报 5/5 至 6/9):</b><br>
+      · <b>下跌日均量 1.12M 股 &gt; 上涨日均量 0.78M 股(比值 0.70)</b>——卖压日放量、买盘日缩量,偏<b>派发</b>(高位获利盘在出)。<br>
+      · <b>把股数换成钱和市值看:</b>日均成交额约 <b>$6.6 亿/天 ≈ 市值($21B)的 3.1%/天</b>(流动性极好);财报后累计成交 ≈ <b>全部流通股的 57% 换了手</b>——五周里一半多筹码易主,价格却从基线跌了 9.5%。<br>
+      · <b>解读:</b>这是"高位换手 + 温和派发",不是恐慌出清(没有那种 3 倍量的投降日),也不是悄悄吸筹。筹码从"财报前的动量客"换到"愿意在 $580–620 接的人"手里——这批新持有人的成本线,大概率就是 8/24 前的支撑/阻力参照。
+    </div>
+
+    <h2 style="margin-top:18px;">实际 vs 预测,分开看(两张独立 Sankey)</h2>
+    <p class="hint">"推研值和实际值别搞混":左=最新季 <b>实际</b>(FQ3 FY26,绿),右=下一季 <b>预测</b>(FQ4 FY26 按官方指引中点+本季成本结构建模,橙/标 est.)。<b>故意分两张、不叠一起,免得把"已发生"和"还没发生"混为一谈。</b></p>
+    <div class="grid2">
+      <div><div class="qtag act">✅ 实际 · FQ3 FY2026(截至 2026-03-27,已发生)</div><div id="q1Chart" class="chart"></div></div>
+      <div><div class="qtag fc">🔮 预测 · FQ4 FY2026(截至 2026-06-26,模型,非官方)</div><div id="q2Chart" class="chart"></div></div>
+    </div>
+    <div class="note amber">预测口径:收入用<b>官方指引中点 $1,270M</b>;成本/费用按 FQ3 的结构外推(毛利率 ~12.3%、SG&amp;A ~2%);净利润钉在<b>官方 GAAP EPS 指引中点 $3.56 × 36.3M 股 ≈ $129M</b>,毛利和税倒推得出。⚠ 公司 non-GAAP EPS 指引 $3.72–3.87(剔除股权激励等,约 +$0.24/股)。<b>右图是"形状参考",真正的硬标尺是 8/24 给出的 FQ1 FY27 指引。</b></div>
+    <div class="note blue">
+      <b>预测从哪来:</b>收入/EPS 区间 = <b>FN 官方指引</b>(5/4 财报时自己给的,不是分析师瞎猜);分析师共识基本贴着指引中点。<b>分析师在这之上画的"picture"(目标价 range):低 $635 / 中位 $750 / 高 $850</b>(9 位,S&amp;P Global 口径),比今天 $586 高 <b>8%–45%</b>,中位隐含 +28%。换句话说:<b>卖方整体仍看多,分歧只在"该给代工的倍数还是设计商的倍数"。</b>这个 range 没有 Intuit 那种"最熊 $276 vs 最牛 $921"的撕裂——FN 的分歧是幅度之争,不是方向之争(目前还没有人给出"客户抽单"情景的目标价,这本身是一种盲区)。
+    </div>
+
+    <h2 style="margin-top:18px;">Beat / Meet / Miss 怎么影响股价(框架,不是公式)</h2>
+    <div class="note">
+      <b>没有精确公式,但有成熟框架:</b><br>
+      股价反应 ≈ <b>当季超预期幅度</b> + <b>FQ1 FY27 指引 vs 共识($1.41B)</b> + <b>数通放量与否的"叙事修正"</b> − <b>已被 price-in 的部分(仍然不少)</b>,再 × <b>仓位/隐含波动</b>。<br>
+      四个要点:① FN 的历史告诉你<b>"beat 不等于涨"</b>——最近 4 次有 3 次跌,因为 50× 的预期门槛比指引高得多;② 这次 <b>FQ1 指引远比 FQ4 当季数字重要</b>;③ 对 FN,<b>数通收入和毛利率比 EPS 更关键</b>(它是"英伟达链健康度"的体检表);④ 财报日波动中位数 ±9% 左右,期权市场会提前把这个波动卖得很贵(IV crush)。<br>
+      一句话直觉:<b>"指引不加速 = 跌(哪怕 beat);指引加速 + 数通放量 = 才有新高的燃料。"</b>
+    </div>
+
+    <h2 style="margin-top:18px;">情景概率矩阵(作者推算,非定论)</h2>
+    <div id="scenChart" class="chart"></div>
+    <div style="overflow-x:auto;">
+      <table class="scen">
+        <tr><th>情景</th><th>概率</th><th>长什么样</th><th>预期股价反应</th><th>价位区间</th></tr>
+        <tr><td>🚀 大 beat + FQ1 指引 ≥$1.42B</td><td class="pb">15%</td><td>数通放量到 $300M+、供应约束确认缓解、FY27 加速</td><td class="up">+8% ~ +16%</td><td>$633–680</td></tr>
+        <tr><td>✅ beat + FQ1 指引 $1.35–1.42B</td><td class="pb">30%</td><td>FQ4 再超指引、FQ1 符合共识、数通温和改善</td><td class="up">+2% ~ +7%</td><td>$598–627</td></tr>
+        <tr><td>😐 inline + 指引中庸($1.30–1.35B)</td><td class="pb">30%</td><td>达标但无惊喜;按"beat 也跌"的历史习性处理</td><td class="dn">−7% ~ −2%</td><td>$545–574</td></tr>
+        <tr><td>⚠️ 供应约束未解 / 毛利率破 12%</td><td class="pb">20%</td><td>数通继续走平、FX/爬坡压毛利、指引 ≤$1.30B</td><td class="dn">−15% ~ −9%</td><td>$498–533</td></tr>
+        <tr><td>💥 大客户/CPO 坏消息</td><td class="pb">5%</td><td>大客户转单/内包迹象、CPO 路线图提速</td><td class="dn">−30% ~ −20%</td><td>$410–469</td></tr>
+      </table>
+    </div>
+    <div class="note amber">
+      <b>加权之后:</b>期望值约 <b>−1%,基本中性、但左尾更深</b>——和"价格已计入中性偏牛剧本"的诊断一致:上行靠"超预期再超预期"(顶格 +16%),下行的坏剧本(−20%~−30%)虽然概率小但没被定价。<b>这正是"好公司 ≠ 好赔率"的标准形状。</b>(概率为作者估算,非预测,仅供学习。)
+    </div>
+
+    <h2 style="margin-top:18px;">多空天平 Bull vs Bear(Claude × Gemini 双模型红蓝队)</h2>
+    <p class="hint">双模型真实对抗:<b>Claude 独立执空方、Gemini(gemini-flash-latest)执多方</b>,打满 3 轮(开场→反驳→收口),Gemini 最后跳出角色当中立裁判。砝码后标 <span class="mtag c">C</span>=Claude 提、<span class="mtag g">G</span>=Gemini 提、两者都标=两家都认。</p>
+    <div class="twocol">
+      <div class="bcard"><div class="bh">🤖 Claude 的结论</div><div style="font-size:12.5px;color:#444"><b>中性偏谨慎(对"现价买入",不是对生意)</b>。FN 是 A 级生意:增长 +39%、执行无瑕疵、家底零水分;但 $586 = 50× P/E 已把"供应解除+客户不变心"计入,而客户集中(前4=58%)+ FCF 背离 + "beat 也跌"的筹码结构让左尾没有被定价。<b>胜负手是 8/24 的 FQ1 指引和数通放量;等验证或等回调,胜率更高。</b></div></div>
+      <div class="bcard"><div class="bh">✨ Gemini 的结论(中立裁判)</div><div style="font-size:12.5px;color:#444"><b>lean = neutral(中性)</b>。原话:"$586 的价格已经部分透支了高增长,短期内 FCF 的背离和筹码博弈偏向空头;但长期看 AI 光通信红利和 Building 10 的产能释放仍将为多头筑底。"</div></div>
+    </div>
+    <div class="twocol" style="margin-top:14px;">
+      <div class="pan bull">
+        <div class="ph">🐂 多头砝码</div>
+        <ul>
+          <li><span>AI 光模块需求极强:DCI +90%,数通受限是供应不是需求 <span class="mtag c">C</span><span class="mtag g">G</span></span><span class="w">3</span></li>
+          <li><span>Building 10 新增 $30 亿产能 + 净现金 $9.4 亿、零有息债 <span class="mtag c">C</span><span class="mtag g">G</span></span><span class="w">2</span></li>
+          <li><span>6.2% 低税率 + 2.2% 费用率 → 净利率 9.9%,远超普通 EMS <span class="mtag g">G</span></span><span class="w">2</span></li>
+          <li><span>大客户深度绑定(亚马逊商业协议;高难度封装无人能替) <span class="mtag g">G</span></span><span class="w">2</span></li>
+          <li><span>回撤 21% + 跑输板块 18 点,部分乐观已被挤出 <span class="mtag c">C</span></span><span class="w">1</span></li>
+        </ul>
+      </div>
+      <div class="pan bear">
+        <div class="ph">🐻 空头砝码</div>
+        <ul>
+          <li><span>前 4 大客户 58.1%、英伟达 27.6%;CPO/自研/转单 = 单点崩溃风险 <span class="mtag c">C</span><span class="mtag g">G</span></span><span class="w">3</span></li>
+          <li><span>净利 $421M 但 TTM FCF 仅 $45M;存货 +51% 是潜在减值雷 <span class="mtag c">C</span><span class="mtag g">G</span></span><span class="w">2</span></li>
+          <li><span>34× 前瞻 &gt; 全部 EMS 同行;P/B 9.1× 历史最高,均值回归即 −25% <span class="mtag c">C</span><span class="mtag g">G</span></span><span class="w">2</span></li>
+          <li><span>代工无定价权:供货协议无最低采购承诺;毛利 12% 十五年不动 <span class="mtag c">C</span></span><span class="w">2</span></li>
+          <li><span>"beat 也跌"模式 + 下跌日量 &gt; 上涨日量(派发) <span class="mtag c">C</span><span class="mtag g">G</span></span><span class="w">1</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="tilt">
+      <div class="tilt-track">
+        <div class="tilt-mark" style="left:50%;background:#7c3aed" title="Gemini: neutral"></div>
+        <div class="tilt-mark" style="left:57%;background:#1f2733" title="Claude: 中性偏谨慎"></div>
+      </div>
+      <div class="tilt-labels"><span>🐂 多头</span><span>✨Gemini 中性 · 🤖Claude 中性偏谨慎(综合:中性,左尾未定价)</span><span>🐻 空头</span></div>
+    </div>
+    <div class="note green" style="margin-top:12px;">
+      <b>两个模型都同意(共识):</b>① FN 正处在 AI 驱动的业绩爆发期,行业β 是真的;② 泰国税收优惠 + 高难度光封装给了它<b>远超普通代工</b>的盈利能力;③ <b>存货激增和 FCF 转负是本期财报最显眼的隐忧</b>;④ <b>8/24 财报和 FQ1 FY27 指引是决定股价去向的试金石。</b>
+    </div>
+    <div class="note amber" style="margin-top:8px;">
+      <b>关键分歧(最值钱):</b>同一个"客户集中 58%",两边解读相反——<b>多头(Gemini)</b>读作"非它不可的证据"(英伟达、思科、亚马逊都离不开它,经济越卷越要外包给最便宜最稳的);<b>空头(Claude)</b>读作"单点故障"(代工厂对客户没有反制手段,协议无最低承诺,CPO/内包/转单任何一个落地都是 C 类剧本)。<b>Claude 的事实纠错:</b>Gemini 在辩论中说"亚马逊主动送上认股权证求绑定"——方向说反了,10-Q 写明是 <b>FN 发认股权证给亚马逊</b>(给客户股权甜头换订单),这恰恰说明<b>议价权在客户一边</b>,是偏空的证据而不是偏多的。两模型最后都收敛到同一句:<b>FN 是"光学台积电"还是"高级代工厂",由数通放量和客户名单的演变决定,8/24 起逐季验证。</b>
+    </div>
+
+    <h2 style="margin-top:18px;">红蓝对抗全文 The debate(Claude 执空 × Gemini 执多 · 逐轮)</h2>
+    <p class="hint">真实跑出来的 3 轮辩论(开场 → 反驳 → 收口),按原文整理、论点未删改。🔵=多头(Gemini)/ 🔴=空头(Claude)。</p>
+
+    <div style="font-weight:700;font-size:14px;margin:14px 0 6px;color:#1f2733">第 1 轮 · 开场陈词 Opening</div>
+    <div class="twocol">
+      <div class="bcard bull">
+        <div class="bh">🔵 多头(Gemini):"AI 算力时代的黄金包装商"</div>
+        <ul>
+          <li><b>别拿低端 EMS 的帽子往 FN 头上套,33.9× 的前瞻 P/E 明明是折价!</b>FN 是 AI 算力与高端光封装的独家交付者。若非不可替代,英伟达(27.6%)、思科(18.2%)为何死粘着它?前四大客户占比飙升至 58.1%,亚马逊甚至签长期协议绑定。它享受光器件设计商(COHR 44×、LITE 45×)的高成长,39.3% 的营收增速绝非 EMS 同行可比。</li>
+          <li><b>把存货暴增和数通仅 +4% 当鬼故事?这是爆发前夜的蓄力!</b>官方早说明白:激光器/ASIC"供应约束,需求远超产能"。存货增至 $8.76 亿是为下半场疯狂备料。看底气:Building 10 完工新增超 $30 亿营收产能,满产可支撑 $115 亿收入。没爆单,谁会疯到去扩 200 多万平方英尺?</li>
+          <li><b>回撤 21.5% 是洗盘黄金坑,+40% 的 Q4 营收指引足证增长未死!</b>泰国 6.2% 超低税率护航下,FY27 共识 EPS $17.27(+25%)。分析师中位目标价 $750(+28% 空间)。在 AI 光通信爆发的硬轨道上,用脚投票的终将因踏空而交出筹码!</li>
+        </ul>
+      </div>
+      <div class="bcard bear">
+        <div class="bh">🔴 空头(Claude):"周期顶点的 12% 毛利代工机器"</div>
+        <ul>
+          <li><b>毛利率只有 12% 的代工机器,却卖出了 34× 前瞻 PE</b>——比所有 EMS 同行(CLS/JBL 25×、FLEX 21×、SANM 19×)都贵一大截,而它的客户恰恰是产业链里议价权最强的巨头。15 个月 P/E 从 22× 翻到 50×、P/B 9.1× 创历史最高:<b>涨的不是生意,是故事</b>。任何"增速从 39% 回到 20%"的正常化都足以触发戴维斯双杀——不需要坏消息,只需要"不再更好"。</li>
+          <li><b>命门是客户集中:前 4 大 = 58.1%,英伟达一家 27.6%。</b>代工厂对客户没有定价权、没有专利护城河,客户却有一万个理由挪走订单:CPO 把光模块吸进 GPU 封装、超大规模厂"拆包"自采、英伟达扶第二供应商压价。数通本季只 +4%——管理层说是"供应约束",但<b>外部无法验证那不是需求/份额问题的遮羞布</b>。</li>
+          <li><b>市场已在用脚投票:</b>beat+raise 后股价照样 −8%,最近 4 次财报 3 次大跌,财报后跑输 SMH 18 个点,下跌日量能 &gt; 上涨日。净利 $421M 但 TTM FCF 只有 $45M,存货暴增 51%——下游一砍单,$8.76 亿存货就是减值炸弹。<b>$586 已计入"完美执行+周期不灭",赔率向下。</b></li>
+        </ul>
+      </div>
+    </div>
+    <div style="font-weight:700;font-size:14px;margin:16px 0 6px;color:#1f2733">第 2 轮 · 互相反驳 Rebuttal</div>
+    <div class="twocol">
+      <div class="bcard bull">
+        <div class="bh">🔵 多头反驳(Gemini)</div>
+        <ul>
+          <li><b>别拿 12% 毛利率装外行,9.9% 的净利率你闭口不提?</b>传统 EMS 同行净利率才 2–4%,而 FN 在泰国 6.2% 超低税率护航下净利率高达 9.9%!这叫代工?这是"高精密光封装"的特许垄断!至于"供应约束",恰恰证明 FN 卡在生态最核心——下游求着要货,上游卡脖子卡的是全行业。30bps 的汇率波动不过是噪音,不影响 39.3% 的营收暴增。</li>
+          <li><b>"无最低承诺"是行业常态,深度绑定才是真爱。</b>强如台积电也不会和客户签死合同。亚马逊和 FN 签长期商业协议、深度捆绑,说明 FN 是它 AI 版图里不可替代的一环。没有订单能见度,FN 那帮精明的管理层会在零负债、手握 $9.4 亿净现金的情况下,这个月就让 200 万平方英尺的 Building 10 首层投产?</li>
+          <li><b>捧 LITE/COHR 踩 FN 更是笑话!</b>他们空有 IP,却因搞不定量产和成本,只能把最核心的 AI 订单送给 FN。FN 就是"光通信领域的台积电"。用 33.9× 的前瞻 PE,买一个手握海量现金、EPS 年增 25% 的 AI 绝对龙头,这是极其便宜的抱团筹码!</li>
+        </ul>
+      </div>
+      <div class="bcard bear">
+        <div class="bh">🔴 空头反驳(Claude)</div>
+        <ul>
+          <li><b>"供应约束"恰恰是空头论据:</b>约束在激光器/内存/ASIC——都是<b>别人的零件</b>。FN 没有任何上游掌控力,景气时吃不到量、毛利率还被汇率压(本季 −30bps);这正暴露了代工模式的天花板:收入翻倍、利润率一分不涨,12% 毛利十五年如一日。</li>
+          <li><b>多头吹 Building 10 新增 $30 亿产能 = 订单可见性?产能不是订单。</b>2000 年的北电、2021 年的 Zoom 都在顶点扩产。真信号是客户合同——而 FN 的供货协议"无最低采购承诺"(10-Q 原文)。给亚马逊发的那张认股权证更说明问题:<b>大客户用拿股权甜头的方式压价,是反向拿捏供应商。</b></li>
+          <li><b>34× 前瞻 PE 对一个"利润=加工费"的生意,历史上从没有善终。</b>LITE/COHR 的 45× 贵在自有芯片/器件 IP,FN 没有。就算 FY27 真 +25%,$586 也只是兑现;一旦 8/24 给的 FQ1 指引环比走平(供应约束没解除),50× trailing 的故事自己就会塌。</li>
+        </ul>
+      </div>
+    </div>
+    <div style="font-weight:700;font-size:14px;margin:16px 0 6px;color:#1f2733">第 3 轮 · 收口陈词 Closing</div>
+    <div class="twocol">
+      <div class="bcard bull">
+        <div class="bh">🔵 多头收口(Gemini)</div>
+        <div style="font-size:13px;color:#333;line-height:1.55">空头在用"周期性代工"的刻板印象,刻意忽视 AI 光通信 1.6T 时代不可逆转的爆发力!$586 的价格不仅没透支,反而因为近期 −21.5% 的回撤和财报后的超跌,留出了安全边际。33.9 倍的前瞻 P/E 对应的是 FY27 25% 的 EPS 高增长($17.27)和 39.3% 的营收增速,这根本不是普通 EMS,而是享受芯片级技术壁垒的"光封装之王"。手握 $9.4 亿净现金、几乎零负债,Building 10 本月首层投产将新增 $30 亿收入产能,这就是最硬的底气。AI 浪潮没有减速,硬件供不应求。在 8 月 24 日财报指引揭晓前,每一次因为"预期过高"带来的回调,都是捡便宜筹码的买点!</div>
+      </div>
+      <div class="bcard bear">
+        <div class="bh">🔴 空头收口(Claude)</div>
+        <div style="font-size:13px;color:#333;line-height:1.55">我不否认 FN 是最好的光学代工厂、生意在高速增长——<b>我否认的是 $586 这个价格</b>。50× trailing / 34× forward 已经把"供应解除 + 1.6T 顺利 + 大客户不变心"全部计入;而历史告诉你,这家公司连 beat 都要跌 8–12%,因为预期永远跑在现实前面。前 4 大客户 58%、毛利 12%、FCF 几乎为零、存货 +51%——这套组合在周期向上时是杠杆,向下时是绞索。我不需要赌 AI 退潮——<b>只需要增速从 39% 自然回落到 20%、估值从 34× 回到 EMS 的 25×,股价就是 −25%</b>。在赔率明显不对称的位置,看对生意、买错价格,一样亏钱。</div>
+      </div>
+    </div>
+
+    <div class="note blue" style="margin-top:14px;">
+      <b>⚖ 唯一的胜负手(双方都收敛到同一变量):</b>FN 究竟是拥有高护城河、配得上 30×+ P/E 的<b>"AI 光封装独占龙头"</b>,还是终将面临客户压价、技术替代(CPO)、估值均值回归的<b>"高端代工厂"</b>?判据不在嘴上,在报表里:<b>数通放量与否 + 客户名单演变 + 毛利率守不守得住 12%。</b><br>
+      <b>✨ Gemini 最终判决(中立裁判):lean = neutral。</b>原话:"$586 的价格已经部分透支了高增长,短期内 FCF 的背离和筹码博弈偏向空头,但长期看 AI 光通信红利和 Building 10 的产能释放仍将为多头筑底。"<br>
+      <b>🤖 Claude 的合议:</b>同意胜负手所在;补一个事实纠错(认股权证是 FN 发给亚马逊的,不是反过来——这是客户议价权的证据)。我的最终读法:<b>生意 A 级、价格已饱满、左尾未定价</b>——中性偏谨慎,关键验证点 8/24:数通放量 + FQ1 指引 ≥$1.42B 则故事续命,环比走平则倍数先杀为敬。两模型方向一致(中性),分歧只在"回调该不该接"——这正是把仓位决策交给 8/24 数据的理由。
+    </div>
+
+    <h2 style="margin-top:18px;">8/24 前后的宏观大事 Macro around the print</h2>
+    <div class="note">
+      FN(估)8/24 财报落在<b>暑期财报尾声 + 美联储 Jackson Hole 年会(通常 8 月下旬)</b>附近,宏观会放大或抵消它自己的数字:<br>
+      · <b>8 月 CPI / PPI(8 月中旬)</b>:通胀偏热 → 降息预期降温 → 高倍数成长股(50× 的 FN 首当其冲)承压;偏冷 → risk-on 顺风。<br>
+      · <b>Jackson Hole(8 月下旬)</b>:美联储定调降息路径,常是 8 月底市场的最大变量。<br>
+      · <b>英伟达财报(8 月下旬,通常与 FN 同周或前后脚)</b>:对 FN 这是第二份"自己的财报"——英伟达数据中心指引强弱直接定 FN 的β;若英伟达先发且大超,FN 财报日的门槛会被进一步抬高。<br>
+      · <b>9 月 FOMC</b>:财报后几周的大事。<br>
+      <b>解读:</b>看 FN 财报反应时,先扣掉当天半导体板块(SMH)的β——6/5 那种全板块 −9% 的日子已经演示过它的高β体质(当日 FN −13%)。
+    </div>
+  </div>
+
+  <footer>
+    Data: SEC 8-K/10-Q(Fabrinet FQ3 FY2026, 2026-05-04)、FY2025 10-K(客户集中度)、stockanalysis.com(估值比率历史/分析师预期)、yfinance(价格/成交量/同行倍数/分析师快照)、财报电话会全文(Investing.com)· 宏观日历为公开日程(2026-06)。情景概率为作者估算,非预测。TTM 利润 = 最近 4 个季度(FQ4 FY25 + FQ1–FQ3 FY26)逐行相加,各 Sankey 节点已对账平衡(流入=流出)。多空辩论由 Claude(空方)与 Gemini flash(多方+中立裁判)真实生成。8/24 财报日为第三方估计,以公司官宣为准。<br>
+    Educational illustration, not investment advice.
+  </footer>
+</div>
+
+<script>
+/* ---------- plain-language definitions (shown on hover) ---------- */
+var DEF = {
+  // income (TTM, ending Mar 27 2026)
+  'Revenue':'总收入(TTM 近 12 个月)$4,235M。给英伟达/思科/亚马逊等代工光模块、光器件、汽车/医疗/激光设备收到的全部加工收入。最新季同比 +39%。',
+  '营业成本':'营业成本(COGS)$3,725M,占收入 88%。光芯片、激光器、电子料等零件 + 泰国产线人工 + 厂房折旧。代工模式:成本大头是替客户采购的料。',
+  '毛利':'毛利 = 收入 − 直接成本 = $510M(占收入 12.0%)。FN 挣的是"加工费",毛利率 15 年稳定在 12% 上下——不高,但极稳。',
+  'SG&A 费用':'销售+管理费用 $92M,只占收入 2.2%——同行里几乎最低。FN 不打广告、不养销售大军(大客户直接找上门),这是 12% 毛利还能剩 10% 营业利润的秘诀。',
+  '营业利润':'营业利润 $418M(营业利润率 9.9%)。毛利扣掉运营费用后、主业真正赚到的钱。',
+  '利息+汇兑':'利息收入 + 汇兑及其他净收益 $31M。账上 $9.4 亿净现金的利息,减去泰铢波动的汇兑损益。',
+  '税前利润':'税前利润 $449M = 营业利润 + 利息汇兑收益。',
+  '所得税':'所得税仅 $28M,有效税率 6.2%——泰国 BOI(投资促进委员会)给的税收优惠。这是 FN 净利率能到 9.9% 的关键之一,政策若变是隐藏风险。',
+  'Net Income':'净利润 $421M(净利率 9.9%)。对代工厂是顶级水平(Jabil/Flex 约 3–5%)。这笔钱全部留存再投入扩产能,不分红。',
+  // balance sheet
+  '现金及短期投资':'现金 $357M + 短期投资 $589M = $945M。几乎无债,是少见的"净现金"制造企业。',
+  '应收账款':'应收账款 $909M。客户已收货还没付的钱,一年涨 20%——收入暴涨的自然结果,但也占用现金。',
+  '存货':'存货 $876M,9 个月暴涨 51%(原材料 $240M + 在制品 $544M + 产成品 $91M)。为新项目疯狂备料——备对了是下季收入,备错了是减值。',
+  '其他流动资产':'预付款 $38M + 其他流动资产 $177M(含外汇合约、增值税应收等)。',
+  '厂房设备':'厂房设备净值 $529M(含使用权资产)。泰国 Chonburi/Pinehurst 的厂房和产线,一年 +39%——Building 10 在拼命盖。',
+  '其他非流动资产':'递延税资产、软件等合计 $34M。注意:FN 几乎没有商誉(只有 $2M 软件类无形资产)——资产全是硬的。',
+  'TOTAL ASSETS':'总资产 $3,509M = 公司拥有的所有东西。永远等于"总负债 + 股东权益"。结构:1/4 现金、1/4 应收、1/4 存货、1/4 厂房。',
+  '总负债':'总负债 $1,204M。大头是欠供应商的应付账款(免息占用),有息债务几乎为零($4M 租赁)。',
+  '账面净资产':'账面净资产/股东权益 = 总资产 − 总负债 = $2,305M。其中留存收益 $2,427M——15 年利润攒出来的,零商誉、零水分。',
+  '应付账款':'应付账款 $859M。欠供应商的货款——规模做大后可以免息占用上游资金,是代工厂的"隐形融资"。',
+  '其他流动负债':'固定资产应付款 $65M + 应计工资奖金 $31M + 其他应付 $153M + 应计费用/税等,合计 $296M。',
+  '非流动负债':'长期负债合计 $49M:泰国员工离职补偿金准备 $32M、递延税等。没有任何长期借款。',
+  // integrated
+  'Cash & Investments':'现金 + 短期投资 = $945M。几乎无债,净现金 $941M。',
+  'Other Assets':'除现金外的全部资产 $2,564M:应收、存货、厂房设备等(零商誉)。',
+  'Book Equity (Net Worth)':'账面净资产 = 总资产 − 总负债 = $2.30B。是市值里"有家底撑着"的部分,只占市值的 11%。',
+  'Market Premium':'市场溢价 = 市值 − 账面净资产 = $18.7B。市场为"AI 光模块未来几年利润翻几倍"多付的钱,占市值 89%。',
+  'MARKET CAP':'市值 = 股价 $586 × 35.8M 股 ≈ $21.0B。一年涨约 1.5 倍;较 5/14 高点 $746 已回撤 21%。',
+  'Total Liab.':'总负债 $1.20B,大头是欠供应商的应付账款,有息债几乎为零。',
+  '流动负债':'一年内要兑现的负债 $1,156M,大头是应付账款 $859M。',
+  '非流动负债 ':'长期负债 $49M:员工离职补偿准备金等,无长期借款。'
+};
+
+/* ---------- helpers ---------- */
+var fmtM = function(v){ return '$' + Math.round(v).toLocaleString('en-US') + 'M'; };
+var nodeLabel = function(p){ return p.name + '\n' + fmtM(p.value); };
+
+function richTip(refTotal, refLabel){
+  return function(p){
+    if(p.dataType === 'edge'){
+      return '<div style="font-weight:700">' + p.data.source + '  →  ' + p.data.target + '</div>'
+           + '<div style="font-size:15px;font-weight:700;color:#2e9e5b;margin-top:2px">' + fmtM(p.data.value) + '</div>';
+    }
+    var pct = (p.value / refTotal * 100).toFixed(1);
+    var def = DEF[p.name] || '';
+    return '<div style="max-width:300px;white-space:normal">'
+      + '<div style="font-weight:700;margin-bottom:2px">' + p.name + '</div>'
+      + '<div style="font-size:15px;font-weight:700;color:#1f2733">' + fmtM(p.value)
+      + ' <span style="font-weight:400;color:#5b6573;font-size:11.5px">· ' + pct + '% of ' + refLabel + '</span></div>'
+      + (def ? '<div style="font-size:12px;color:#566;margin-top:6px;line-height:1.5">' + def + '</div>' : '')
+      + '</div>';
+  };
+}
+var tipCfg = function(ref,lab){ return {trigger:'item', triggerOn:'mousemove', confine:true,
+  extraCssText:'max-width:320px;white-space:normal;box-shadow:0 4px 18px rgba(0,0,0,.12);', formatter:richTip(ref,lab)}; };
+
+var charts = {};
+
+/* ---------- ① INCOME (TTM) ---------- */
+function buildIncome(){
+  var REV = 4235;
+  var G='#2e9e5b', G2='#46c07a', O='#e8923a', O2='#efb066', R='#e05c54', GR='#9aa3ad';
+  var nodes = [
+    {name:'Revenue',      value:4235, depth:0, itemStyle:{color:G}},
+    {name:'营业成本',      value:3725, depth:1, itemStyle:{color:O}},
+    {name:'毛利',          value:510,  depth:1, itemStyle:{color:G2}},
+    {name:'SG&A 费用',    value:92,   depth:2, itemStyle:{color:O2}},
+    {name:'营业利润',      value:418,  depth:2, itemStyle:{color:G2}},
+    {name:'利息+汇兑',     value:31,   depth:2, itemStyle:{color:GR}},
+    {name:'税前利润',      value:449,  depth:3, itemStyle:{color:G2}},
+    {name:'所得税',        value:28,   depth:4, itemStyle:{color:R}},
+    {name:'Net Income',   value:421,  depth:4, itemStyle:{color:G}}
+  ];
+  var links = [
+    {source:'Revenue', target:'营业成本', value:3725},
+    {source:'Revenue', target:'毛利',    value:510},
+    {source:'毛利',  target:'SG&A 费用', value:92},
+    {source:'毛利',  target:'营业利润',  value:418},
+    {source:'营业利润', target:'税前利润', value:418},
+    {source:'利息+汇兑', target:'税前利润', value:31},
+    {source:'税前利润', target:'所得税',    value:28},
+    {source:'税前利润', target:'Net Income', value:421}
+  ];
+  return {
+    tooltip:tipCfg(REV,'revenue'),
+    series:[{ type:'sankey', left:'1%', right:'14%', top:'3%', bottom:'3%',
+      nodeWidth:16, nodeGap:16, draggable:true, layoutIterations:0, emphasis:{focus:'adjacency'},
+      data:nodes, links:links,
+      label:{ formatter:function(p){
+          var ANOM={'营业成本':'占88% — 代工模式天生如此','所得税':'税率仅6.2%(泰国BOI优惠)','SG&A 费用':'只占2.2%,极薄'};
+          var pct=(p.value/REV*100).toFixed(1); var s='{nm|'+p.name+'}\n{val|'+fmtM(p.value)+' · '+pct+'%}';
+          if(ANOM[p.name]) s+='\n{warn|'+ANOM[p.name]+'}';
+          return s; },
+        rich:{ nm:{fontSize:11,color:'#27313d',fontWeight:700,lineHeight:14},
+          val:{fontSize:11,color:'#5b6573',lineHeight:14},
+          warn:{fontSize:10,color:'#c0392b',fontWeight:700,lineHeight:15,backgroundColor:'#fdecea',padding:[1,4],borderRadius:2} } },
+      lineStyle:{color:'gradient', opacity:0.32, curveness:0.5} }]
+  };
+}
+
+/* ---------- ① revenue by end market (FQ3 FY26 actual) ---------- */
+function buildRevenue(){
+  var x = ['Telecom\n电信','Datacom\n数通(英伟达链)','DCI\n数据中心互连','汽车','HPC\n高性能计算','工业激光','其他'];
+  var v = [431.4, 260.4, 196.9, 115.5, 106.7, 44.2, 59.2];
+  var yoy = ['+42%','+4% ⚠供应约束','+90%','−11%','新列示','+9%',''];
+  var col = ['#2e9e5b','#e8923a','#1f7a45','#e05c54','#46c07a','#9aa3ad','#9aa3ad'];
+  return {
+    grid:{left:8, right:14, top:40, bottom:46, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ var i=p[0].dataIndex;
+        return x[i].replace('\n',' ') + '<br/><b>$'+v[i].toFixed(0)+'M</b> · '+(v[i]/1214.3*100).toFixed(1)+'% of revenue<br/>同比: <b>'+(yoy[i]||'—')+'</b>'; }},
+    xAxis:{type:'category', data:x, axisLabel:{fontSize:10, color:'#5b6573', interval:0, lineHeight:13}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'US$ M(FQ3 FY26)', nameTextStyle:{fontSize:10,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{ type:'bar', barWidth:'56%',
+      data:v.map(function(val,i){ return {value:val, itemStyle:{color:col[i], borderRadius:3}}; }),
+      label:{show:true, position:'top', fontSize:10, fontWeight:700, color:'#27313d',
+        formatter:function(p){ return '$'+p.value.toFixed(0)+'M·'+(p.value/1214.3*100).toFixed(0)+'%\n'+yoy[p.dataIndex]; }} }]
+  };
+}
+
+/* ---------- ② BALANCE SHEET (Mar 27, 2026) ---------- */
+function buildBalance(){
+  var TA = 3509;
+  var B='#3b82c4', B2='#6aa7d8', B3='#86b8de', O='#e8923a', O2='#efa45a', P='#8a63c4';
+  var nodes = [
+    {name:'现金及短期投资',   value:945,  depth:0, itemStyle:{color:B}},
+    {name:'应收账款',        value:909,  depth:0, itemStyle:{color:B2}},
+    {name:'存货',           value:876,  depth:0, itemStyle:{color:B3}},
+    {name:'其他流动资产',     value:216,  depth:0, itemStyle:{color:B3}},
+    {name:'厂房设备',        value:529,  depth:0, itemStyle:{color:'#2f6aa3'}},
+    {name:'其他非流动资产',   value:34,   depth:0, itemStyle:{color:B3}},
+    {name:'TOTAL ASSETS',   value:3509, depth:1, itemStyle:{color:'#244e74'}},
+    {name:'总负债',         value:1204, depth:2, itemStyle:{color:O}},
+    {name:'账面净资产',      value:2305, depth:2, itemStyle:{color:P}},
+    {name:'应付账款',        value:859,  depth:3, itemStyle:{color:O2}},
+    {name:'其他流动负债',     value:296,  depth:3, itemStyle:{color:O}},
+    {name:'非流动负债',      value:49,   depth:3, itemStyle:{color:O}}
+  ];
+  var links = [
+    {source:'现金及短期投资', target:'TOTAL ASSETS', value:945},
+    {source:'应收账款',      target:'TOTAL ASSETS', value:909},
+    {source:'存货',         target:'TOTAL ASSETS', value:876},
+    {source:'其他流动资产',   target:'TOTAL ASSETS', value:216},
+    {source:'厂房设备',      target:'TOTAL ASSETS', value:529},
+    {source:'其他非流动资产', target:'TOTAL ASSETS', value:34},
+    {source:'TOTAL ASSETS', target:'总负债',    value:1204},
+    {source:'TOTAL ASSETS', target:'账面净资产', value:2305},
+    {source:'总负债', target:'应付账款',    value:859},
+    {source:'总负债', target:'其他流动负债', value:296},
+    {source:'总负债', target:'非流动负债',   value:49}
+  ];
+  return {
+    tooltip:tipCfg(TA,'total assets'),
+    series:[{ type:'sankey', left:'1%', right:'14%', top:'3%', bottom:'3%',
+      nodeWidth:16, nodeGap:12, draggable:true, layoutIterations:0, emphasis:{focus:'adjacency'},
+      data:nodes, links:links,
+      label:{formatter:function(p){ return p.name+'\n'+fmtM(p.value)+' · '+(p.value/TA*100).toFixed(0)+'%'; }, fontSize:11, color:'#27313d', fontWeight:600},
+      lineStyle:{color:'gradient', opacity:0.32, curveness:0.5} }]
+  };
+}
+
+/* ---------- ② capex & gross margin trend ---------- */
+function buildCloud(){
+  var x=['FY2022','FY2023','FY2024','FY2025','TTM'];
+  var gm=[12.3,12.7,12.4,12.1,12.0];
+  var capex=[4.0,2.4,1.7,3.6,5.0];
+  return {
+    grid:{left:8,right:16,top:36,bottom:24,containLabel:true},
+    legend:{top:4,itemWidth:18,textStyle:{fontSize:11}},
+    tooltip:{trigger:'axis',valueFormatter:function(v){return v+'%';}},
+    xAxis:{type:'category',data:x,axisLabel:{fontSize:11,color:'#5b6573'},axisTick:{show:false}},
+    yAxis:{type:'value',name:'占收入 %',nameTextStyle:{fontSize:10,color:'#9aa3ad'},axisLabel:{fontSize:10,color:'#9aa3ad',formatter:'{value}%'},splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[
+      {name:'毛利率 %(纹丝不动)',type:'line',data:gm,smooth:true,symbol:'circle',symbolSize:7,lineStyle:{width:3,color:'#3b82c4'},itemStyle:{color:'#3b82c4'},label:{show:true,fontSize:10,color:'#3b82c4',formatter:'{c}%'}},
+      {name:'资本开支 %(扩产信号)',type:'line',data:capex,smooth:true,symbol:'circle',symbolSize:7,lineStyle:{width:3,color:'#e8923a'},itemStyle:{color:'#e8923a'},label:{show:true,fontSize:10,color:'#e8923a',formatter:'{c}%'}}
+    ]
+  };
+}
+
+/* ---------- ③ INTEGRATED: assets -> liab+equity -> market cap ---------- */
+function buildIntegrated(){
+  var MC = 20996;
+  var nodes = [
+    {name:'Cash & Investments',     value:945,   depth:0, itemStyle:{color:'#3b82c4'}},
+    {name:'Other Assets',           value:2564,  depth:0, itemStyle:{color:'#6aa7d8'}},
+    {name:'TOTAL ASSETS',           value:3509,  depth:1, itemStyle:{color:'#244e74'}},
+    {name:'Total Liab.',            value:1204,  depth:2, itemStyle:{color:'#e8923a'}},
+    {name:'Book Equity (Net Worth)',value:2305,  depth:2, itemStyle:{color:'#8a63c4'}},
+    {name:'Market Premium',         value:18691, depth:2, itemStyle:{color:'#46c07a'}},
+    {name:'流动负债',                value:1155,  depth:3, itemStyle:{color:'#e8923a'}},
+    {name:'非流动负债 ',             value:49,    depth:3, itemStyle:{color:'#efa45a'}},
+    {name:'MARKET CAP',             value:20996, depth:3, itemStyle:{color:'#1f7a45'}}
+  ];
+  var links = [
+    {source:'Cash & Investments', target:'TOTAL ASSETS', value:945},
+    {source:'Other Assets',       target:'TOTAL ASSETS', value:2564},
+    {source:'TOTAL ASSETS', target:'Total Liab.',             value:1204},
+    {source:'TOTAL ASSETS', target:'Book Equity (Net Worth)', value:2305},
+    {source:'Total Liab.', target:'流动负债',    value:1155},
+    {source:'Total Liab.', target:'非流动负债 ',  value:49},
+    {source:'Book Equity (Net Worth)', target:'MARKET CAP', value:2305},
+    {source:'Market Premium',          target:'MARKET CAP', value:18691}
+  ];
+  return {
+    tooltip:tipCfg(MC,'market cap'),
+    series:[{ type:'sankey', left:'1%', right:'12%', top:'4%', bottom:'4%',
+      nodeWidth:18, nodeGap:16, draggable:true, layoutIterations:0, emphasis:{focus:'adjacency'},
+      data:nodes, links:links,
+      label:{formatter:function(p){ return p.name+'\n'+fmtM(p.value)+' · '+(p.value/MC*100).toFixed(0)+'%'; }, fontSize:11, color:'#27313d', fontWeight:600},
+      lineStyle:{color:'gradient', opacity:0.34, curveness:0.5} }]
+  };
+}
+
+/* ---------- ③a EV BRIDGE ---------- */
+function buildEV(){
+  var cats = ['Market Cap','+ Debt','− Cash & Inv.','= Enterprise Value'];
+  var mc=21.00, debt=0.004, cash=0.95, ev=20.05;
+  var base   = [0, mc, ev, 0];
+  var amount = [mc, debt, cash, ev];
+  var colors = ['#8a63c4','#e8923a','#3b82c4','#1f7a45'];
+  return {
+    grid:{left:8, right:14, top:34, bottom:24, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ var i=p[0].dataIndex;
+        var ex={0:'股东那部分的总价值',1:'有息债几乎为零(只有$4M租赁)',2:'账上现金短投归买家,等于打折',3:'整个生意的价钱'};
+        return cats[i] + '<br/><b>$'+amount[i].toFixed(2)+'B</b><br/><span style="font-size:11px;color:#888">'+ex[i]+'</span>'; }},
+    xAxis:{type:'category', data:cats, axisLabel:{fontSize:11, color:'#5b6573'}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'US$ B', nameTextStyle:{fontSize:10,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[
+      {type:'bar', stack:'t', itemStyle:{color:'transparent'}, data:base, silent:true},
+      {type:'bar', stack:'t', barWidth:'50%',
+        itemStyle:{color:function(p){return colors[p.dataIndex];}, borderRadius:3},
+        label:{show:true, position:'top', fontSize:11.5, fontWeight:700, color:'#27313d',
+          formatter:function(p){return '$'+amount[p.dataIndex].toFixed(2)+'B';}},
+        data:amount}
+    ]
+  };
+}
+
+/* ---------- ③b MARKET CAP COMPOSITION ---------- */
+function buildComp(){
+  return {
+    grid:{left:6, right:14, top:8, bottom:34, containLabel:true},
+    tooltip:{trigger:'item', formatter:function(p){ return p.seriesName+'<br/><b>$'+p.value.toFixed(2)+'B</b> ('+(p.value/21.0*100).toFixed(0)+'% of market cap)'; }},
+    legend:{bottom:0, itemWidth:12, itemHeight:12, textStyle:{fontSize:11,color:'#5b6573'}},
+    xAxis:{type:'value', max:21.0, axisLabel:{show:false}, splitLine:{show:false}, axisTick:{show:false}, axisLine:{show:false}},
+    yAxis:{type:'category', data:['Market Cap\n$21.0B'], axisLabel:{fontSize:11,color:'#5b6573'}, axisTick:{show:false}, axisLine:{show:false}},
+    series:[
+      {name:'Book Value (net assets) 账面净资产', type:'bar', stack:'m', barWidth:42,
+        itemStyle:{color:'#8a63c4', borderRadius:[4,0,0,4]},
+        label:{show:true, color:'#fff', fontSize:11, fontWeight:700, formatter:'$2.3B (11%)'}, data:[2.30]},
+      {name:'Growth · AI-cycle premium 溢价', type:'bar', stack:'m', barWidth:42,
+        itemStyle:{color:'#46c07a', borderRadius:[0,4,4,0]},
+        label:{show:true, color:'#fff', fontSize:11, fontWeight:700, formatter:'$18.7B (89%)'}, data:[18.69]}
+    ]
+  };
+}
+
+/* ---------- ④ P/E & P/B history ---------- */
+function buildMultiples(){
+  var x  = ['Mar 24','Jun 24','Sep 24','Dec 24','Mar 25','Jun 25','Sep 25','Dec 25','Mar 26','Jun 26\n(now)'];
+  var pe = [25.1, 30.2, 28.4, 24.6, 21.8, 32.2, 37.0, 45.8, 57.3, 50.3];
+  var pb = [4.12, 5.07, 4.76, 4.31, 3.68, 5.33, 6.24, 7.84, 8.58, 9.11];
+  return {
+    grid:{left:10, right:18, top:46, bottom:34, containLabel:true},
+    tooltip:{trigger:'axis', formatter:function(ps){
+      var s='<b>'+ps[0].axisValueLabel.replace('\n',' ')+'</b>';
+      ps.forEach(function(p){ s+='<br/>'+p.marker+p.seriesName+': <b>'+p.value+'×</b>'; });
+      return s; }},
+    legend:{top:6, itemWidth:18, textStyle:{fontSize:12}},
+    xAxis:{type:'category', data:x, boundaryGap:false, axisLabel:{fontSize:11,color:'#5b6573'}},
+    yAxis:[
+      {type:'value', name:'P/E ×', position:'left', nameTextStyle:{color:'#e05c54',fontSize:11},
+       axisLabel:{fontSize:10,color:'#e05c54'}, splitLine:{lineStyle:{color:'#f0f2f5'}}},
+      {type:'value', name:'P/B ×', position:'right', nameTextStyle:{color:'#3b82c4',fontSize:11},
+       axisLabel:{fontSize:10,color:'#3b82c4'}, splitLine:{show:false}}
+    ],
+    series:[
+      {name:'P/E (price ÷ earnings)', type:'line', yAxisIndex:0, data:pe, smooth:true,
+       symbol:'circle', symbolSize:7, lineStyle:{width:3,color:'#e05c54'}, itemStyle:{color:'#e05c54'},
+       label:{show:true, fontSize:10, color:'#e05c54', formatter:'{c}×'},
+       areaStyle:{color:'rgba(224,92,84,0.06)'}},
+      {name:'P/B (price ÷ book)', type:'line', yAxisIndex:1, data:pb, smooth:true,
+       symbol:'circle', symbolSize:7, lineStyle:{width:3,color:'#3b82c4'}, itemStyle:{color:'#3b82c4'}}
+    ]
+  };
+}
+
+/* ---------- ④ fair value (justified multiple) ---------- */
+function buildFairValue(){
+  var x = ['今天股价\n33.9×', '熊市 20×\n(代工身份)', '中性 28×\n(EMS上限+溢价)', '牛市 38×\n(向设计商靠)'];
+  var v = [586, 345, 483, 656];
+  var col = ['#e05c54', '#ef8a84', '#2e9e5b', '#1f7a45'];
+  return {
+    grid:{left:8, right:14, top:30, bottom:40, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ return p[0].axisValue.replace('\n',' ') + ': <b>$' + p[0].value + '</b>'; }},
+    xAxis:{type:'category', data:x, axisLabel:{fontSize:10, color:'#5b6573', interval:0, lineHeight:13}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'每股 $', nameTextStyle:{fontSize:10,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad', formatter:'${value}'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{ type:'bar', barWidth:'50%',
+      data:v.map(function(val,i){ return {value:val, itemStyle:{color:col[i], borderRadius:3}}; }),
+      label:{show:true, position:'top', fontSize:11.5, fontWeight:700, color:'#27313d',
+        formatter:function(p){ return '$' + p.value; }},
+      markLine:{silent:true, symbol:'none', lineStyle:{color:'#e05c54', type:'dashed'},
+        data:[{yAxis:586, label:{formatter:'今天 $586', position:'insideEndTop', fontSize:10, color:'#e05c54'}}]} }]
+  };
+}
+
+/* ---------- ⑤ PEER forward P/E COMPARISON ---------- */
+function buildPeers(){
+  var t = ['SANM','FLEX','JBL','CLS','FN','COHR','LITE'];
+  var v = [18.6, 21.2, 24.8, 24.9, 33.9, 44.0, 45.4];
+  var grp = ['EMS 代工','EMS 代工','EMS 代工','EMS 代工','FN','光器件设计商','光器件设计商'];
+  var col = t.map(function(x){ return x==='FN' ? '#e05c54' : (x==='COHR'||x==='LITE' ? '#8a63c4' : '#6aa7d8'); });
+  return {
+    grid:{left:8, right:18, top:30, bottom:24, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ var i=p[0].dataIndex; return t[i] + '('+grp[i]+'): <b>' + p[0].value + '× 前瞻P/E</b>'; }},
+    xAxis:{type:'category', data:t, axisLabel:{fontSize:12,fontWeight:700,color:'#5b6573'}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'前瞻 P/E ×', nameTextStyle:{fontSize:10,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{ type:'bar', barWidth:'52%',
+      data:v.map(function(val,i){ return {value:val, itemStyle:{color:col[i], borderRadius:3}}; }),
+      label:{show:true, position:'top', fontSize:11.5, fontWeight:700, color:'#27313d', formatter:'{c}×'},
+      markLine:{ silent:true, symbol:'none', lineStyle:{color:'#e8923a', type:'dashed'},
+        data:[{yAxis:22, label:{formatter:'S&P500 前瞻 ≈ 22×', position:'insideEndTop', fontSize:10, color:'#e8923a'}}] }
+    }]
+  };
+}
+
+/* ---------- ⑤ segment growth (order flow) ---------- */
+function buildCompete(){
+  var x = ['DCI\n数据中心互连', 'Telecom\n电信', '工业激光', 'Datacom\n数通(英伟达链)', '汽车'];
+  var v = [90, 42, 9, 4, -11];
+  var col = ['#1f7a45', '#2e9e5b', '#9aa3ad', '#e8923a', '#e05c54'];
+  return {
+    grid:{left:8, right:14, top:30, bottom:42, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ return p[0].axisValue.replace('\n',' ') + ': <b>' + (p[0].value>0?'+':'') + p[0].value + '%</b> 收入同比(FQ3 FY26)'; }},
+    xAxis:{type:'category', data:x, axisLabel:{fontSize:10, color:'#5b6573', interval:0, lineHeight:13}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'收入同比增速 %', nameTextStyle:{fontSize:10,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad', formatter:'{value}%'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{ type:'bar', barWidth:'52%',
+      data:v.map(function(val,i){ return {value:val, itemStyle:{color:col[i], borderRadius:3}}; }),
+      label:{show:true, position:'top', fontSize:11.5, fontWeight:700, color:'#27313d',
+        formatter:function(p){ return (p.value>0?'+':'') + p.value + '%'; }} }]
+  };
+}
+
+/* ---------- ④ de-rating evolution scatter (history) ---------- */
+function buildDerate(){
+  function P(a){return a.map(function(d){return {value:[d[0],d[1]],name:d[2]};});}
+  var green=[[28,-77,'Meta'],[33,-76,'Netflix'],[16,-56,'Nvidia18'],[18,-66,'Nvidia22'],[22,-44,'Apple13'],[28,-59,'Salesforce']];
+  var red=[[58,-87,'PayPal'],[68,-82,'Zoom'],[55,-74,'Nike'],[63,-49,'Disney'],[70,-64,'Kraft*']];
+  var open=[[55,-63,'Adobe'],[8,-63,'INTU']];
+  var here=[[1,-21,'FN 现在']];
+  var INFO={'Meta':'砍成本利润反涨→15个月回本','Netflix':'广告档+打击共享→27个月回本','Nvidia18':'库存暂时性→14个月','Nvidia22':'撞上AI爆发→7个月(最快)','Apple13':'利润持续长→15个月','Salesforce':'提利润率+AI→15个月','PayPal':'增速从20%+塌到个位→至今-87%','Zoom':'疫情透支增长归零→至今-82%','Nike':'渠道+中国利润下滑→至今-74%','Disney':'流媒体亏损→至今-49%','Kraft*':'品牌失提价权+砍息→实际9年+未回本','Adobe':'利润还在长但AI恐惧未解,已拖4.5年未回本','INTU':'利润+13%仍被AI报税恐慌砸63%,8个月待定','FN 现在':'利润+54%、倍数仍50×高位;-21%更多是板块β+获利盘,尚未开始杀估值——这张图是它的"风险地图",不是现状'};
+  function lab(p){return p.name;}
+  function ser(name,data,color){return {name:name,type:'scatter',symbolSize:13,itemStyle:{color:color},data:P(data),label:{show:true,position:'top',fontSize:10,color:color,fontWeight:600,formatter:lab}};}
+  return {
+    grid:{left:10,right:20,top:34,bottom:42,containLabel:true},
+    legend:{top:2,itemWidth:11,itemHeight:11,textStyle:{fontSize:10},data:['利润还在长→已回本','利润塌了→未回本','利润还长但未回本(待定)','FN 现在']},
+    tooltip:{trigger:'item',confine:true,extraCssText:'max-width:240px;white-space:normal;box-shadow:0 4px 18px rgba(0,0,0,.12);',
+      formatter:function(p){return '<b>'+p.name+'</b><br/>最大跌幅 <b>'+p.value[1]+'%</b><br/>用时/已耗 <b>'+p.value[0]+'</b> 个月<br/><span style="font-size:11px;color:#666">'+(INFO[p.name]||'')+'</span>';}},
+    xAxis:{type:'value',name:'从顶点到回本(或至今)月数 →',nameLocation:'middle',nameGap:24,nameTextStyle:{fontSize:10,color:'#9aa3ad'},min:0,max:75,axisLabel:{fontSize:10,color:'#9aa3ad',formatter:'{value}m'},splitLine:{lineStyle:{color:'#eef1f5'}}},
+    yAxis:{type:'value',name:'最大跌幅 %',nameTextStyle:{fontSize:10,color:'#9aa3ad'},max:0,min:-95,axisLabel:{fontSize:10,color:'#9aa3ad',formatter:'{value}%'},splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[
+      ser('利润还在长→已回本',green,'#2e9e5b'),
+      ser('利润塌了→未回本',red,'#e05c54'),
+      ser('利润还长但未回本(待定)',open,'#e8923a'),
+      {name:'FN 现在',type:'scatter',symbol:'pin',symbolSize:48,itemStyle:{color:'#1f2733'},data:P(here),
+       label:{show:true,position:'top',fontSize:10.5,color:'#1f2733',fontWeight:700,formatter:lab},
+       markArea:{silent:true,itemStyle:{color:'rgba(46,158,91,0.07)'},
+         label:{show:true,position:'insideTop',color:'#2e9e5b',fontSize:10,formatter:'健康恢复区 6–33 个月'},
+         data:[[{xAxis:6,yAxis:0},{xAxis:33,yAxis:-95}]]}}
+    ]
+  };
+}
+
+/* ---------- ⑥ SCENARIO MATRIX ---------- */
+function buildScenario(){
+  var x  = ['🚀 大beat+\nFQ1≥$1.42B','✅ beat+FQ1\n$1.35-1.42B','😐 inline+\n指引中庸','⚠️ 供应未解/\n毛利率破12%','💥 大客户/\nCPO坏消息'];
+  var mv = [12, 4, -4, -12, -25];
+  var prob = [15, 30, 30, 20, 5];
+  return {
+    grid:{left:8, right:14, top:30, bottom:46, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ var i=p[0].dataIndex;
+        return x[i].replace('\n','') + '<br/>概率 <b>'+prob[i]+'%</b><br/>预期股价 <b>'+(mv[i]>0?'+':'')+mv[i]+'%</b>'; }},
+    xAxis:{type:'category', data:x, axisLabel:{fontSize:10, color:'#5b6573', interval:0, lineHeight:13}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'预期股价反应 %', nameTextStyle:{fontSize:10,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad', formatter:'{value}%'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{ type:'bar', barWidth:'46%',
+      data:mv.map(function(v){ return {value:v, itemStyle:{color:v>=0?'#2e9e5b':'#e05c54', borderRadius:3}}; }),
+      label:{show:true, position:'top', fontSize:11, fontWeight:700, color:'#27313d',
+        formatter:function(p){ return prob[p.dataIndex]+'%'; }},
+      markLine:{silent:true, symbol:'none', lineStyle:{color:'#9aa3ad'}, data:[{yAxis:0}]} }]
+  };
+}
+
+/* ---------- ⑥ ACTUAL (FQ3) vs FORECAST (FQ4) quarterly income sankeys ---------- */
+var Q1ACTUAL = {rev:1214, cogs:1070, gross:144, sga:24, oi:120, nonop:14, pretax:134, tax:9, net:125};
+var Q2FCAST  = {rev:1270, cogs:1113, gross:157, sga:26, oi:131, nonop:7,  pretax:138, tax:9, net:129};
+function quarterSankey(d, forecast){
+  var A = forecast?'#e8923a':'#2e9e5b', A2 = forecast?'#efb066':'#46c07a', O='#e8923a', R='#e05c54', GR='#9aa3ad';
+  var nodes = [
+    {name:'Revenue',value:d.rev,depth:0,itemStyle:{color:A}},
+    {name:'Cost of Rev',value:d.cogs,depth:1,itemStyle:{color:O}},
+    {name:'Gross Profit',value:d.gross,depth:1,itemStyle:{color:A2}},
+    {name:'SG&A',value:d.sga,depth:2,itemStyle:{color:O}},
+    {name:'Operating Income',value:d.oi,depth:2,itemStyle:{color:A2}},
+    {name:'Net Int.&FX',value:d.nonop,depth:2,itemStyle:{color:GR}},
+    {name:'Pre-Tax',value:d.pretax,depth:3,itemStyle:{color:A2}},
+    {name:'Tax',value:d.tax,depth:4,itemStyle:{color:R}},
+    {name:'Net Income',value:d.net,depth:4,itemStyle:{color:A}}
+  ];
+  var links = [
+    {source:'Revenue',target:'Cost of Rev',value:d.cogs},
+    {source:'Revenue',target:'Gross Profit',value:d.gross},
+    {source:'Gross Profit',target:'SG&A',value:d.sga},
+    {source:'Gross Profit',target:'Operating Income',value:d.oi},
+    {source:'Operating Income',target:'Pre-Tax',value:d.oi},
+    {source:'Net Int.&FX',target:'Pre-Tax',value:d.nonop},
+    {source:'Pre-Tax',target:'Tax',value:d.tax},
+    {source:'Pre-Tax',target:'Net Income',value:d.net}
+  ];
+  return {
+    tooltip:{trigger:'item', triggerOn:'mousemove', confine:true,
+      formatter:function(p){ if(p.dataType==='edge') return p.data.source+' → '+p.data.target+'<br/><b>'+fmtM(p.data.value)+'</b>';
+        return '<b>'+p.name+'</b><br/>'+fmtM(p.value)+(forecast?'<br/><span style="color:#e8923a">模型预测值 est.</span>':'<br/><span style="color:#2e9e5b">实际值</span>'); }},
+    series:[{ type:'sankey', left:'2%', right:'15%', top:'4%', bottom:'4%', nodeWidth:14, nodeGap:10,
+      draggable:false, layoutIterations:0, emphasis:{focus:'adjacency'}, data:nodes, links:links,
+      label:{formatter:function(p){ return p.name+'\n'+fmtM(p.value)+' · '+(p.value/d.rev*100).toFixed(1)+'%'; }, fontSize:9.5, color:'#27313d', fontWeight:600},
+      lineStyle:{color:'gradient', opacity:0.3, curveness:0.5} }]
+  };
+}
+
+/* ---------- ⑥ pre-earnings relative setup (since last-earnings baseline) ---------- */
+function buildBaseline(){
+  var x = ['FN', 'SMH 半导体板块', 'SPY 大盘'];
+  var v = [-9.5, 8.5, 0.8];
+  var col = ['#e05c54', '#3b82c4', '#9aa3ad'];
+  return {
+    grid:{left:8, right:14, top:30, bottom:24, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ return p[0].axisValue + ': <b>' + (p[0].value>0?'+':'') + p[0].value + '%</b>'; }},
+    xAxis:{type:'category', data:x, axisLabel:{fontSize:11, color:'#5b6573'}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'自财报后基线(5/5-5/11均价)以来 %', nameTextStyle:{fontSize:9.5,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad', formatter:'{value}%'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{ type:'bar', barWidth:'48%',
+      data:v.map(function(val,i){ return {value:val, itemStyle:{color:col[i], borderRadius:3}}; }),
+      label:{show:true, position:'top', fontSize:11.5, fontWeight:700, color:'#27313d',
+        formatter:function(p){ return (p.value>0?'+':'') + p.value + '%'; }} }]
+  };
+}
+
+/* ---------- ⑥ volume: accumulation vs distribution ---------- */
+function buildFlow(){
+  var x = ['上涨日均量', '下跌日均量', '3个月日均量'];
+  var v = [0.78, 1.12, 0.81];
+  var col = ['#2e9e5b', '#e05c54', '#9aa3ad'];
+  return {
+    grid:{left:8, right:14, top:30, bottom:24, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+      formatter:function(p){ return p[0].axisValue + ': <b>' + p[0].value + 'M 股/日</b>'; }},
+    xAxis:{type:'category', data:x, axisLabel:{fontSize:11, color:'#5b6573'}, axisTick:{show:false}},
+    yAxis:{type:'value', name:'百万股/日', nameTextStyle:{fontSize:10,color:'#9aa3ad'},
+      axisLabel:{fontSize:10,color:'#9aa3ad', formatter:'{value}M'}, splitLine:{lineStyle:{color:'#eef1f5'}}},
+    series:[{ type:'bar', barWidth:'48%',
+      data:v.map(function(val,i){ return {value:val, itemStyle:{color:col[i], borderRadius:3}}; }),
+      label:{show:true, position:'top', fontSize:11.5, fontWeight:700, color:'#27313d',
+        formatter:function(p){ return p.value + 'M'; }} }]
+  };
+}
+
+/* ---------- ② revenue -> profit -> market cap, with explicit "story amplifier" (valid Sankey) ---------- */
+function buildStory(){
+  var MC=20996;
+  var nodes=[
+    {name:'年收入',value:4235,depth:0,itemStyle:{color:'#2e9e5b'}},
+    {name:'成本+税',value:3814,depth:1,itemStyle:{color:'#e8923a'}},
+    {name:'年净利润',value:421,depth:1,itemStyle:{color:'#46c07a'}},
+    {name:'预期放大器',value:18270,depth:1,itemStyle:{color:'#8a63c4'}},
+    {name:'故事溢价',value:18691,depth:2,itemStyle:{color:'#6aa7d8'}},
+    {name:'现金+短投',value:945,depth:0,itemStyle:{color:'#3b82c4'}},
+    {name:'其他资产',value:2564,depth:0,itemStyle:{color:'#6aa7d8'}},
+    {name:'总资产',value:3509,depth:1,itemStyle:{color:'#244e74'}},
+    {name:'负债',value:1204,depth:2,itemStyle:{color:'#e8923a'}},
+    {name:'账面净资产',value:2305,depth:2,itemStyle:{color:'#8a63c4'}},
+    {name:'市值',value:20996,depth:3,itemStyle:{color:'#1f7a45'}}
+  ];
+  var links=[
+    {source:'年收入',target:'成本+税',value:3814},
+    {source:'年收入',target:'年净利润',value:421},
+    {source:'年净利润',target:'故事溢价',value:421},
+    {source:'预期放大器',target:'故事溢价',value:18270},
+    {source:'故事溢价',target:'市值',value:18691},
+    {source:'账面净资产',target:'市值',value:2305},
+    {source:'现金+短投',target:'总资产',value:945},
+    {source:'其他资产',target:'总资产',value:2564},
+    {source:'总资产',target:'负债',value:1204},
+    {source:'总资产',target:'账面净资产',value:2305}
+  ];
+  return {
+    tooltip:{trigger:'item', triggerOn:'mousemove', confine:true, extraCssText:'max-width:300px;white-space:normal;box-shadow:0 4px 18px rgba(0,0,0,.12);',
+      formatter:function(p){ if(p.dataType==='edge') return p.data.source+' → '+p.data.target+'<br/><b>$'+(p.data.value/1000).toFixed(2)+'B</b>';
+        var DEFU={'年收入':'一年(TTM)代工收到的全部加工收入 $4.24B。','成本+税':'收入里没留下的部分:零件+人工+折旧 $3.73B、销售管理费 $0.09B、所得税 $0.03B(扣除利息收益后净额)。','年净利润':'扣掉所有成本费用和税后,真正赚到、归股东的钱 $421M。','预期放大器':'市场基于"AI 光模块还要爆几年"的预期,在利润之上额外多付的钱 $18.3B——是年净利润的 43 倍。','故事溢价':'市值里超出账面净资产的部分 = 净利润 + 预期放大器 = 市场为"未来"付的钱,占市值 89%。','现金+短投':'银行里随时能用的钱 + 短期投资 $945M,几乎无债。','其他资产':'除现金外的全部资产 $2.56B:应收、存货、泰国厂房设备(零商誉)。','总资产':'公司拥有的所有东西加总 $3.51B。永远 = 负债 + 账面净资产。','负债':'公司欠别人的所有钱 $1.20B,大头是欠供应商的应付账款(免息)。','账面净资产':'总资产 − 总负债 = 清算还清债后剩给股东的账面值 $2.30B(看得见的家底,零水分)。','市值':'股价 $586 × 35.8M 股 = $21.0B。'};
+        var d=DEFU[p.name]||'';
+        return '<b>'+p.name+'</b><br/>$'+(p.value/1000).toFixed(2)+'B · '+(p.value/MC*100).toFixed(0)+'% of 市值'+(d?'<br/><span style="font-size:11.5px;color:#566;line-height:1.5">'+d+'</span>':''); }},
+    series:[{ type:'sankey', left:'2%', right:'13%', top:'4%', bottom:'4%', nodeWidth:16, nodeGap:11,
+      draggable:false, layoutIterations:0, emphasis:{focus:'adjacency'}, data:nodes, links:links,
+      label:{formatter:function(p){ return p.name+'\n$'+(p.value/1000).toFixed(2)+'B·'+(p.value/MC*100).toFixed(0)+'%'; }, fontSize:10, color:'#27313d', fontWeight:600},
+      lineStyle:{color:'gradient', opacity:0.30, curveness:0.5} }]
+  };
+}
+
+/* ---------- tabs + lazy render ---------- */
+var built = {};
+function mk(id, opt){ var c = echarts.init(document.getElementById(id)); c.setOption(opt); charts[id]=c; }
+var GROUPS = { fin:['income','balance'], val:['bigpic','mult'], diag:['diag'], play:['play'] };
+var ALLPANELS = ['income','balance','bigpic','mult','diag','play'];
+var PANELINIT = {
+  income:  function(){ mk('incomeChart', buildIncome()); mk('revenueChart', buildRevenue()); },
+  balance: function(){ mk('balanceChart', buildBalance()); mk('cloudChart', buildCloud()); },
+  bigpic:  function(){ mk('integratedChart', buildIntegrated()); mk('storyChart', buildStory()); mk('evChart', buildEV()); mk('compChart', buildComp()); },
+  mult:    function(){ mk('fairChart', buildFairValue()); mk('multiplesChart', buildMultiples()); mk('derateChart', buildDerate()); },
+  diag:    function(){ mk('peerChart', buildPeers()); mk('competeChart', buildCompete()); },
+  play:    function(){ mk('scenChart', buildScenario()); mk('baselineChart', buildBaseline()); mk('flowChart', buildFlow()); mk('q1Chart', quarterSankey(Q1ACTUAL,false)); mk('q2Chart', quarterSankey(Q2FCAST,true)); }
+};
+function render(group){
+  var show = GROUPS[group] || [group];
+  ALLPANELS.forEach(function(p){ document.getElementById('panel-'+p).classList.toggle('hide', show.indexOf(p)<0); });
+  show.forEach(function(p){ if(!built[p]){ PANELINIT[p](); built[p]=1; } });
+  setTimeout(function(){ Object.keys(charts).forEach(function(k){ charts[k] && charts[k].resize(); }); }, 30);
+}
+
+document.querySelectorAll('.tab').forEach(function(t){
+  t.addEventListener('click', function(){
+    var name = t.getAttribute('data-tab');
+    document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('active'); });
+    t.classList.add('active');
+    render(name);
+  });
+});
+
+render('fin');
+window.addEventListener('resize', function(){ Object.keys(charts).forEach(function(k){ charts[k] && charts[k].resize(); }); });
+</script>
+<script src="nav.js"></script>
+</body>
+</html>

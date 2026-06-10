@@ -1,0 +1,31 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>sankey 策略 — 方法论 / 架构</title>
+<style>body{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;background:#f6f8fb;color:#1f2733;margin:0;line-height:1.65}
+.wrap{max-width:860px;margin:0 auto;padding:28px 22px 70px}h1{font-size:23px}h2{font-size:17px;margin-top:26px;border-bottom:1px solid #e6e9ee;padding-bottom:6px}
+code{background:#eef1f5;padding:1px 5px;border-radius:4px;font-size:13px}a{color:#3b82c4}ul{padding-left:20px}li{margin:5px 0}
+.note{background:#fff8ec;border:1px solid #f3e2c2;border-radius:8px;padding:10px 14px;color:#7a5b1e;font-size:13px;margin-top:14px}</style></head>
+<body><div class="wrap">
+<h1>sankey 策略 — 方法论 / 架构</h1>
+<p>单公司财报"钱流"解剖 + 估值诊断 + 财报事件推演。纯前端 ECharts(本地 <code>echarts.min.js</code>,断网可用),不接回测引擎(基本面事件分析,非交易信号——同 <code>price-over-value</code>)。</p>
+<h2>六个页签</h2><ul>
+<li><b>① 利润表(TTM)</b>:收入→成本→各项费用→净利润的桑基流;节点 hover 给大白话解释;标注 YoY 异常(税率跳升、SG&amp;A 跑赢收入)。</li>
+<li><b>② 资产负债表</b>:资产 = 负债 + 权益 的流向。</li>
+<li><b>③ 资产→市值 全景</b>:把账面净资产 + 市场溢价合成市值,直观看"溢价占市值近 9 成"。</li>
+<li><b>④ 估值倍数</b>:P/E、P/B 8 季度 de-rating 走势 + 同行对比。</li>
+<li><b>⑤ 诊断</b>:黑马 or 价值陷阱;同行 P/E 对比、应对是否有效、招聘/员工 sentiment、思路链。</li>
+<li><b>⑥ 6/11 推演</b>:情景概率矩阵、实际 vs 预测两张<b>独立</b> Sankey、Claude×Gemini 双模型红蓝队、宏观日历。</li>
+</ul>
+<h2>数据来源 &amp; 口径</h2><ul>
+<li>财报:stockanalysis.com(10-K/10-Q)。利润表用 <b>TTM</b> = FY2025 − Q1 FY2025 + Q1 FY2026;资产负债表用最新季(2026-02-27);市值/倍数为实时(2026-06-05)。所有桑基节点流入=流出,已勾稽。</li>
+<li>同行倍数、新闻、期权隐含波动、宏观日历:公开报道(2026-06)。</li>
+<li>红蓝队:Google <b>Gemini 3.1 Pro</b> API(独立第二模型)。</li>
+</ul>
+<h2>预测 Sankey 怎么来的</h2>
+<p>下一季(Q2)用<b>一致预期收入中值 $6.455B + 上一季实际利润率结构</b>建模(GAAP 口径),全部节点标 <code>est.</code>。一致预期另给:收入 $6.43–6.48B、调整后(非GAAP)EPS $5.01。<b>故意和"实际"分两张图,不叠加。</b>右图只是"形状参考",硬标尺是收入与净新增 ARR。</p>
+<h2>双模型红蓝队</h2>
+<p>Claude 与 Gemini 各自独立跑 3 轮(开场→反驳→收口)红蓝辩论,提炼成"多空天平"(砝码标注哪个模型提出)。<b>共识</b>与<b>分歧</b>分开列——分歧点最值钱(本例 Gemini 偏多、Claude 略偏空,分歧核心是"企业版权赔付"砝码)。</p>
+<h2>命名约定</h2><p>每次分析一个文件:<code>YYMMDD_ticker.html</code>(本例 <code>260606_adbe.html</code>)。同一策略下可累积多份,索引见 <a href="dashboard.html">dashboard.html</a>。</p>
+<h2>局限</h2><ul><li>情景概率是作者主观估计,非预测。</li><li>预测 Sankey 是建模值非官方。</li><li>多空论点含判断成分,非投资建议。</li></ul>
+<div class="note">教育用途,非投资建议。</div>
+<p style="margin-top:18px"><a href="dashboard.html">← 回 sankey 索引</a></p>
+</div></body></html>
