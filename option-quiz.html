@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>期权策略 × 时机 · 情景选择题(20)</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--card2:#1c2430;--line:#2d3640;--txt:#e6edf3;--mut:#8b949e;
+--grn:#3fb950;--red:#f85149;--amber:#d29922;--blue:#58a6ff;--purp:#bc8cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,"PingFang SC","Segoe UI",sans-serif;line-height:1.6;padding:28px 16px 80px}
+.wrap{max-width:760px;margin:0 auto}
+h1{font-size:21px;margin-bottom:6px}
+.sub{color:var(--mut);font-size:13px;margin-bottom:18px}
+.bar{height:6px;background:var(--card2);border-radius:6px;overflow:hidden;margin-bottom:6px}
+.bar>div{height:100%;background:var(--blue);width:0;transition:width .3s}
+.meta{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:18px}
+.meta b{color:var(--txt)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+.tag{display:inline-block;font-size:11px;padding:2px 10px;border-radius:10px;background:rgba(88,166,255,.14);color:var(--blue);margin-bottom:12px}
+.q{font-size:16px;font-weight:500;margin-bottom:16px;line-height:1.55}
+.opt{display:block;width:100%;text-align:left;background:var(--card2);border:1px solid var(--line);color:var(--txt);
+padding:13px 15px;border-radius:10px;font-size:14.5px;margin-bottom:10px;cursor:pointer;transition:.15s;line-height:1.5}
+.opt:hover:not(:disabled){border-color:var(--blue)}
+.opt:disabled{cursor:default}
+.opt.correct{border-color:var(--grn);background:rgba(63,185,80,.12)}
+.opt.wrong{border-color:var(--red);background:rgba(248,81,73,.12)}
+.opt .mk{float:right;font-weight:700}
+.opt.correct .mk{color:var(--grn)}.opt.wrong .mk{color:var(--red)}
+.why{margin-top:14px;padding:14px 16px;border-radius:10px;background:var(--card2);border-left:3px solid var(--amber);
+font-size:13.5px;color:#cdd6df;line-height:1.7;display:none}
+.why.show{display:block}
+.why b{color:var(--amber)}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:18px}
+button.nx{background:var(--blue);border:none;color:#0d1117;font-weight:600;padding:10px 24px;border-radius:9px;font-size:14px;cursor:pointer}
+button.nx:disabled{opacity:.35;cursor:not-allowed}
+.scoreline{font-size:13px;color:var(--mut)}
+.scoreline .pos{color:var(--grn)}.scoreline .neg{color:var(--red)}
+.result h2{font-size:18px;margin-bottom:4px}
+.big{font-size:46px;font-weight:700;margin:10px 0}
+.catrow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.catrow:last-child{border:none}
+.catrow .s{font-variant-numeric:tabular-nums}
+.weak{color:var(--amber)}.strong{color:var(--grn)}
+.rev{font-size:13px;color:var(--mut);line-height:1.8;margin-top:14px}
+.rev .qn{color:var(--red)}
+.restart{background:var(--card2);border:1px solid var(--line);color:var(--txt);padding:9px 22px;border-radius:9px;font-size:14px;cursor:pointer;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>期权策略 × 时机 · 情景选择题</h1>
+  <div class="sub">20 道。每题选「最合适」的策略 + 时机 —— 按兵不动 / 买正股 / LEAP / sell put / 选到期 / 何时离场 都是策略。选完即时讲解,最后按类别诊断弱项。</div>
+  <div class="bar"><div id="prog"></div></div>
+  <div class="meta"><span>第 <b id="qn">1</b> / 20</span><span class="scoreline">答对 <b class="pos" id="right">0</b> · 答错 <b class="neg" id="wrong">0</b></span></div>
+  <div id="stage"></div>
+</div>
+
+<script>
+const Q=[
+{cat:"时机·事件",q:"指数从历史高点连跌 4 天,RSI6=27 超卖但还在创新低、没有任何企稳信号。你想开始建立长期核心仓。最合适的做法?",
+ o:[{t:"分批 DCA:今天先一小笔,设触发价 + 时间节奏,留大头干火药",ok:1},
+    {t:"一次性把现金全买入 —— 超卖=便宜,抄到就是赚",},
+    {t:"卖平值 put 尽快被接货建仓",},
+    {t:"买当周 call 抢反弹"}],
+ why:"下跌腿没企稳=接刀,谁也不知道底。长期核心用<b>分批</b>而不是赌单点;平值 put 在下跌趋势里接货概率高、当周 call 是在赌时机+付高 IV。建仓是过程,不是一次 all-in。"},
+
+{cat:"波动率·概念",q:"你在高 IV 时卖了一张 put。之后 IV 回落(对你有利),但股票继续跌,你的仓位却还是浮亏。为什么?",
+ o:[{t:"短 put 是正 delta,股票下跌(delta)的亏盖过了 IV 回落的赚",ok:1},
+    {t:"卖 put 是纯波动率交易,你看错了 vol",},
+    {t:"券商定价错了",},
+    {t:"theta 在跟你作对"}],
+ why:"短 put 同时是<b>空 vega + 正 delta + 收 theta</b>。IV 跌帮你、时间帮你,但方向是大头——股票继续跌,delta 的亏先盖过来。<b>卖 put 短期是方向游戏,不是波动率游戏</b>:别在下跌腿里卖。"},
+
+{cat:"时机·事件",q:"你看多某股,财报在 2 天后,IV Rank=92(极高)。想表达这个看多观点。最合适?",
+ o:[{t:"卖一张价外 put —— 看多 + 收极高 IV,吃财报后的 IV crush",ok:1},
+    {t:"买当周平值 call,赌财报跳涨",},
+    {t:"买当周 call debit spread",},
+    {t:"买跨式 straddle"}],
+ why:"高 IV Rank + 事件前 = <b>当卖方,不当买方</b>。买任何 call(单腿/价差)都是在 IV 最贵时买,财报一出 IV crush 先吃掉你。看多又想吃 IV,<b>卖 put</b> 最顺。这正是 MSFT call spread −$308 的反面(高 IV 还当买方)。"},
+
+{cat:"纪律·失效价",q:"一只被打趴的股票,你判断要反弹,打算买 call 博一把。下单前<b>不可省略</b>的一步是?",
+ o:[{t:"先写下一个价格型失效价 + 触发后的动作(平仓/不加仓)",ok:1},
+    {t:"确认 IV 够低",},
+    {t:"挑最便宜的当周合约",},
+    {t:"加大仓位,把反弹利润最大化"}],
+ why:"<b>反转赌注没有失效价 = 不许下单</b>(checklist 第 3/5 条,MSFT 第一错)。反转是逆势,必须先定义『错了在哪个价位认输』,否则就是浮亏死扛。便宜合约和大仓位只会放大这个错。"},
+
+{cat:"到期日",q:"你的论点是一个『季度级的基本面反转』,大概要 2-3 个月兑现。买长 call 选哪个到期?",
+ o:[{t:"3-6 个月 / LEAP —— 到期 ≥ 论点兑现所需时间",ok:1},
+    {t:"当周,最便宜",},
+    {t:"0DTE",},
+    {t:"哪个 IV 最高选哪个"}],
+ why:"<b>工具到期要对齐论点时间尺度</b>(checklist 第 2 条)。季度级论点配几天的期权 = 砍掉时间缓冲和胜率,不是省成本。论点没错但时间没给够,照样归零。"},
+
+{cat:"纪律·离场",q:"一笔交易已经不错的浮盈;此时你的技术面论点被证伪了,但你仍在盈利。最该做的?",
+ o:[{t:"立刻了结 —— 论点被证伪时,浮盈/平本窗口就是离场窗口",ok:1},
+    {t:"扛到原定目标价才走",},
+    {t:"加倍",},
+    {t:"roll 出去再给它时间"}],
+ why:"<b>论点被证伪,浮盈窗口=离场窗口,别为回本扛</b>。这是 MSFT(+46→−308)和 GOOGL(+199→−53)反复犯的同一个错。论点没了,继续拿就是赌运气。"},
+
+{cat:"波动率·判贵",q:"QQQ 的 IV=31%,SPY 的 IV=21%。要卖 put 收溢价,哪个『更贵、卖方更划算』?",
+ o:[{t:"光看绝对值判断不了 —— 要看 IV Rank 和 IV vs HV",ok:1},
+    {t:"SPY,IV 低更安全",},
+    {t:"QQQ,数字大肯定贵",},
+    {t:"都太低,不值得卖"}],
+ why:"绝对 IV 不可比(QQQ 结构性就比 SPY 高)。判贵看<b>① IV Rank(>50 才卖,>80 明确贵)② IV vs HV(有没有溢价)</b>。本轮 QQQ Rank 88 vs SPY 53 → 确实 QQQ 更贵。"},
+
+{cat:"时机·事件",q:"你想卖 put 收溢价。现在市场正在杀跌、还在创新低,FOMC 在 5 天后,IV 偏高。最稳妥?",
+ o:[{t:"要么等企稳再卖,要么只卖小仓 + 深虚值,别在下跌腿+事件前满仓",ok:1},
+    {t:"满仓卖平值 put,IV 这么肥不卖白不卖",},
+    {t:"高 IV 时永远别卖",},
+    {t:"改成买 put"}],
+ why:"三条件(IV 贵/企稳/日历干净)是调 <b>size 和 strike 的旋钮,不是开关</b>。这里只满足『IV 贵』,还在下跌腿+事件前 → 用<b>小仓+深档+低 delta</b>吃一口就好,或干脆等企稳。肥 IV 是风险补偿,不是免费午餐。"},
+
+{cat:"到期·strike",q:"在一个明确下跌趋势、且有事件在前的指数上卖现金担保 put。行权价怎么选?",
+ o:[{t:"深虚值,落在真支撑(斐波/均线共振)上,低 delta",ok:1},
+    {t:"平值,收最多权利金",},
+    {t:"略价内,胜率高",},
+    {t:"挑最整数的行权价"}],
+ why:"下跌腿里<b>不卖平值</b>。strike 要落在你真愿意接货的支撑位,delta 压低(≈0.15-0.20)→ 接货概率低、即便接也接在好位置。权利金少是用安全换的,值。"},
+
+{cat:"机制·指派",q:"你卖了一张价外 put,还有 3 周到期。担心到期前就被提前指派。实际情况?",
+ o:[{t:"价外 put 几乎不会被提前指派;只有深度价内 + 时间价值≈0 时才有风险",ok:1},
+    {t:"随时可能被指派,天天提心吊胆",},
+    {t:"每个周五都会被指派",},
+    {t:"指派是随机的"}],
+ why:"美式期权理论上随时可指派,但<b>价外 put 没人会行权</b>(等于低于市价卖股给你)。真风险只在跌成深度价内、且时间价值快归零(通常临到期)时。3 周价外 = 基本不用担心。"},
+
+{cat:"风控·相关性",q:"你已经持有 SMH(半导体 ETF),现在想卖 put 收溢价,而 QQQ 的 IV 最肥。要注意什么?",
+ o:[{t:"QQQ 半数科技、与 SMH 同因子 —— 卖它=把半导体押第二遍,宜换 SPY 或缩小",ok:1},
+    {t:"直接卖 QQQ,溢价最肥就是最优",},
+    {t:"只要 IV 高,相关性无所谓",},
+    {t:"两个都按最大仓位卖"}],
+ why:"<b>别把同一个 beta 买第二遍</b>(checklist 第 6 条)。QQQ 和 SMH 高度相关,叠在一起=半导体单一因子超配。要分散就偏 SPY,要碰 QQQ 就深档小仓。溢价肥往往正因为风险也大。"},
+
+{cat:"策略·按兵不动",q:"今天是 CPI 公布日,下周还有 FOMC;你对方向没有清晰判断,也没有明确 edge。最合适的『策略』?",
+ o:[{t:"按兵不动 —— 没有 edge 时,空仓等待本身就是一种正确的策略",ok:1},
+    {t:"必须下单,不能空着仓位",},
+    {t:"买跨式两边都押",},
+    {t:"裸卖期权收点权利金再说"}],
+ why:"<b>没有 edge 就不交易</b>。双事件前+无方向判断,最好的操作往往是不操作。跨式是在双倍付高 IV、裸卖是在双事件前承担无补偿的尾部风险。空仓等信号,永远不算错。"},
+
+{cat:"机制·Roll",q:"你的短 put 临近到期、正在变价内,而你暂时不想被接货。最该用的机制?",
+ o:[{t:"Roll down & out:买回当前的,卖一张更低行权价/更晚到期的,通常能收净 credit",ok:1},
+    {t:"躺平等它被指派然后抱怨",},
+    {t:"市价不计成本立刻买回",},
+    {t:"在更低位再加卖几张 put"}],
+ why:"不想接货又想留在场内,标准动作是 <b>roll down & out</b> —— 把接货线往下挪、再买时间,多数能收净权利金。市价买回会被价差宰;往下加卖是在下跌中放大敞口。Roll 单挂 GTC,别赶 3:59 收盘(GOOGL 教训)。"},
+
+{cat:"策略·LEAP",q:"你强烈看多一只优质公司、视野 2 年,想要杠杆但资金有限,当前 IV 中性偏低。最合适?",
+ o:[{t:"买 LEAP call(深度价内、长到期)或直接买正股 —— 长跑道、theta 慢",ok:1},
+    {t:"反复滚动当周 call",},
+    {t:"只卖 put",},
+    {t:"买 0DTE 博彩票"}],
+ why:"低 IV → 当买方;长视野 → 长到期。<b>深 ITM 的 LEAP</b> 给你杠杆又把 theta 损耗压到最低,不用一直滚动喂时间价值。卖 put 只在跌时接货、封顶收益,不适合『强烈看多要弹性』。"},
+
+{cat:"税务·轮动",q:"你有一只浮亏的 RSU 股票想清掉、换成指数。最聪明的税务做法?",
+ o:[{t:"卖掉浮亏股做亏损收割,再买指数 —— 不构成 wash sale(非同一标的)",ok:1},
+    {t:"扛到回本再卖",},
+    {t:"再买点这只股票摊低成本",},
+    {t:"卖掉后 5 天内买回同一只股票"}],
+ why:"浮亏轮动有<b>税务红利</b>:卖出实现资本亏损(抵利得 + 每年 $3k 普通收入),而买 SPY/QQQ <b>不是 wash sale</b>(非实质相同标的)。扛回本是沉没成本谬误;5 天内买回同股才会触发 wash sale。"},
+
+{cat:"执行",q:"你要卖出一张 put,盘口 bid 5.32 / ask 5.36。下单方式?",
+ o:[{t:"用 Limit,挂中间价(~5.34)或 ask;挂不上改 GTC,别赶收盘",ok:1},
+    {t:"市价单,最快成交",},
+    {t:"市价就行,价差反正很小",},
+    {t:"挂 stop 单"}],
+ why:"<b>期权永远用 Limit</b>。市价 sell 会成交在 bid(5.32)甚至更差,白送钱。养成中间价试、不成再让步的习惯;roll/组合单挂 <b>GTC</b>,别赶 3:59 收盘(GOOGL 连两天没成交)。"},
+
+{cat:"theta",q:"你卖了一张『虚值 5%』的 put,30 天到期。在股价不动的前提下,它的 theta(你的每日收入)什么时候最大?",
+ o:[{t:"大致平稳,然后临到期反而衰减到≈0(虚值期权时间价值本来就少)",ok:1},
+    {t:"像平值那样,临到期前几天暴增",},
+    {t:"每天恒定不变",},
+    {t:"第一天最大"}],
+ why:"<b>theta 加速只对平值成立</b>。虚值期权时间价值本就不多,theta 大致平稳、临到期反而<b>衰减归零</b>(没东西可跌了)。所以卖深虚值是细水长流,不必死等最后几天。平值才有末端 theta 暴增(但 gamma 也最危险)。"},
+
+{cat:"波动率·regime",q:"一句话口诀:IV Rank 高时该当____,IV Rank 低时该当____?",
+ o:[{t:"高 IV → 当卖方(CSP/价差卖腿);低 IV → 当买方(正股/call/debit spread)",ok:1},
+    {t:"高 IV → 买期权;低 IV → 卖期权",},
+    {t:"IV 不影响买卖方向的选择",},
+    {t:"无论如何都卖"}],
+ why:"<b>IV 定买卖</b>(checklist 第 4 条):IV 贵了你就卖保险(收 variance premium),IV 便宜了你就买。把这条反过来做(高 IV 净买权利金)= 给卖方送钱,正是 MSFT 的错。"},
+
+{cat:"时机·事件",q:"周五有个大型科技公司 IPO,可能因资金轮动压制科技股,但不直接进宽基指数。你本周要部署现金。怎么偏?",
+ o:[{t:"偏向更宽、受事件冲击更小的 SPY,且小仓进、留到事件落地后加",ok:1},
+    {t:"满仓买 QQQ 蹭科技热度",},
+    {t:"做空科技",},
+    {t:"永远什么都不做"}],
+ why:"IPO 的扰动主要砸<b>科技/QQQ 这一侧</b>(资金轮动),基本不碰宽基。本周想部署就<b>偏 SPY + 小仓 + 留子弹</b>,等事件落地。做空是赌方向、满仓 QQQ 是往事件雷上撞。"},
+
+{cat:"风控·仓位",q:"你卖出的几张 put,若全被指派的总接货金额是你可用现金的 2.4 倍。怎么评估?",
+ o:[{t:"过度暴露,除非有别的资金兜底 —— 总接货额要控制在你真能拿出的现金内",ok:1},
+    {t:"没事,收了权利金就行",},
+    {t:"再多卖几张把风险摊薄",},
+    {t:"保证金总会帮我兜住"}],
+ why:"<b>最坏情况要扛得住</b>(checklist 第 7 条):被接盘 = 行权价×100×张数 的现金占用。义务 2.4× 现金 = 至少一部分是裸卖/保证金支撑,真崩+多张被指派会触发追保/强平。把总接货额封顶在你能实际兑付的范围。"}
+];
+
+let i=0,right=0,wrong=0,answered=[],catStat={};
+const $=s=>document.querySelector(s);
+function shuffle(a){a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]];}return a;}
+
+function render(){
+  $('#qn').textContent=i+1;
+  $('#prog').style.width=((i)/Q.length*100)+'%';
+  const q=Q[i];
+  if(!q._opts)q._opts=shuffle(q.o);
+  const done=answered[i]!==undefined;
+  let html=`<div class="card"><span class="tag">${q.cat}</span><div class="q">${q.q}</div>`;
+  q._opts.forEach((o,idx)=>{
+    let cls='opt',mk='';
+    if(done){
+      if(o.ok){cls+=' correct';mk='<span class="mk">✓</span>';}
+      else if(answered[i]===idx){cls+=' wrong';mk='<span class="mk">✗</span>';}
+    }
+    html+=`<button class="${cls}" ${done?'disabled':''} onclick="answer(${idx})">${o.t}${mk}</button>`;
+  });
+  const correctWhy=Q[i].why;
+  html+=`<div class="why ${done?'show':''}">${done&&answered[i]!==q._opts.findIndex(x=>x.ok)?'<b>✗ 再想想 → </b>':'<b>✓ 对了 → </b>'}${correctWhy}</div>`;
+  html+=`<div class="nav"><span class="scoreline">${done?'':'选一个答案'}</span>
+    <button class="nx" id="next" ${done?'':'disabled'} onclick="nextQ()">${i===Q.length-1?'看结果':'下一题 →'}</button></div></div>`;
+  $('#stage').innerHTML=html;
+}
+function answer(idx){
+  if(answered[i]!==undefined)return;
+  answered[i]=idx;
+  const q=Q[i],ok=q._opts[idx].ok;
+  const cat=q.cat;catStat[cat]=catStat[cat]||{r:0,n:0};catStat[cat].n++;
+  if(ok){right++;catStat[cat].r++;}else wrong++;
+  $('#right').textContent=right;$('#wrong').textContent=wrong;
+  render();
+}
+function nextQ(){
+  if(i<Q.length-1){i++;render();}
+  else result();
+}
+function result(){
+  $('#prog').style.width='100%';$('#qn').textContent=Q.length;
+  const pct=Math.round(right/Q.length*100);
+  let cats=Object.entries(catStat).map(([k,v])=>({k,r:v.r,n:v.n,p:v.r/v.n}));
+  cats.sort((a,b)=>a.p-b.p);
+  let catHtml=cats.map(c=>{
+    const weak=c.p<1;
+    return `<div class="catrow"><span class="${weak?'weak':'strong'}">${weak?'● ':'○ '}${c.k}</span><span class="s ${weak?'weak':'strong'}">${c.r}/${c.n}</span></div>`;
+  }).join('');
+  let wrongList=Q.map((q,k)=>{
+    if(answered[k]===undefined)return '';
+    const okIdx=q._opts.findIndex(x=>x.ok);
+    if(answered[k]===okIdx)return '';
+    return `<div style="margin-bottom:8px"><span class="qn">第${k+1}题(${q.cat})</span> · 正解:${q._opts[okIdx].t}</div>`;
+  }).filter(Boolean).join('');
+  const msg=pct>=85?'稳了 —— 纪律和时机基本到位':pct>=60?'有底子,但时机/纪律还会漏':'重点不在工具,在时机和纪律 —— 把错题的原则抄进 checklist';
+  $('#stage').innerHTML=`<div class="card result">
+    <h2>结果</h2>
+    <div class="big ${pct>=60?'strong':'weak'}" style="color:${pct>=85?'var(--grn)':pct>=60?'var(--amber)':'var(--red)'}">${right}/20</div>
+    <div class="sub" style="margin-bottom:18px">${msg}</div>
+    <div style="font-size:14px;font-weight:500;margin-bottom:6px">按类别(● = 有漏,优先复习)</div>
+    ${catHtml}
+    ${wrongList?`<div style="font-size:14px;font-weight:500;margin:18px 0 6px">错题回顾</div><div class="rev">${wrongList}</div>`:'<div class="rev" style="margin-top:16px;color:var(--grn)">满分,没有错题 👏</div>'}
+    <button class="restart" onclick="restart()">↻ 重做(选项会重新打乱)</button>
+  </div>`;
+}
+function restart(){i=0;right=0;wrong=0;answered=[];catStat={};Q.forEach(q=>delete q._opts);
+  $('#right').textContent=0;$('#wrong').textContent=0;render();}
+render();
+</script>
+</body>
+</html>
